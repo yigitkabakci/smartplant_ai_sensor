@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+
+{% block title %}Hastalık Tespiti{% endblock %}
+{% block nav_disease %}active{% endblock %}
+{% block page_title %}Hastalık Tespiti{% endblock %}
+{% block page_sub %}Yaprak görüntüsü yükle — AI ile anında bitki hastalığı tespiti{% endblock %}
+
+{% block head_styles %}
+.upload-zone {
+    border: 2px dashed rgba(34,197,94,0.3);
+    background: rgba(34,197,94,0.04);
+    border-radius: var(--radius);
+    padding: 50px 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .25s ease;
+    position: relative;
+}
+.upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--green);
+    background: rgba(34,197,94,0.08);
+}
+.upload-zone .upload-icon {
+    font-size: 48px;
+    color: var(--green);
+    margin-bottom: 14px;
+    display: block;
+    animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+}
+.upload-zone h3 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.upload-zone p  { font-size: 13px; color: var(--sub); margin-bottom: 18px; }
+.upload-zone .format-badges { display: flex; gap: 6px; justify-content: center; }
+
+.result-section { display: none; }
+.result-section.visible { display: block; }
+
+.disease-image-wrap {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg2);
+    aspect-ratio: 4/3;
+    display: flex; align-items: center; justify-content: center;
+}
+.disease-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.confidence-meter {
+    margin: 14px 0;
+}
+.confidence-meter .cm-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--sub);
+    margin-bottom: 6px;
+}
+.confidence-meter .cm-bar {
+    height: 8px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.confidence-meter .cm-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+}
+.disease-name-display {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    line-height: 1.3;
+}
+.severity-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.spinner-wrap {
+    display: none;
+    text-align: center;
+    padding: 40px;
+}
+.spinner-wrap.visible { display: block; }
+.spin-circle {
+    width: 56px; height: 56px;
+    border: 3px solid rgba(34,197,94,0.15);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+.history-item:last-child { border-bottom: none; }
+.history-thumb {
+    width: 48px; height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg2);
+}
+.history-thumb-placeholder {
+    width: 48px; height: 48px;
+    border-radius: 8px;
+    background: var(--card2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--sub);
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.history-disease { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.history-time { font-size: 11px; color: var(--sub); }
+.history-conf { font-size: 12px; font-weight: 700; }
+
+.info-tip {
+    background: var(--green-dim);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--sub2);
+    margin-top: 14px;
+}
+.info-tip i { color: var(--green); flex-shrink: 0; margin-top: 1px; }
+{% endblock %}
+
+{% block content %}
+<div class="grid" style="grid-template-columns: 1fr 380px; gap: 18px; align-items: start;">
+    <!-- Left: Upload + Results -->
+    <div>
+        <!-- Upload Area -->
+        <div class="card" id="upload-card">
+            <div id="drop-zone" class="upload-zone">
+                <i class="fas fa-leaf upload-icon"></i>
+                <h3>Yaprak Görüntüsü Yükle</h3>
+                <p>Sürükle-bırak veya tıkla</p>
+                <div class="format-badges">
+                    <span class="badge badge-green">PNG</span>
+                    <span class="badge badge-green">JPG</span>
+                    <span class="badge badge-green">JPEG</span>
+                    <span class="badge badge-blue">Max 16MB</span>
+                </div>
+                <input type="file" id="file-input" style="display:none;" accept=".png,.jpg,.jpeg">
+            </div>
+
+            <div class="info-tip" style="margin-top:16px;">
+                <i class="fas fa-circle-info"></i>
+                <span>En iyi sonuçlar için: Tek yaprak, iyi aydınlatılmış, net fotoğraf yükleyin. AI modelimiz 50+ bitki hastalığını %98 doğrulukla tanıyabilir.</span>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="card spinner-wrap" id="loading-card">
+            <div class="spin-circle"></div>
+            <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;">Yaprak analiz ediliyor...</div>
+            <div style="font-size:12px;color:var(--sub);">AI modelimiz görüntüyü inceliyor</div>
+        </div>
+
+        <!-- Results -->
+        <div class="result-section" id="result-section">
+            <!-- Main result card -->
+            <div class="card" style="margin-bottom:18px;">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title"><i class="fas fa-microscope" style="color:var(--green)"></i> Tanı Sonucu</div>
+                        <div class="card-sub">AI analiz tamamlandı</div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="resetUpload()">
+                        <i class="fas fa-rotate"></i> Yeni Analiz
+                    </button>
+                </div>
+
+                <div class="grid grid-2" style="gap:20px;align-items:start;">
+                    <!-- Image -->
+                    <div>
+                        <div class="disease-image-wrap">
+                            <img id="preview-img" src="" alt="Yüklenen yaprak">
+                        </div>
+                        <div class="info-tip" style="margin-top:12px;">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Tüm tahminler aşağıdaki grafik ile görüntülenebilir.</span>
+                        </div>
+                    </div>
+                    <!-- Disease Info -->
+                    <div>
+                        <div style="margin-bottom:8px;">
+                            <span id="severity-badge" class="severity-indicator badge-orange">
+                                <i class="fas fa-circle-exclamation"></i> Analiz Edildi
+                            </span>
+                        </div>
+                        <div class="disease-name-display" id="disease-name">--</div>
+                        <div style="font-size:12px;color:var(--sub);margin-bottom:16px;" id="disease-family">Bitki hastalığı</div>
+
+                        <div class="confidence-meter">
+                            <div class="cm-label">
+                                <span>Güven Skoru</span>
+                                <span id="conf-pct" style="color:var(--green);font-weight:700">--%</span>
+                            </div>
+                            <div class="cm-bar">
+                                <div class="cm-fill" id="conf-bar" style="width:0%;background:linear-gradient(90deg,#22c55e,#06b6d4)"></div>
+                            </div>
+                        </div>
+
+                        <div style="font-size:12px;color:var(--sub);line-height:1.8;">
+                            <div><i class="fas fa-check" style="color:var(--green);width:16px;"></i> MobileNetV2 derin öğrenme modeli</div>
+                            <div><i class="fas fa-check" style="color:var(--green);width:16px;"></i> 50+ hastalık sınıfı</div>
+                            <div><i class="fas fa-check" style="color:var(--green);width:16px;"></i> %98 doğruluk oranı</div>
+                        </div>
+
+                        <div style="margin-top:18px;display:flex;gap:8px;">
+                            <button class="btn btn-primary btn-sm" onclick="resetUpload()">
+                                <i class="fas fa-plus"></i> Yeni Analiz
+                            </button>
+                            <a href="/alerts_page" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-bell"></i> Uyarılar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Probability Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title"><i class="fas fa-chart-bar" style="color:var(--blue)"></i> Tüm Tahminler</div>
+                        <div class="card-sub">Olasılık dağılımı</div>
+                    </div>
+                </div>
+                <canvas id="predictions-chart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: History Panel -->
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title"><i class="fas fa-clock-rotate-left" style="color:var(--sub)"></i> Analiz Geçmişi</div>
+                    <div class="card-sub" id="history-count-sub">Son analizler</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="loadHistory()">
+                    <i class="fas fa-rotate"></i>
+                </button>
+            </div>
+            <div id="history-list">
+                <div style="text-align:center;padding:24px;color:var(--sub);">
+                    <i class="fas fa-circle-notch fa-spin" style="color:var(--green);font-size:20px;"></i>
+                    <div style="margin-top:10px;font-size:13px;">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="card" style="margin-top:18px;">
+            <div class="card-title" style="margin-bottom:14px;">
+                <i class="fas fa-lightbulb" style="color:var(--orange)"></i> İpuçları
+            </div>
+            <div style="font-size:12px;color:var(--sub);line-height:2;">
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Güneş ışığında net fotoğraf çekin</div>
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Tek bir yaprağa odaklanın</div>
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Hastalıklı bölgeyi çerçevede tutun</div>
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Bulanık veya karanlık fotoğraftan kaçının</div>
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>PNG veya JPG formatı kullanın</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+let predictionsChart = null;
+
+// Drop zone
+const dropZone  = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+
+['dragenter','dragover','dragleave','drop'].forEach(ev => {
+    dropZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+    document.body.addEventListener(ev, e => e.preventDefault());
+});
+['dragenter','dragover'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.add('dragover')));
+['dragleave','drop'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.remove('dragover')));
+dropZone.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+});
+
+function showState(state) {
+    document.getElementById('upload-card').style.display   = state === 'upload'  ? 'block' : 'none';
+    document.getElementById('loading-card').style.display  = state === 'loading' ? 'block' : 'none';
+    document.getElementById('result-section').classList.toggle('visible', state === 'result');
+}
+
+async function handleFile(file) {
+    if (!file) return;
+    if (!['image/png','image/jpeg','image/jpg'].includes(file.type)) {
+        showToast('Sadece PNG, JPG veya JPEG dosyaları desteklenir.', 'warning');
+        return;
+    }
+
+    // Preview
+    const reader = new FileReader();
+    reader.onload = e => document.getElementById('preview-img').src = e.target.result;
+    reader.readAsDataURL(file);
+
+    showState('loading');
+    fileInput.value = '';
+
+    const form = new FormData();
+    form.append('file', file);
+
+    try {
+        const r = await fetch('/leaf_disease/predict', { method: 'POST', body: form });
+        if (!r.ok) {
+            const err = await r.json();
+            throw new Error(err.detail || 'Sunucu hatası');
+        }
+        const data = await r.json();
+        displayResult(data);
+        showState('result');
+        loadHistory();
+    } catch(e) {
+        showToast('Hata: ' + e.message, 'error');
+        showState('upload');
+    }
+}
+
+function displayResult(data) {
+    const top = data.top_prediction;
+    document.getElementById('disease-name').textContent = top.disease || '--';
+
+    // Parse confidence
+    let confNum = 0;
+    if (typeof top.confidence === 'string') {
+        confNum = parseFloat(top.confidence.replace('%',''));
+    } else if (top.score != null) {
+        confNum = top.score * 100;
+    }
+
+    document.getElementById('conf-pct').textContent = confNum.toFixed(1) + '%';
+    document.getElementById('conf-bar').style.width = Math.min(confNum, 100) + '%';
+
+    // Family / category from label
+    const label = (top.disease || '').toLowerCase();
+    const isHealthy = label.includes('healthy');
+    document.getElementById('disease-family').textContent = isHealthy ? 'Sağlıklı yaprak' : 'Bitki hastalığı tespit edildi';
+
+    const badge = document.getElementById('severity-badge');
+    if (isHealthy) {
+        badge.className = 'severity-indicator badge-green';
+        badge.innerHTML = '<i class="fas fa-circle-check"></i> Sağlıklı';
+    } else if (confNum > 70) {
+        badge.className = 'severity-indicator badge-red';
+        badge.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Hastalık Tespit Edildi';
+    } else {
+        badge.className = 'severity-indicator badge-orange';
+        badge.innerHTML = '<i class="fas fa-circle-question"></i> Belirsiz';
+    }
+
+    // Chart
+    buildChart(data.predictions || []);
+}
+
+function buildChart(predictions) {
+    if (predictionsChart) { predictionsChart.destroy(); predictionsChart = null; }
+    const ctx = document.getElementById('predictions-chart').getContext('2d');
+    const labels = predictions.map(p => p.disease);
+    const vals   = predictions.map(p => {
+        if (typeof p.confidence === 'string') return parseFloat(p.confidence) || (p.score * 100);
+        return (p.score ?? 0) * 100;
+    });
+    const colors = [
+        '#22c55e','#3b82f6','#f59e0b','#ef4444','#a855f7',
+        '#06b6d4','#ec4899','#84cc16','#f97316','#6366f1'
+    ];
+    predictionsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                data: vals,
+                backgroundColor: labels.map((_,i) => colors[i % colors.length] + '30'),
+                borderColor:     labels.map((_,i) => colors[i % colors.length]),
+                borderWidth: 1.5,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `Olasılık: ${ctx.raw.toFixed(2)}%`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    max: 100,
+                    ticks: { color: '#64748b', font: { size: 10 }, callback: v => v + '%' },
+                    grid: { color: 'rgba(255,255,255,0.04)' }
+                },
+                y: {
+                    ticks: { color: '#94a3b8', font: { size: 11 } },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function resetUpload() {
+    if (predictionsChart) { predictionsChart.destroy(); predictionsChart = null; }
+    document.getElementById('preview-img').src = '';
+    document.getElementById('conf-bar').style.width = '0%';
+    showState('upload');
+}
+
+async function loadHistory() {
+    try {
+        const r = await fetch('/api/leaf-history?limit=15');
+        const data = await r.json();
+        const list = document.getElementById('history-list');
+        const sub  = document.getElementById('history-count-sub');
+
+        if (!data.length) {
+            sub.textContent = '0 analiz';
+            list.innerHTML = `<div style="text-align:center;padding:24px;color:var(--sub);font-size:13px;">
+                <i class="fas fa-leaf" style="font-size:24px;opacity:.3;display:block;margin-bottom:8px;"></i>
+                Henüz analiz yapılmadı
+            </div>`;
+            return;
+        }
+
+        sub.textContent = `${data.length} kayıt`;
+        list.innerHTML = data.map(item => {
+            const d = new Date(item.timestamp);
+            const conf = item.confidence != null ? (item.confidence * 100).toFixed(1) + '%' : '--';
+            const isHealthy = (item.label || '').toLowerCase().includes('healthy');
+            const confColor = isHealthy ? 'var(--green)' : parseFloat(conf) > 70 ? 'var(--red)' : 'var(--orange)';
+            return `
+                <div class="history-item">
+                    ${item.image_path
+                        ? `<img src="${item.image_path}" class="history-thumb" alt="yaprak" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="history-thumb-placeholder" style="display:none;"><i class="fas fa-leaf"></i></div>`
+                        : `<div class="history-thumb-placeholder"><i class="fas fa-leaf"></i></div>`
+                    }
+                    <div style="flex:1;min-width:0;">
+                        <div class="history-disease" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${item.label}">${item.label || '--'}</div>
+                        <div class="history-time">${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</div>
+                    </div>
+                    <div class="history-conf" style="color:${confColor};">${conf}</div>
+                </div>`;
+        }).join('');
+    } catch(e) {}
+}
+
+showState('upload');
+loadHistory();
+{% endblock %}

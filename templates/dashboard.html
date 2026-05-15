@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+{% block page_title %}Farm Dashboard{% endblock %}
+{% block page_sub %}Gerçek zamanlı sensör verisi ve sistem özeti{% endblock %}
+
+{% block head_styles %}
+.gauge-wrap { position: relative; width: 100%; max-width: 120px; margin: 0 auto; }
+.gauge-wrap canvas { display: block; }
+.gauge-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+.gauge-val { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1; }
+.gauge-unit { font-size: 10px; color: var(--sub); margin-top: 2px; }
+.sensor-card-inner { text-align: center; }
+.sensor-label { font-size: 11px; font-weight: 600; color: var(--sub); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px; }
+.sensor-status { font-size: 11px; margin-top: 6px; }
+.watering-card { background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05)); border-color: rgba(34,197,94,0.2); }
+.alert-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+.alert-item:last-child { border-bottom: none; padding-bottom: 0; }
+.alert-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+}
+.alert-icon.warning  { background: var(--orange-dim); color: var(--orange); }
+.alert-icon.critical { background: var(--red-dim);    color: var(--red); }
+.alert-icon.info     { background: var(--blue-dim);   color: var(--blue); }
+.alert-msg { font-size: 13px; color: var(--text); font-weight: 500; }
+.alert-time { font-size: 11px; color: var(--sub); margin-top: 2px; }
+.no-data { text-align: center; color: var(--sub); font-size: 13px; padding: 24px 0; }
+.no-data i { font-size: 28px; display: block; margin-bottom: 8px; opacity: .4; }
+.live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    box-shadow: 0 0 0 0 var(--green-glow);
+    animation: livePulse 2s infinite;
+}
+@keyframes livePulse {
+    0%   { box-shadow: 0 0 0 0 var(--green-glow); }
+    70%  { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+    100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+.summary-row { display: flex; align-items: center; gap: 6px; }
+{% endblock %}
+
+{% block content %}
+<!-- Row 1: 4 Metric gauges -->
+<div class="grid grid-4 mb-4" id="sensor-gauges">
+    <!-- Soil Moisture -->
+    <div class="card" id="card-moisture">
+        <div class="sensor-card-inner">
+            <div class="gauge-wrap">
+                <canvas id="gauge-moisture" width="120" height="120"></canvas>
+                <div class="gauge-center">
+                    <span class="gauge-val" id="val-moisture">--</span>
+                    <span class="gauge-unit">%</span>
+                </div>
+            </div>
+            <div class="sensor-label">Toprak Nemi</div>
+            <div class="sensor-status" id="status-moisture"><span class="badge badge-blue">Yükleniyor...</span></div>
+        </div>
+    </div>
+    <!-- Temperature -->
+    <div class="card" id="card-temp">
+        <div class="sensor-card-inner">
+            <div class="gauge-wrap">
+                <canvas id="gauge-temp" width="120" height="120"></canvas>
+                <div class="gauge-center">
+                    <span class="gauge-val" id="val-temp">--</span>
+                    <span class="gauge-unit">°C</span>
+                </div>
+            </div>
+            <div class="sensor-label">Sıcaklık</div>
+            <div class="sensor-status" id="status-temp"><span class="badge badge-blue">Yükleniyor...</span></div>
+        </div>
+    </div>
+    <!-- Humidity -->
+    <div class="card" id="card-humidity">
+        <div class="sensor-card-inner">
+            <div class="gauge-wrap">
+                <canvas id="gauge-humidity" width="120" height="120"></canvas>
+                <div class="gauge-center">
+                    <span class="gauge-val" id="val-humidity">--</span>
+                    <span class="gauge-unit">%</span>
+                </div>
+            </div>
+            <div class="sensor-label">Hava Nemi</div>
+            <div class="sensor-status" id="status-humidity"><span class="badge badge-blue">Yükleniyor...</span></div>
+        </div>
+    </div>
+    <!-- Light -->
+    <div class="card" id="card-light">
+        <div class="sensor-card-inner">
+            <div class="gauge-wrap">
+                <canvas id="gauge-light" width="120" height="120"></canvas>
+                <div class="gauge-center">
+                    <span class="gauge-val" id="val-light">--</span>
+                    <span class="gauge-unit">lx</span>
+                </div>
+            </div>
+            <div class="sensor-label">Işık</div>
+            <div class="sensor-status" id="status-light"><span class="badge badge-blue">Yükleniyor...</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2: Chart + Alerts -->
+<div class="grid grid-2 mb-4">
+    <!-- Trend Chart -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title flex items-center gap-2">
+                    <span class="live-dot"></span>
+                    Sensör Trendi
+                </div>
+                <div class="card-sub">Son 20 okuma</div>
+            </div>
+            <div class="flex gap-2">
+                <button class="btn btn-secondary btn-sm" onclick="setTrendMetric('moisture')">Nem</button>
+                <button class="btn btn-secondary btn-sm" onclick="setTrendMetric('temp')">Sıcaklık</button>
+            </div>
+        </div>
+        <canvas id="trend-chart" height="180"></canvas>
+    </div>
+
+    <!-- Alerts -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Aktif Uyarılar</div>
+                <div class="card-sub" id="alert-count-sub">Kontrol ediliyor...</div>
+            </div>
+            <a href="/alerts_page" class="btn btn-secondary btn-sm">Tümü</a>
+        </div>
+        <div id="alert-list">
+            <div class="no-data"><i class="fas fa-circle-check"></i>Uyarı kontrol ediliyor...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 3: Watering Prediction + Recent Table + Quick Stats -->
+<div class="grid grid-3">
+    <!-- Watering Prediction -->
+    <div class="card watering-card">
+        <div class="card-header">
+            <div>
+                <div class="card-title"><i class="fas fa-droplet" style="color:var(--blue)"></i> Sulama Tahmini</div>
+                <div class="card-sub">Lineer regresyon analizi</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="fetchWatering()">
+                <i class="fas fa-rotate"></i> Güncelle
+            </button>
+        </div>
+        <div id="watering-result">
+            <div class="no-data"><i class="fas fa-droplet"></i>Hesaplanmadı</div>
+        </div>
+    </div>
+
+    <!-- Recent Readings Table (spans 2 cols) -->
+    <div class="card" style="grid-column: span 2;">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Son Okumalar</div>
+                <div class="card-sub" id="last-update">Güncelleniyor...</div>
+            </div>
+            <div class="flex gap-2">
+                <span id="device-count-badge" class="badge badge-green" style="display:none"></span>
+                <button class="btn btn-secondary btn-sm" onclick="loadAll()">
+                    <i class="fas fa-rotate"></i>
+                </button>
+            </div>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="readings-table">
+                <thead>
+                    <tr>
+                        <th>Zaman</th>
+                        <th>Cihaz</th>
+                        <th>Toprak Nemi</th>
+                        <th>Sıcaklık</th>
+                        <th>Hava Nemi</th>
+                        <th>Işık</th>
+                    </tr>
+                </thead>
+                <tbody id="readings-tbody">
+                    <tr><td colspan="6" class="no-data" style="text-align:center;padding:24px;">
+                        <i class="fas fa-circle-notch fa-spin" style="color:var(--green)"></i> Yükleniyor...
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+// ── Gauge Factory ──
+function makeGauge(canvasId, color, max) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    return new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [0, max],
+                backgroundColor: [color, 'rgba(255,255,255,0.05)'],
+                borderWidth: 0,
+                circumference: 240,
+                rotation: 240,
+            }]
+        },
+        options: {
+            cutout: '78%',
+            responsive: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            animation: { duration: 800, easing: 'easeInOutQuart' }
+        }
+    });
+}
+
+const gauges = {
+    moisture: makeGauge('gauge-moisture', '#3b82f6', 100),
+    temp:     makeGauge('gauge-temp',     '#f59e0b', 60),
+    humidity: makeGauge('gauge-humidity', '#a855f7', 100),
+    light:    makeGauge('gauge-light',    '#22c55e', 100000),
+};
+
+function updateGauge(key, value, max) {
+    const g = gauges[key];
+    g.data.datasets[0].data = [Math.min(value, max), Math.max(0, max - value)];
+    g.update('none');
+}
+
+// ── Status Badge ──
+function statusBadge(value, low, high) {
+    if (value === null || value === undefined) return '<span class="badge badge-blue">N/A</span>';
+    if (value < low)  return '<span class="badge badge-red"><i class="fas fa-arrow-down"></i> Düşük</span>';
+    if (value > high) return '<span class="badge badge-orange"><i class="fas fa-arrow-up"></i> Yüksek</span>';
+    return '<span class="badge badge-green"><i class="fas fa-check"></i> Normal</span>';
+}
+
+// ── Trend Chart ──
+let trendChart = null;
+let allReadings = [];
+let currentMetric = 'moisture';
+
+function initTrendChart() {
+    const ctx = document.getElementById('trend-chart').getContext('2d');
+    trendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Toprak Nemi %',
+                data: [],
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59,130,246,0.08)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: '#3b82f6',
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: {
+                    ticks: { color: '#64748b', font: { size: 10 }, maxTicksLimit: 6 },
+                    grid: { color: 'rgba(255,255,255,0.04)' }
+                },
+                y: {
+                    ticks: { color: '#64748b', font: { size: 10 } },
+                    grid: { color: 'rgba(255,255,255,0.04)' }
+                }
+            }
+        }
+    });
+}
+
+function setTrendMetric(metric) {
+    currentMetric = metric;
+    updateTrendChart();
+}
+
+function updateTrendChart() {
+    if (!trendChart || !allReadings.length) return;
+    const reversed = [...allReadings].reverse();
+    const labels = reversed.map(r => {
+        const d = new Date(r.timestamp);
+        return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    });
+    const metricMap = {
+        moisture: { key: 'moisture_pct', label: 'Toprak Nemi %', color: '#3b82f6' },
+        temp:     { key: 'temperature_c', label: 'Sıcaklık °C', color: '#f59e0b' },
+    };
+    const m = metricMap[currentMetric] || metricMap.moisture;
+    const data = reversed.map(r => r[m.key] ?? null);
+    trendChart.data.labels = labels;
+    trendChart.data.datasets[0].data = data;
+    trendChart.data.datasets[0].label = m.label;
+    trendChart.data.datasets[0].borderColor = m.color;
+    trendChart.data.datasets[0].backgroundColor = m.color + '14';
+    trendChart.data.datasets[0].pointBackgroundColor = m.color;
+    trendChart.update();
+}
+
+// ── Load Sensor Data ──
+async function loadSensorData() {
+    try {
+        const r = await fetch('/api/sensor?limit=20');
+        allReadings = await r.json();
+        if (!allReadings.length) return;
+        const latest = allReadings[0];
+
+        // Gauges
+        updateGauge('moisture', latest.moisture_pct ?? 0, 100);
+        updateGauge('temp',     latest.temperature_c ?? 0, 60);
+        updateGauge('humidity', latest.humidity_pct ?? 0, 100);
+        updateGauge('light',    Math.min(latest.light_lux ?? 0, 100000), 100000);
+
+        // Values
+        document.getElementById('val-moisture').textContent = latest.moisture_pct?.toFixed(1) ?? '--';
+        document.getElementById('val-temp').textContent     = latest.temperature_c?.toFixed(1) ?? '--';
+        document.getElementById('val-humidity').textContent = latest.humidity_pct?.toFixed(1) ?? '--';
+        const lux = latest.light_lux ?? null;
+        document.getElementById('val-light').textContent = lux !== null ? (lux >= 1000 ? (lux/1000).toFixed(1)+'k' : lux.toFixed(0)) : '--';
+
+        // Status badges
+        document.getElementById('status-moisture').innerHTML = statusBadge(latest.moisture_pct, 20, 90);
+        document.getElementById('status-temp').innerHTML     = statusBadge(latest.temperature_c, 5, 35);
+        document.getElementById('status-humidity').innerHTML = statusBadge(latest.humidity_pct, 30, 95);
+        document.getElementById('status-light').innerHTML    = statusBadge(latest.light_lux, 100, 100000);
+
+        // Table
+        const tbody = document.getElementById('readings-tbody');
+        tbody.innerHTML = allReadings.slice(0,10).map(r => {
+            const d = new Date(r.timestamp);
+            const mac = r.device_mac || 'N/A';
+            const shortMac = mac.length > 11 ? '...' + mac.slice(-5) : mac;
+            return `<tr>
+                <td style="color:var(--text)">${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'})}</td>
+                <td><span style="font-family:monospace;font-size:11px;color:var(--sub2)">${shortMac}</span></td>
+                <td><span style="color:#3b82f6;font-weight:600">${r.moisture_pct?.toFixed(1) ?? '--'}%</span></td>
+                <td><span style="color:#f59e0b;font-weight:600">${r.temperature_c?.toFixed(1) ?? '--'}°C</span></td>
+                <td><span style="color:#a855f7;font-weight:600">${r.humidity_pct?.toFixed(1) ?? '--'}%</span></td>
+                <td><span style="color:#22c55e;font-weight:600">${r.light_lux?.toFixed(0) ?? '--'} lx</span></td>
+            </tr>`;
+        }).join('');
+
+        const now = new Date();
+        document.getElementById('last-update').textContent =
+            `Son güncelleme: ${now.toLocaleTimeString('tr-TR')}`;
+
+        updateTrendChart();
+    } catch(e) {
+        document.getElementById('readings-tbody').innerHTML =
+            `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--sub)">
+                <i class="fas fa-exclamation-triangle" style="color:var(--orange)"></i>
+                Veri yüklenemedi
+            </td></tr>`;
+    }
+}
+
+// ── Load Alerts ──
+async function loadAlerts() {
+    try {
+        const r = await fetch('/api/alerts');
+        const alerts = await r.json();
+        const list = document.getElementById('alert-list');
+        const sub  = document.getElementById('alert-count-sub');
+
+        if (!alerts.length) {
+            sub.textContent = 'Aktif uyarı yok';
+            list.innerHTML = `<div class="no-data">
+                <i class="fas fa-circle-check" style="color:var(--green)"></i>
+                Tüm değerler normal aralıkta
+            </div>`;
+            return;
+        }
+
+        sub.textContent = `${alerts.length} aktif uyarı`;
+        const iconMap = { warning: 'fa-triangle-exclamation', critical: 'fa-circle-xmark', info: 'fa-circle-info' };
+        list.innerHTML = alerts.slice(0, 4).map(a => `
+            <div class="alert-item">
+                <div class="alert-icon ${a.level}">
+                    <i class="fas ${iconMap[a.level] || 'fa-bell'}"></i>
+                </div>
+                <div>
+                    <div class="alert-msg">${a.message}</div>
+                    <div class="alert-time">${a.timestamp}</div>
+                </div>
+            </div>
+        `).join('');
+    } catch(e) {}
+}
+
+// ── Watering Prediction ──
+async function fetchWatering() {
+    const box = document.getElementById('watering-result');
+    box.innerHTML = `<div class="no-data"><i class="fas fa-circle-notch fa-spin" style="color:var(--green)"></i> Hesaplanıyor...</div>`;
+    try {
+        const r = await fetch('/api/predict-watering', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ device_mac: null, history_hours: 24 })
+        });
+        if (r.status === 422) {
+            box.innerHTML = `<div class="no-data">
+                <i class="fas fa-database" style="color:var(--orange)"></i>
+                <span>Yeterli veri yok (en az 3 okuma gerekli)</span>
+            </div>`;
+            return;
+        }
+        const d = await r.json();
+        if (d.status === 'no_watering_needed') {
+            box.innerHTML = `
+                <div style="text-align:center;padding:8px 0;">
+                    <div style="font-size:36px;margin-bottom:8px;">💧</div>
+                    <div style="color:var(--green);font-weight:700;font-size:15px;">Sulama Gerekmiyor</div>
+                    <div style="color:var(--sub);font-size:12px;margin-top:4px;">Toprak nemi yeterli seviyede</div>
+                </div>`;
+        } else {
+            const predicted = d.predicted_watering_time ? new Date(d.predicted_watering_time) : null;
+            const hours = d.hours_until_watering?.toFixed(1);
+            const r2 = d.regression?.r_squared?.toFixed(2);
+            box.innerHTML = `
+                <div style="text-align:center;padding:4px 0;">
+                    <div style="font-size:32px;margin-bottom:8px;">🌊</div>
+                    <div style="color:var(--blue);font-weight:700;font-size:15px;">Sulama Tahmini</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--text);margin:10px 0 4px;">
+                        ${hours ? hours + ' saat' : '--'}
+                    </div>
+                    <div style="color:var(--sub);font-size:12px;">
+                        ${predicted ? predicted.toLocaleString('tr-TR', {dateStyle:'short',timeStyle:'short'}) : ''}
+                    </div>
+                    ${r2 ? `<div style="color:var(--sub);font-size:11px;margin-top:8px;">R² = ${r2}</div>` : ''}
+                </div>`;
+        }
+    } catch(e) {
+        box.innerHTML = `<div class="no-data">
+            <i class="fas fa-exclamation-triangle" style="color:var(--red)"></i>
+            Hata oluştu
+        </div>`;
+    }
+}
+
+// ── Load Devices Count ──
+async function loadDevices() {
+    try {
+        const r = await fetch('/api/devices');
+        const devs = await r.json();
+        const badge = document.getElementById('device-count-badge');
+        if (devs.length > 0) {
+            badge.textContent = `${devs.length} Cihaz`;
+            badge.style.display = 'inline-flex';
+        }
+    } catch(e) {}
+}
+
+function loadAll() {
+    loadSensorData();
+    loadAlerts();
+    loadDevices();
+}
+
+// Init
+initTrendChart();
+loadAll();
+fetchWatering();
+setInterval(loadSensorData, 30000);
+setInterval(loadAlerts, 60000);
+{% endblock %}

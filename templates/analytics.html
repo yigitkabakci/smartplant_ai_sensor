@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+
+{% block title %}Analitik{% endblock %}
+{% block nav_analytics %}active{% endblock %}
+{% block page_title %}Çevresel Analitik{% endblock %}
+{% block page_sub %}Sensör geçmişi, trendler ve istatistiksel analiz{% endblock %}
+
+{% block head_styles %}
+.period-btn {
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--card2);
+    color: var(--sub2);
+    transition: all .2s;
+}
+.period-btn.active, .period-btn:hover {
+    background: var(--green-dim);
+    color: var(--green);
+    border-color: rgba(34,197,94,0.3);
+}
+.summary-metric {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.summary-metric .sm-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+.summary-metric .sm-val {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+}
+.summary-metric .sm-lbl { font-size: 11px; color: var(--sub); margin-top: 3px; }
+.summary-metric .sm-min-max { font-size: 10px; color: var(--sub); margin-top: 4px; }
+.chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+}
+.chart-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+.chart-sub { font-size: 11px; color: var(--sub); margin-bottom: 14px; }
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+}
+.filter-row .filter-label { font-size: 12px; color: var(--sub); font-weight: 600; }
+.mac-filter {
+    padding: 6px 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    cursor: pointer;
+}
+.mac-filter:focus { border-color: var(--green); }
+{% endblock %}
+
+{% block content %}
+<!-- Filter Row -->
+<div class="filter-row">
+    <span class="filter-label">Periyot:</span>
+    <div style="display:flex;gap:6px;">
+        <button class="period-btn" onclick="setPeriod(24)"  data-period="24">24 Saat</button>
+        <button class="period-btn active" onclick="setPeriod(72)"  data-period="72">3 Gün</button>
+        <button class="period-btn" onclick="setPeriod(168)" data-period="168">7 Gün</button>
+        <button class="period-btn" onclick="setPeriod(720)" data-period="720">30 Gün</button>
+        <button class="period-btn" onclick="setPeriod(0)"   data-period="0">Tümü</button>
+    </div>
+    <span class="filter-label" style="margin-left:8px;">Cihaz:</span>
+    <select class="mac-filter" id="mac-filter" onchange="applyFilters()">
+        <option value="">Tüm Cihazlar</option>
+    </select>
+    <button class="btn btn-secondary btn-sm" onclick="loadData()">
+        <i class="fas fa-rotate"></i> Yenile
+    </button>
+    <span style="margin-left:auto;font-size:12px;color:var(--sub);" id="data-count-label"></span>
+</div>
+
+<!-- Summary Metrics -->
+<div class="grid grid-4 mb-4" id="summary-row">
+    <div class="summary-metric">
+        <div class="sm-icon" style="background:rgba(245,158,11,0.12);color:#f59e0b;">
+            <i class="fas fa-thermometer-half"></i>
+        </div>
+        <div>
+            <div class="sm-val" id="avg-temp">--</div>
+            <div class="sm-lbl">Ort. Sıcaklık (°C)</div>
+            <div class="sm-min-max" id="range-temp">Min/Max: --</div>
+        </div>
+    </div>
+    <div class="summary-metric">
+        <div class="sm-icon" style="background:rgba(168,85,247,0.12);color:#a855f7;">
+            <i class="fas fa-wind"></i>
+        </div>
+        <div>
+            <div class="sm-val" id="avg-humidity">--</div>
+            <div class="sm-lbl">Ort. Hava Nemi (%)</div>
+            <div class="sm-min-max" id="range-humidity">Min/Max: --</div>
+        </div>
+    </div>
+    <div class="summary-metric">
+        <div class="sm-icon" style="background:rgba(59,130,246,0.12);color:#3b82f6;">
+            <i class="fas fa-droplet"></i>
+        </div>
+        <div>
+            <div class="sm-val" id="avg-moisture">--</div>
+            <div class="sm-lbl">Ort. Toprak Nemi (%)</div>
+            <div class="sm-min-max" id="range-moisture">Min/Max: --</div>
+        </div>
+    </div>
+    <div class="summary-metric">
+        <div class="sm-icon" style="background:rgba(34,197,94,0.12);color:#22c55e;">
+            <i class="fas fa-sun"></i>
+        </div>
+        <div>
+            <div class="sm-val" id="avg-light">--</div>
+            <div class="sm-lbl">Ort. Işık (lux)</div>
+            <div class="sm-min-max" id="range-light">Min/Max: --</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="grid grid-2 mb-4">
+    <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-thermometer-half" style="color:#f59e0b"></i> Sıcaklık Trendi</div>
+        <div class="chart-sub">Zaman içindeki sıcaklık değişimi (°C)</div>
+        <canvas id="chart-temp" height="180"></canvas>
+    </div>
+    <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-wind" style="color:#a855f7"></i> Hava Nemi Trendi</div>
+        <div class="chart-sub">Zaman içindeki bağıl nem değişimi (%)</div>
+        <canvas id="chart-humidity" height="180"></canvas>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="grid grid-2 mb-4">
+    <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-droplet" style="color:#3b82f6"></i> Toprak Nemi Trendi</div>
+        <div class="chart-sub">Zaman içindeki toprak nem değişimi (%)</div>
+        <canvas id="chart-moisture" height="180"></canvas>
+    </div>
+    <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-sun" style="color:#22c55e"></i> Işık Yoğunluğu Trendi</div>
+        <div class="chart-sub">Zaman içindeki ışık değişimi (lux)</div>
+        <canvas id="chart-light" height="180"></canvas>
+    </div>
+</div>
+
+<!-- Correlation Chart -->
+<div class="grid grid-2 mb-4">
+    <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-chart-pie" style="color:var(--green)"></i> Korelasyon Analizi</div>
+        <div class="chart-sub">Sensör değerlerinin dağılım ortalamaları</div>
+        <canvas id="chart-radar" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+        <div class="card-header" style="margin-bottom:12px;">
+            <div>
+                <div class="chart-title"><i class="fas fa-table" style="color:var(--blue)"></i> Ham Veri Tablosu</div>
+                <div class="chart-sub">Son okumalar detaylı görünüm</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV()">
+                <i class="fas fa-download"></i> CSV
+            </button>
+        </div>
+        <div style="overflow-y:auto;max-height:240px;">
+            <table class="data-table" id="raw-table">
+                <thead>
+                    <tr>
+                        <th>Zaman</th>
+                        <th>Nem%</th>
+                        <th>Sıcaklık</th>
+                        <th>Hava</th>
+                        <th>Işık</th>
+                    </tr>
+                </thead>
+                <tbody id="raw-tbody">
+                    <tr><td colspan="5" style="text-align:center;padding:16px;color:var(--sub)">Yükleniyor...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+let allData = [];
+let currentPeriod = 72;
+let currentMac = '';
+let charts = {};
+
+const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+        x: {
+            ticks: { color: '#64748b', font: { size: 10 }, maxTicksLimit: 8 },
+            grid: { color: 'rgba(255,255,255,0.04)' }
+        },
+        y: {
+            ticks: { color: '#64748b', font: { size: 10 } },
+            grid: { color: 'rgba(255,255,255,0.04)' }
+        }
+    }
+};
+
+function makeLineChart(id, color, yLabel) {
+    const ctx = document.getElementById(id).getContext('2d');
+    return new Chart(ctx, {
+        type: 'line',
+        data: { labels: [], datasets: [{
+            data: [],
+            borderColor: color,
+            backgroundColor: color + '12',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 2,
+            borderWidth: 2,
+            pointBackgroundColor: color,
+        }]},
+        options: {
+            ...chartDefaults,
+            scales: {
+                ...chartDefaults.scales,
+                y: { ...chartDefaults.scales.y, title: { display: false } }
+            }
+        }
+    });
+}
+
+function initCharts() {
+    charts.temp     = makeLineChart('chart-temp',     '#f59e0b', '°C');
+    charts.humidity = makeLineChart('chart-humidity', '#a855f7', '%');
+    charts.moisture = makeLineChart('chart-moisture', '#3b82f6', '%');
+    charts.light    = makeLineChart('chart-light',    '#22c55e', 'lux');
+
+    const ctxRadar = document.getElementById('chart-radar').getContext('2d');
+    charts.radar = new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+            labels: ['Toprak Nemi', 'Sıcaklık', 'Hava Nemi', 'Işık (%)'],
+            datasets: [{
+                label: 'Ortalama Değerler',
+                data: [0,0,0,0],
+                borderColor: '#22c55e',
+                backgroundColor: 'rgba(34,197,94,0.1)',
+                pointBackgroundColor: '#22c55e',
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                r: {
+                    ticks: { color: '#64748b', font: { size: 10 }, backdropColor: 'transparent' },
+                    grid: { color: 'rgba(255,255,255,0.06)' },
+                    angleLines: { color: 'rgba(255,255,255,0.06)' },
+                    pointLabels: { color: '#94a3b8', font: { size: 11 } }
+                }
+            }
+        }
+    });
+}
+
+function setPeriod(hours) {
+    currentPeriod = hours;
+    document.querySelectorAll('.period-btn').forEach(b => {
+        b.classList.toggle('active', parseInt(b.dataset.period) === hours);
+    });
+    applyFilters();
+}
+
+function applyFilters() {
+    currentMac = document.getElementById('mac-filter').value;
+    let filtered = [...allData];
+    if (currentMac) filtered = filtered.filter(r => r.device_mac === currentMac);
+    if (currentPeriod > 0) {
+        const cutoff = Date.now() - currentPeriod * 3600000;
+        filtered = filtered.filter(r => new Date(r.timestamp).getTime() >= cutoff);
+    }
+    renderCharts(filtered);
+}
+
+function avg(arr, key) {
+    const vals = arr.map(r => r[key]).filter(v => v != null);
+    return vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : null;
+}
+function minMax(arr, key) {
+    const vals = arr.map(r => r[key]).filter(v => v != null);
+    return vals.length ? { min: Math.min(...vals), max: Math.max(...vals) } : null;
+}
+
+function renderCharts(data) {
+    const sorted = [...data].sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const labels = sorted.map(r => {
+        const d = new Date(r.timestamp);
+        return `${d.getMonth()+1}/${d.getDate()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    });
+
+    const update = (chart, key) => {
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = sorted.map(r => r[key] ?? null);
+        chart.update('none');
+    };
+    update(charts.temp,     'temperature_c');
+    update(charts.humidity, 'humidity_pct');
+    update(charts.moisture, 'moisture_pct');
+    update(charts.light,    'light_lux');
+
+    // Summary
+    const setAvg = (id, val, unit='') =>
+        document.getElementById(id).textContent = val != null ? val.toFixed(1) + unit : '--';
+    const setRange = (id, mm, unit='') => {
+        document.getElementById(id).textContent = mm
+            ? `Min: ${mm.min.toFixed(1)}${unit} / Max: ${mm.max.toFixed(1)}${unit}`
+            : 'Min/Max: --';
+    };
+
+    setAvg('avg-temp', avg(data, 'temperature_c'), '°C');
+    setAvg('avg-humidity', avg(data, 'humidity_pct'), '%');
+    setAvg('avg-moisture', avg(data, 'moisture_pct'), '%');
+    const avgLight = avg(data, 'light_lux');
+    document.getElementById('avg-light').textContent = avgLight != null
+        ? (avgLight >= 1000 ? (avgLight/1000).toFixed(1)+'k' : avgLight.toFixed(0))
+        : '--';
+
+    setRange('range-temp',     minMax(data, 'temperature_c'), '°C');
+    setRange('range-humidity', minMax(data, 'humidity_pct'),  '%');
+    setRange('range-moisture', minMax(data, 'moisture_pct'),  '%');
+    setRange('range-light',    minMax(data, 'light_lux'),     ' lx');
+
+    // Radar - normalized values (0-100)
+    const avgM = avg(data, 'moisture_pct') ?? 0;
+    const avgT = ((avg(data, 'temperature_c') ?? 0) / 60) * 100;
+    const avgH = avg(data, 'humidity_pct') ?? 0;
+    const avgL = Math.min((avg(data, 'light_lux') ?? 0) / 1000, 100);
+    charts.radar.data.datasets[0].data = [avgM, avgT, avgH, avgL];
+    charts.radar.update('none');
+
+    // Count label
+    document.getElementById('data-count-label').textContent = `${data.length} okuma gösteriliyor`;
+
+    // Raw table
+    const tbody = document.getElementById('raw-tbody');
+    if (!data.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--sub)">Bu periyotta veri yok</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = sorted.slice(-30).reverse().map(r => {
+        const d = new Date(r.timestamp);
+        return `<tr>
+            <td style="color:var(--sub);font-size:11px;">${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</td>
+            <td style="color:#3b82f6;font-weight:600">${r.moisture_pct?.toFixed(1) ?? '--'}%</td>
+            <td style="color:#f59e0b;font-weight:600">${r.temperature_c?.toFixed(1) ?? '--'}°C</td>
+            <td style="color:#a855f7;font-weight:600">${r.humidity_pct?.toFixed(1) ?? '--'}%</td>
+            <td style="color:#22c55e;font-weight:600">${r.light_lux?.toFixed(0) ?? '--'}</td>
+        </tr>`;
+    }).join('');
+}
+
+async function loadData() {
+    try {
+        const r = await fetch('/api/sensor?limit=100');
+        allData = await r.json();
+
+        // Populate device filter
+        const macs = [...new Set(allData.map(r => r.device_mac).filter(Boolean))];
+        const macSel = document.getElementById('mac-filter');
+        macSel.innerHTML = '<option value="">Tüm Cihazlar</option>' +
+            macs.map(m => `<option value="${m}">${m}</option>`).join('');
+
+        applyFilters();
+    } catch(e) {
+        document.getElementById('data-count-label').textContent = 'Veri yüklenemedi';
+    }
+}
+
+function exportCSV() {
+    let filtered = [...allData];
+    if (currentMac) filtered = filtered.filter(r => r.device_mac === currentMac);
+    if (currentPeriod > 0) {
+        const cutoff = Date.now() - currentPeriod * 3600000;
+        filtered = filtered.filter(r => new Date(r.timestamp).getTime() >= cutoff);
+    }
+    const header = 'Zaman,Cihaz,Toprak Nemi %,Sıcaklık C,Hava Nemi %,Işık lux\n';
+    const rows = filtered.map(r =>
+        `${r.timestamp},${r.device_mac},${r.moisture_pct},${r.temperature_c},${r.humidity_pct},${r.light_lux}`
+    ).join('\n');
+    const blob = new Blob([header + rows], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `agrosense_export_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+}
+
+initCharts();
+loadData();
+{% endblock %}
