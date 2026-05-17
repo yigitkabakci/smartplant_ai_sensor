@@ -1,4 +1,5 @@
 import os
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -20,7 +21,14 @@ cfg = Config()
 async def lifespan(app: FastAPI):
     os.makedirs(cfg.UPLOAD_FOLDER, exist_ok=True)
     database.init_db(cfg.DATABASE_PATH)
-    ml_service.load_leaf_model()
+
+    # ML modelini background thread'de yükle.
+    # Doğrudan çağrı event loop'u bloke eder ve HuggingFace background
+    # thread'leri GIL çakışmasına (dolayısıyla periyodik server donmalarına)
+    # yol açar. run_in_executor ile thread pool'da çalıştırılır.
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, ml_service.load_leaf_model)
+
     logger.info("Uygulama başlatıldı.")
     yield
     logger.info("Uygulama kapatılıyor.")

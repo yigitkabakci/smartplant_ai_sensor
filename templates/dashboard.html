@@ -23,6 +23,7 @@
 .sensor-label { font-size: 11px; font-weight: 600; color: var(--sub); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px; }
 .sensor-status { font-size: 11px; margin-top: 6px; }
 .watering-card { background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05)); border-color: rgba(34,197,94,0.2); }
+#watering-result { min-height: 120px; display: flex; align-items: center; justify-content: center; }
 .alert-item {
     display: flex; align-items: flex-start; gap: 10px;
     padding: 12px 0;
@@ -134,7 +135,9 @@
                 <button class="btn btn-secondary btn-sm" onclick="setTrendMetric('temp')">Sıcaklık</button>
             </div>
         </div>
-        <canvas id="trend-chart" height="180"></canvas>
+        <div style="position:relative;height:180px;background:var(--card);">
+            <canvas id="trend-chart"></canvas>
+        </div>
     </div>
 
     <!-- Alerts -->
@@ -161,7 +164,7 @@
                 <div class="card-title"><i class="fas fa-droplet" style="color:var(--blue)"></i> Sulama Tahmini</div>
                 <div class="card-sub">Lineer regresyon analizi</div>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="fetchWatering()">
+            <button class="btn btn-primary btn-sm" onclick="fetchWatering(true)">
                 <i class="fas fa-rotate"></i> Güncelle
             </button>
         </div>
@@ -214,6 +217,7 @@ function makeGauge(canvasId, color, max) {
     const ctx = canvas.getContext('2d');
     return new Chart(ctx, {
         type: 'doughnut',
+        plugins: [darkBgPlugin],
         data: {
             datasets: [{
                 data: [0, max],
@@ -227,7 +231,7 @@ function makeGauge(canvasId, color, max) {
             cutout: '78%',
             responsive: false,
             plugins: { legend: { display: false }, tooltip: { enabled: false } },
-            animation: { duration: 800, easing: 'easeInOutQuart' }
+            animation: { duration: 0 }
         }
     });
 }
@@ -258,10 +262,26 @@ let trendChart = null;
 let allReadings = [];
 let currentMetric = 'moisture';
 
+// Chart.js plugin: her draw'dan önce canvas'ı dark renkle doldur.
+// Bu olmadan canvas beyaz render olur çünkü HTML canvas varsayılan
+// olarak şeffaf, tarayıcı ise altındaki CSS background'ı değil
+// canvas'ın kendi background'ını kullanır.
+const darkBgPlugin = {
+    id: 'darkBg',
+    beforeDraw(chart) {
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(0, 0, chart.width, chart.height);
+        ctx.restore();
+    }
+};
+
 function initTrendChart() {
     const ctx = document.getElementById('trend-chart').getContext('2d');
     trendChart = new Chart(ctx, {
         type: 'line',
+        plugins: [darkBgPlugin],
         data: {
             labels: [],
             datasets: [{
@@ -279,6 +299,7 @@ function initTrendChart() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: { duration: 0 },
             plugins: { legend: { display: false } },
             scales: {
                 x: {
@@ -299,7 +320,7 @@ function setTrendMetric(metric) {
     updateTrendChart();
 }
 
-function updateTrendChart() {
+function updateTrendChart(mode) {
     if (!trendChart || !allReadings.length) return;
     const reversed = [...allReadings].reverse();
     const labels = reversed.map(r => {
@@ -318,7 +339,7 @@ function updateTrendChart() {
     trendChart.data.datasets[0].borderColor = m.color;
     trendChart.data.datasets[0].backgroundColor = m.color + '14';
     trendChart.data.datasets[0].pointBackgroundColor = m.color;
-    trendChart.update();
+    trendChart.update(mode ?? undefined);
 }
 
 // ── Load Sensor Data ──
@@ -348,27 +369,40 @@ async function loadSensorData() {
         document.getElementById('status-humidity').innerHTML = statusBadge(latest.humidity_pct, 30, 95);
         document.getElementById('status-light').innerHTML    = statusBadge(latest.light_lux, 100, 100000);
 
-        // Table
+        // Table — update in-place to avoid layout flash
         const tbody = document.getElementById('readings-tbody');
-        tbody.innerHTML = allReadings.slice(0,10).map(r => {
+        const rows = allReadings.slice(0, 10);
+        const existingRows = tbody.querySelectorAll('tr');
+        rows.forEach((r, i) => {
             const d = new Date(r.timestamp);
             const mac = r.device_mac || 'N/A';
             const shortMac = mac.length > 11 ? '...' + mac.slice(-5) : mac;
-            return `<tr>
-                <td style="color:var(--text)">${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'})}</td>
-                <td><span style="font-family:monospace;font-size:11px;color:var(--sub2)">${shortMac}</span></td>
-                <td><span style="color:#3b82f6;font-weight:600">${r.moisture_pct?.toFixed(1) ?? '--'}%</span></td>
-                <td><span style="color:#f59e0b;font-weight:600">${r.temperature_c?.toFixed(1) ?? '--'}°C</span></td>
-                <td><span style="color:#a855f7;font-weight:600">${r.humidity_pct?.toFixed(1) ?? '--'}%</span></td>
-                <td><span style="color:#22c55e;font-weight:600">${r.light_lux?.toFixed(0) ?? '--'} lx</span></td>
-            </tr>`;
-        }).join('');
+            const cells = [
+                `<td style="color:var(--text)">${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'})}</td>`,
+                `<td><span style="font-family:monospace;font-size:11px;color:var(--sub2)">${shortMac}</span></td>`,
+                `<td><span style="color:#3b82f6;font-weight:600">${r.moisture_pct?.toFixed(1) ?? '--'}%</span></td>`,
+                `<td><span style="color:#f59e0b;font-weight:600">${r.temperature_c?.toFixed(1) ?? '--'}°C</span></td>`,
+                `<td><span style="color:#a855f7;font-weight:600">${r.humidity_pct?.toFixed(1) ?? '--'}%</span></td>`,
+                `<td><span style="color:#22c55e;font-weight:600">${r.light_lux?.toFixed(0) ?? '--'} lx</span></td>`,
+            ].join('');
+            if (i < existingRows.length) {
+                existingRows[i].innerHTML = cells;
+            } else {
+                const tr = document.createElement('tr');
+                tr.innerHTML = cells;
+                tbody.appendChild(tr);
+            }
+        });
+        // Remove extra rows if data shrank
+        for (let i = tbody.rows.length - 1; i >= rows.length; i--) {
+            tbody.deleteRow(i);
+        }
 
         const now = new Date();
         document.getElementById('last-update').textContent =
             `Son güncelleme: ${now.toLocaleTimeString('tr-TR')}`;
 
-        updateTrendChart();
+        updateTrendChart('none');
     } catch(e) {
         document.getElementById('readings-tbody').innerHTML =
             `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--sub)">
@@ -412,9 +446,11 @@ async function loadAlerts() {
 }
 
 // ── Watering Prediction ──
-async function fetchWatering() {
+async function fetchWatering(showSpinner = false) {
     const box = document.getElementById('watering-result');
-    box.innerHTML = `<div class="no-data"><i class="fas fa-circle-notch fa-spin" style="color:var(--green)"></i> Hesaplanıyor...</div>`;
+    if (showSpinner) {
+        box.innerHTML = `<div class="no-data"><i class="fas fa-circle-notch fa-spin" style="color:var(--green)"></i> Hesaplanıyor...</div>`;
+    }
     try {
         const r = await fetch('/api/predict-watering', {
             method: 'POST',
