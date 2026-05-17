@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block title %}Cihazlar{% endblock %}
+{% block nav_devices %}active{% endblock %}
+{% block page_title %}Cihaz Yönetimi{% endblock %}
+{% block page_sub %}ESP32 sensör cihazlarını kayıt edin ve yönetin{% endblock %}
+
+{% block head_styles %}
+.device-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all .25s ease;
+}
+.device-card:hover {
+    border-color: rgba(255,255,255,0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 35px rgba(0,0,0,0.3);
+}
+.device-card-header {
+    padding: 18px 20px 14px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+}
+.device-icon-wrap {
+    width: 46px; height: 46px;
+    background: var(--green-dim);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    color: var(--green);
+}
+.device-mac {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--sub2);
+    background: var(--bg2);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    margin-top: 6px;
+    display: inline-block;
+}
+.device-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+}
+.device-card-body { padding: 16px 20px; }
+.device-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.device-stat-label { font-size: 12px; color: var(--sub); display: flex; align-items: center; gap: 6px; }
+.device-stat-value { font-size: 12px; font-weight: 600; color: var(--sub2); }
+.device-card-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.last-seen {
+    font-size: 11px;
+    color: var(--sub);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.setup-guide {
+    background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.03));
+    border: 1px solid rgba(59,130,246,0.15);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+}
+.setup-step {
+    display: flex;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.setup-step:last-child { border-bottom: none; }
+.step-num {
+    width: 26px; height: 26px;
+    background: var(--blue-dim);
+    color: var(--blue);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.step-content h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.step-content p  { font-size: 12px; color: var(--sub); }
+.code-snippet {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--green);
+    overflow-x: auto;
+    white-space: pre;
+    margin-top: 8px;
+}
+{% endblock %}
+
+{% block content %}
+<!-- Page Actions -->
+<div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:12px;">
+    <div class="flex gap-3 items-center">
+        <div style="font-size:13px;color:var(--sub);">
+            <span id="device-total" style="color:var(--text);font-weight:700;font-size:18px;">--</span>
+            &nbsp;kayıtlı cihaz
+        </div>
+        <div style="width:1px;height:20px;background:var(--border)"></div>
+        <div style="font-size:13px;color:var(--sub);">
+            <span id="device-online" style="color:var(--green);font-weight:700;font-size:18px;">--</span>
+            &nbsp;çevrimiçi
+        </div>
+    </div>
+    <div class="flex gap-2">
+        <button class="btn btn-secondary btn-sm" onclick="loadDevices()">
+            <i class="fas fa-rotate"></i> Yenile
+        </button>
+        <button class="btn btn-primary" onclick="openModal('modal-add-device')">
+            <i class="fas fa-plus"></i> Cihaz Ekle
+        </button>
+    </div>
+</div>
+
+<!-- Device Grid -->
+<div class="grid grid-3" id="devices-grid">
+    <div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--sub);">
+        <i class="fas fa-circle-notch fa-spin" style="font-size:28px;color:var(--green);"></i>
+        <div style="margin-top:14px;font-size:13px;">Cihazlar yükleniyor...</div>
+    </div>
+</div>
+
+<!-- Setup Guide -->
+<div class="setup-guide" style="margin-top:28px;">
+    <div class="flex items-center justify-between mb-4" style="margin-bottom:16px;">
+        <div>
+            <div class="card-title"><i class="fas fa-wifi" style="color:var(--blue)"></i> ESP32 Hızlı Kurulum</div>
+            <div class="card-sub">Cihazınızı sisteme bağlamak için adımları takip edin</div>
+        </div>
+        <a href="/sensor_docs" class="btn btn-secondary btn-sm">
+            <i class="fas fa-book-open"></i> Tam Kılavuz
+        </a>
+    </div>
+    <div>
+        <div class="setup-step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+                <h4>Cihazı Kaydet</h4>
+                <p>ESP32'nin MAC adresini sisteme ekleyin. Bu sayfadaki "Cihaz Ekle" butonunu kullanın.</p>
+            </div>
+        </div>
+        <div class="setup-step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+                <h4>Sensör Verisi Gönder</h4>
+                <p>ESP32'den JSON formatında POST isteği atın:</p>
+                <div class="code-snippet">POST /api/sensor
+Content-Type: application/json
+
+{
+  "device_mac": "AA:BB:CC:DD:EE:FF",
+  "moisture_pct": 65.3,
+  "temperature_c": 22.5,
+  "humidity_pct": 58.0,
+  "light_lux": 1200.0
+}</div>
+            </div>
+        </div>
+        <div class="setup-step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+                <h4>Verileri İzle</h4>
+                <p>Dashboard ve Analitik sayfasından sensör verilerini gerçek zamanlı olarak takip edin.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Modal: Add Device ── -->
+<div class="modal-overlay" id="modal-add-device">
+    <div class="modal-box">
+        <div class="flex items-center justify-between" style="margin-bottom:16px;">
+            <div class="modal-title" style="margin-bottom:0;">Yeni Cihaz Ekle</div>
+            <button onclick="closeModal('modal-add-device')" style="background:none;border:none;color:var(--sub);font-size:18px;cursor:pointer;">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        <form id="add-device-form" onsubmit="submitDevice(event)">
+            <div class="form-group">
+                <label class="form-label">MAC Adresi *</label>
+                <input class="form-input" type="text" name="device_mac"
+                    placeholder="AA:BB:CC:DD:EE:FF"
+                    pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+                    required>
+                <div style="font-size:11px;color:var(--sub);margin-top:4px;">Format: AA:BB:CC:DD:EE:FF</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bitki Adı</label>
+                <input class="form-input" type="text" name="plant_name" placeholder="örn. Domates Tarlası A">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bitki Türü</label>
+                <select class="form-input" name="plant_type_id" id="plant-type-select">
+                    <option value="">— Seçin (opsiyonel) —</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('modal-add-device')">İptal</button>
+                <button type="submit" class="btn btn-primary" id="btn-add-device">
+                    <i class="fas fa-microchip"></i> Ekle
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+let allDevices = [];
+let allPlants  = [];
+
+async function loadPlants() {
+    try {
+        const r = await fetch('/api/plants');
+        allPlants = await r.json();
+        const sel = document.getElementById('plant-type-select');
+        sel.innerHTML = '<option value="">— Seçin (opsiyonel) —</option>' +
+            allPlants.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    } catch(e) {}
+}
+
+async function loadDevices() {
+    try {
+        const r = await fetch('/api/devices');
+        allDevices = await r.json();
+        renderDevices(allDevices);
+        document.getElementById('device-total').textContent = allDevices.length;
+
+        // Check recent syncs (< 5 min)
+        const online = allDevices.filter(d => {
+            if (!d.last_sync) return false;
+            return (Date.now() - new Date(d.last_sync).getTime()) < 300000;
+        }).length;
+        document.getElementById('device-online').textContent = online;
+    } catch(e) {
+        document.getElementById('devices-grid').innerHTML =
+            `<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--sub);">
+                <i class="fas fa-exclamation-triangle" style="font-size:28px;color:var(--orange);"></i>
+                <div style="margin-top:14px;">Cihazlar yüklenemedi</div>
+            </div>`;
+    }
+}
+
+function renderDevices(devices) {
+    const grid = document.getElementById('devices-grid');
+    if (!devices.length) {
+        grid.innerHTML = `
+            <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--sub);">
+                <i class="fas fa-microchip" style="font-size:52px;opacity:.2;display:block;margin-bottom:16px;"></i>
+                <div style="font-size:16px;color:var(--sub2);font-weight:600;margin-bottom:8px;">Cihaz bulunamadı</div>
+                <div style="font-size:13px;margin-bottom:20px;">İlk ESP32 cihazınızı ekleyin</div>
+                <button class="btn btn-primary" onclick="openModal('modal-add-device')">
+                    <i class="fas fa-plus"></i> Cihaz Ekle
+                </button>
+            </div>`;
+        return;
+    }
+
+    grid.innerHTML = devices.map(d => {
+        const plant = allPlants.find(p => p.id === d.plant_type_id);
+        const syncDate = d.last_sync ? new Date(d.last_sync) : null;
+        const isOnline = syncDate && (Date.now() - syncDate.getTime()) < 300000;
+        const syncStr = syncDate
+            ? syncDate.toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })
+            : 'Hiç senkronize edilmedi';
+        const macShort = d.device_mac;
+        return `
+            <div class="device-card">
+                <div class="device-card-header">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                            <div class="device-icon-wrap"><i class="fas fa-microchip"></i></div>
+                            <div>
+                                <div class="device-name">${d.plant_name || 'İsimsiz Cihaz'}</div>
+                                <span class="badge ${isOnline ? 'badge-green' : 'badge-blue'}">
+                                    <span class="status-dot ${isOnline ? 'online' : 'offline'}" style="width:6px;height:6px;"></span>
+                                    ${isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="device-mac">${macShort}</div>
+                    </div>
+                </div>
+                <div class="device-card-body">
+                    <div class="device-stat">
+                        <span class="device-stat-label">
+                            <i class="fas fa-seedling" style="color:var(--green)"></i> Bitki Türü
+                        </span>
+                        <span class="device-stat-value">
+                            ${plant ? `<span class="badge badge-green" style="font-size:10px;">${plant.name}</span>` : '--'}
+                        </span>
+                    </div>
+                    ${plant ? `
+                    <div class="device-stat">
+                        <span class="device-stat-label">
+                            <i class="fas fa-droplet" style="color:#3b82f6"></i> Nem Aralığı
+                        </span>
+                        <span class="device-stat-value" style="color:#3b82f6;">
+                            ${plant.min_moisture?.toFixed(0) ?? '--'}% – ${plant.max_moisture?.toFixed(0) ?? '--'}%
+                        </span>
+                    </div>
+                    <div class="device-stat">
+                        <span class="device-stat-label">
+                            <i class="fas fa-thermometer-half" style="color:#f59e0b"></i> Sıcaklık
+                        </span>
+                        <span class="device-stat-value" style="color:#f59e0b;">
+                            ${plant.ideal_temp_min?.toFixed(0) ?? '--'}°C – ${plant.ideal_temp_max?.toFixed(0) ?? '--'}°C
+                        </span>
+                    </div>` : ''}
+                </div>
+                <div class="device-card-footer">
+                    <div class="last-seen">
+                        <i class="fas fa-clock"></i> ${syncStr}
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="/analytics?mac=${encodeURIComponent(d.device_mac)}"
+                           class="btn btn-secondary btn-sm" title="Analitik">
+                            <i class="fas fa-chart-line"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+}
+
+async function submitDevice(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-add-device');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Ekleniyor...';
+
+    const form = e.target;
+    const data = {
+        device_mac: form.device_mac.value.trim().toUpperCase(),
+        plant_name: form.plant_name.value.trim() || null,
+        plant_type_id: form.plant_type_id.value ? parseInt(form.plant_type_id.value) : null,
+    };
+
+    try {
+        const r = await fetch('/api/devices', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (r.ok) {
+            showToast('Cihaz başarıyla eklendi / güncellendi!', 'success');
+            closeModal('modal-add-device');
+            form.reset();
+            await loadDevices();
+        } else {
+            const err = await r.json();
+            showToast('Hata: ' + (err.detail || 'Bilinmeyen hata'), 'error');
+        }
+    } catch(err) {
+        showToast('Bağlantı hatası.', 'error');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-microchip"></i> Ekle';
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => {
+    el.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('open');
+    });
+});
+
+async function init() {
+    await loadPlants();
+    await loadDevices();
+}
+init();
+setInterval(loadDevices, 60000);
+{% endblock %}

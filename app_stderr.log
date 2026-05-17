@@ -1,0 +1,9 @@
+INFO:     Started server process [13724]
+INFO:     Waiting for application startup.
+2026-05-17 23:25:04,285 [INFO] services.database: Veritabaný baþlatýldý: C:\Users\yigit\Desktop\smart_plant\SmartAgriculture-Smart-Plant-Monitoring-and-Disease-Detection-System-main\project_data.db
+2026-05-17 23:25:04,285 [INFO] services.ml_service: Model local cache'ten yükleniyor: C:\Users\yigit\Desktop\smart_plant\SmartAgriculture-Smart-Plant-Monitoring-and-Disease-Detection-System-main\models\leaf_disease_model
+Loading weights:   0%|          | 0/200 [00:00<?, ?it/s]Loading weights: 100%|##########| 200/200 [00:00<00:00, 9739.81it/s]
+2026-05-17 23:25:04,364 [INFO] services.ml_service: Bitki tanýma modeli baþarýyla yüklendi.
+2026-05-17 23:25:04,364 [INFO] main: Uygulama baþlatýldý.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)

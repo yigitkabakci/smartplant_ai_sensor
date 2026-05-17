@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Query, HTTPException, Depends
 from sqlalchemy.orm import Session
@@ -60,6 +60,37 @@ async def get_sensor_readings(
         .all()
     )
     return rows
+
+
+@router.get("/latest-data", response_model=Optional[SensorReadingResponse])
+async def get_latest_data(
+    device_mac: Optional[str] = Query(None, description="Belirli bir cihazın verisi için MAC adresi"),
+    db: Session = Depends(get_db),
+):
+    """En son sensör okumasını döner. Cihaz yoksa null döner."""
+    query = db.query(SensorReading).order_by(SensorReading.log_id.desc())
+    if device_mac:
+        query = query.filter(SensorReading.device_mac == device_mac)
+    row = query.first()
+    return row
+
+
+@router.get("/history", response_model=List[SensorReadingResponse])
+async def get_history(
+    days: int = Query(7, ge=1, le=30, description="Kaç günlük veri (1–30)"),
+    device_mac: Optional[str] = Query(None, description="Belirli bir cihazın verisi için MAC adresi"),
+    db: Session = Depends(get_db),
+):
+    """Son N günlük sensör verilerini zaman serisi olarak döner (dashboard grafiği için)."""
+    since = datetime.utcnow() - timedelta(days=days)
+    query = (
+        db.query(SensorReading)
+        .filter(SensorReading.timestamp >= since)
+        .order_by(SensorReading.timestamp.asc())
+    )
+    if device_mac:
+        query = query.filter(SensorReading.device_mac == device_mac)
+    return query.all()
 
 
 @router.get("/leaf-history", response_model=List[LeafAnalysisHistoryItem])

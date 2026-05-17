@@ -1,0 +1,439 @@
+{% extends "base.html" %}
+
+{% block title %}Bitkilerim{% endblock %}
+{% block nav_crops %}active{% endblock %}
+{% block page_title %}Bitkilerim{% endblock %}
+{% block page_sub %}Bitki kütüphanesi ve aktif bitkilerinizi yönetin{% endblock %}
+
+{% block head_styles %}
+.plant-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all .25s ease;
+    cursor: default;
+}
+.plant-card:hover {
+    border-color: rgba(255,255,255,0.13);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+}
+.plant-card-header {
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    position: relative;
+}
+.plant-card-body { padding: 16px; }
+.plant-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.plant-id { font-size: 11px; color: var(--sub); margin-bottom: 12px; }
+.plant-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.plant-stat-label { font-size: 11px; color: var(--sub); }
+.plant-stat-value { font-size: 12px; font-weight: 600; }
+.plant-card-footer {
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.plant-actions { display: flex; gap: 6px; }
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--sub);
+}
+.empty-state .empty-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+    display: block;
+    opacity: .25;
+}
+.empty-state h3 { font-size: 16px; color: var(--sub2); margin-bottom: 8px; }
+.empty-state p  { font-size: 13px; }
+.page-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+}
+.page-actions-right { margin-left: auto; display: flex; gap: 8px; }
+.search-box {
+    position: relative;
+    flex: 1;
+    max-width: 300px;
+}
+.search-box i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--sub);
+    font-size: 13px;
+}
+.search-box input {
+    width: 100%;
+    padding: 8px 12px 8px 32px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+}
+.search-box input:focus { border-color: var(--green); }
+.search-box input::placeholder { color: var(--sub); }
+.stats-summary {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+}
+.stat-item { display: flex; align-items: center; gap: 8px; }
+.stat-item .stat-num { font-size: 22px; font-weight: 700; color: var(--text); }
+.stat-item .stat-lbl { font-size: 11px; color: var(--sub); }
+.stat-divider { width: 1px; background: var(--border); }
+{% endblock %}
+
+{% block content %}
+<!-- Summary Stats -->
+<div class="stats-summary">
+    <div class="stat-item">
+        <div>
+            <div class="stat-num" id="stat-total">--</div>
+            <div class="stat-lbl">Toplam Bitki</div>
+        </div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <div>
+            <div class="stat-num" id="stat-devices" style="color:var(--green)">--</div>
+            <div class="stat-lbl">Bağlı Cihaz</div>
+        </div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <div>
+            <div class="stat-num" id="stat-types" style="color:var(--blue)">--</div>
+            <div class="stat-lbl">Bitki Türü</div>
+        </div>
+    </div>
+</div>
+
+<!-- Page Actions -->
+<div class="page-actions">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Bitki ara..." id="search-input" oninput="filterPlants()">
+    </div>
+    <div class="page-actions-right">
+        <button class="btn btn-secondary btn-sm" onclick="loadAll()">
+            <i class="fas fa-rotate"></i> Yenile
+        </button>
+        <button class="btn btn-primary" onclick="openModal('modal-add-plant')">
+            <i class="fas fa-plus"></i> Yeni Bitki Ekle
+        </button>
+    </div>
+</div>
+
+<!-- Plant Grid -->
+<div class="grid grid-3" id="plants-grid">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--sub)">
+        <i class="fas fa-circle-notch fa-spin" style="font-size:24px;color:var(--green)"></i>
+        <div style="margin-top:12px;">Bitkiler yükleniyor...</div>
+    </div>
+</div>
+
+<!-- Devices with plants section -->
+<div style="margin-top:28px;">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Cihaz — Bitki Eşleştirmeleri</div>
+                <div class="card-sub">Kayıtlı ESP32 cihazlar ve bağlı bitkiler</div>
+            </div>
+            <a href="/devices_page" class="btn btn-secondary btn-sm">Cihazları Yönet</a>
+        </div>
+        <table class="data-table" id="device-plant-table">
+            <thead>
+                <tr>
+                    <th>Durum</th>
+                    <th>MAC Adresi</th>
+                    <th>Bitki Adı</th>
+                    <th>Bitki Türü</th>
+                    <th>Son Senkron</th>
+                </tr>
+            </thead>
+            <tbody id="device-plant-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--sub)">Yükleniyor...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ── Modal: Add Plant ── -->
+<div class="modal-overlay" id="modal-add-plant">
+    <div class="modal-box">
+        <div class="flex items-center justify-between mb-4" style="margin-bottom:16px;">
+            <div class="modal-title" style="margin-bottom:0;">Yeni Bitki Ekle</div>
+            <button onclick="closeModal('modal-add-plant')" style="background:none;border:none;color:var(--sub);font-size:18px;cursor:pointer;">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        <form id="add-plant-form" onsubmit="submitPlant(event)">
+            <div class="form-group">
+                <label class="form-label">Bitki Adı *</label>
+                <input class="form-input" type="text" name="name" placeholder="örn. Domates" required>
+            </div>
+            <div class="grid grid-2" style="gap:12px;">
+                <div class="form-group">
+                    <label class="form-label">Min. Toprak Nemi (%)</label>
+                    <input class="form-input" type="number" name="min_moisture" placeholder="20" min="0" max="100" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max. Toprak Nemi (%)</label>
+                    <input class="form-input" type="number" name="max_moisture" placeholder="80" min="0" max="100" step="0.1">
+                </div>
+            </div>
+            <div class="grid grid-2" style="gap:12px;">
+                <div class="form-group">
+                    <label class="form-label">Min. Sıcaklık (°C)</label>
+                    <input class="form-input" type="number" name="ideal_temp_min" placeholder="15" min="-10" max="60" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max. Sıcaklık (°C)</label>
+                    <input class="form-input" type="number" name="ideal_temp_max" placeholder="30" min="-10" max="60" step="0.1">
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('modal-add-plant')">İptal</button>
+                <button type="submit" class="btn btn-primary" id="btn-add-plant">
+                    <i class="fas fa-plus"></i> Ekle
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+let allPlants = [];
+let allDevices = [];
+
+// Color themes for plant cards
+const cardThemes = [
+    { bg: 'linear-gradient(135deg,#052e16,#14532d)', emoji: '🌿' },
+    { bg: 'linear-gradient(135deg,#1e1b4b,#3730a3)', emoji: '🌸' },
+    { bg: 'linear-gradient(135deg,#431407,#9a3412)', emoji: '🍅' },
+    { bg: 'linear-gradient(135deg,#14532d,#15803d)', emoji: '🥬' },
+    { bg: 'linear-gradient(135deg,#1a2e05,#365314)', emoji: '🌾' },
+    { bg: 'linear-gradient(135deg,#082f49,#0369a1)', emoji: '💧' },
+    { bg: 'linear-gradient(135deg,#1c1917,#44403c)', emoji: '🌱' },
+    { bg: 'linear-gradient(135deg,#2d1657,#7c3aed)', emoji: '🍇' },
+];
+
+function getTheme(name, id) {
+    const idx = (id || name.charCodeAt(0)) % cardThemes.length;
+    return cardThemes[idx];
+}
+
+function renderPlants(plants) {
+    const grid = document.getElementById('plants-grid');
+    if (!plants.length) {
+        grid.innerHTML = `
+            <div style="grid-column:1/-1;" class="empty-state">
+                <span class="empty-icon">🌱</span>
+                <h3>Henüz bitki eklenmedi</h3>
+                <p>İlk bitkini eklemek için "Yeni Bitki Ekle" butonuna tıkla</p>
+            </div>`;
+        return;
+    }
+
+    // Count devices per plant
+    const devMap = {};
+    allDevices.forEach(d => {
+        if (d.plant_type_id) {
+            devMap[d.plant_type_id] = (devMap[d.plant_type_id] || 0) + 1;
+        }
+    });
+
+    grid.innerHTML = plants.map(p => {
+        const theme = getTheme(p.name, p.id);
+        const devCount = devMap[p.id] || 0;
+        const minM = p.min_moisture != null ? p.min_moisture.toFixed(0) + '%' : '--';
+        const maxM = p.max_moisture != null ? p.max_moisture.toFixed(0) + '%' : '--';
+        const minT = p.ideal_temp_min != null ? p.ideal_temp_min.toFixed(0) + '°C' : '--';
+        const maxT = p.ideal_temp_max != null ? p.ideal_temp_max.toFixed(0) + '°C' : '--';
+        return `
+            <div class="plant-card" id="plant-${p.id}">
+                <div class="plant-card-header" style="background:${theme.bg};">
+                    <span>${theme.emoji}</span>
+                    ${devCount > 0 ? `<span class="badge badge-green" style="position:absolute;top:10px;right:10px;font-size:10px;">
+                        <i class="fas fa-microchip"></i> ${devCount}
+                    </span>` : ''}
+                </div>
+                <div class="plant-card-body">
+                    <div class="plant-name">${p.name}</div>
+                    <div class="plant-id"># Bitki ID: ${p.id}</div>
+                    <div class="plant-stat-row">
+                        <span class="plant-stat-label"><i class="fas fa-droplet" style="color:#3b82f6"></i> Nem Aralığı</span>
+                        <span class="plant-stat-value" style="color:#3b82f6">${minM} – ${maxM}</span>
+                    </div>
+                    <div class="plant-stat-row">
+                        <span class="plant-stat-label"><i class="fas fa-thermometer-half" style="color:#f59e0b"></i> Sıcaklık</span>
+                        <span class="plant-stat-value" style="color:#f59e0b">${minT} – ${maxT}</span>
+                    </div>
+                    <div style="margin-top:10px;">
+                        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-bottom:4px;">
+                            <span>Nem Optimum</span>
+                            <span>${minM} - ${maxM}</span>
+                        </div>
+                        <div class="progress-bar-wrap">
+                            <div class="progress-bar-fill" style="width:${p.max_moisture ?? 70}%;background:linear-gradient(90deg,#3b82f6,#06b6d4)"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="plant-card-footer">
+                    <span class="badge ${devCount > 0 ? 'badge-green' : 'badge-blue'}">
+                        ${devCount > 0 ? `<i class="fas fa-circle" style="font-size:6px;"></i> ${devCount} Cihaz` : 'Cihaz Yok'}
+                    </span>
+                    <div class="plant-actions">
+                        <button class="btn btn-danger btn-sm" onclick="deletePlant(${p.id}, '${p.name}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+}
+
+function filterPlants() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const filtered = allPlants.filter(p => p.name.toLowerCase().includes(q));
+    renderPlants(filtered);
+}
+
+async function loadPlants() {
+    try {
+        const r = await fetch('/api/plants');
+        allPlants = await r.json();
+        document.getElementById('stat-total').textContent = allPlants.length;
+        document.getElementById('stat-types').textContent = new Set(allPlants.map(p => p.name)).size;
+        renderPlants(allPlants);
+    } catch(e) {
+        document.getElementById('plants-grid').innerHTML =
+            `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--sub)">
+                <i class="fas fa-exclamation-triangle" style="color:var(--orange);font-size:28px;"></i>
+                <div style="margin-top:12px;">Bitkiler yüklenemedi</div>
+            </div>`;
+    }
+}
+
+async function loadDevices() {
+    try {
+        const r = await fetch('/api/devices');
+        allDevices = await r.json();
+        document.getElementById('stat-devices').textContent = allDevices.length;
+
+        const tbody = document.getElementById('device-plant-tbody');
+        if (!allDevices.length) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--sub)">Kayıtlı cihaz yok</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = allDevices.map(d => {
+            const plant = allPlants.find(p => p.id === d.plant_type_id);
+            const syncDate = d.last_sync ? new Date(d.last_sync) : null;
+            const syncStr = syncDate ? syncDate.toLocaleString('tr-TR', {dateStyle:'short',timeStyle:'short'}) : '--';
+            const isRecent = syncDate && (Date.now() - syncDate.getTime()) < 300000;
+            return `<tr>
+                <td><span class="status-dot ${isRecent ? 'online' : 'offline'}"></span></td>
+                <td><span style="font-family:monospace;font-size:12px;color:var(--text)">${d.device_mac}</span></td>
+                <td style="color:var(--text);font-weight:500">${d.plant_name || '--'}</td>
+                <td>${plant ? `<span class="badge badge-green">${plant.name}</span>` : '<span class="badge badge-blue">Belirsiz</span>'}</td>
+                <td style="color:var(--sub)">${syncStr}</td>
+            </tr>`;
+        }).join('');
+        renderPlants(allPlants); // re-render with device counts
+    } catch(e) {}
+}
+
+async function submitPlant(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-add-plant');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Ekleniyor...';
+
+    const form = e.target;
+    const data = {
+        name: form.name.value,
+        min_moisture:   parseFloat(form.min_moisture.value) || null,
+        max_moisture:   parseFloat(form.max_moisture.value) || null,
+        ideal_temp_min: parseFloat(form.ideal_temp_min.value) || null,
+        ideal_temp_max: parseFloat(form.ideal_temp_max.value) || null,
+    };
+
+    try {
+        const r = await fetch('/api/plants', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (r.status === 409) {
+            showToast('Bu isimde bir bitki zaten kayıtlı!', 'warning');
+        } else if (r.ok) {
+            showToast('Bitki başarıyla eklendi!', 'success');
+            closeModal('modal-add-plant');
+            form.reset();
+            await loadPlants();
+            await loadDevices();
+        } else {
+            showToast('Hata oluştu, tekrar deneyin.', 'error');
+        }
+    } catch(err) {
+        showToast('Bağlantı hatası.', 'error');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-plus"></i> Ekle';
+}
+
+async function deletePlant(id, name) {
+    if (!confirm(`"${name}" bitkisini silmek istediğinize emin misiniz?`)) return;
+    showToast('Silme işlemi API\'de desteklenmiyor. Lütfen veritabanını manuel güncelleyin.', 'warning');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+    el.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('open');
+    });
+});
+
+async function loadAll() {
+    await loadPlants();
+    await loadDevices();
+}
+
+loadAll();
+{% endblock %}

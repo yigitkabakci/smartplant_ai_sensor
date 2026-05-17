@@ -1,755 +1,610 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaf Disease Detection</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary-green: #38b000;
-            --secondary-green: #008000;
-            --light-green: #d8f3dc;
-            --bright-green: #70e000;
-            --dark-green: #1b4332;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f9f0;
-            color: #333;
-        }
-        
-        .header-gradient {
-            background: linear-gradient(135deg, var(--dark-green), var(--primary-green));
-            color: white;
-            padding: 2rem 0;
-            border-radius: 0 0 1.5rem 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .header-gradient::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="%23ffffff20"><path d="M17.66 8L12 2.35 6.34 8C4.78 9.56 4 11.64 4 13.64s.78 4.11 2.34 5.67 3.61 2.35 5.66 2.35 4.1-.79 5.66-2.35S20 15.64 20 13.64 19.22 9.56 17.66 8zM6 14c.01-2 .62-3.27 1.76-4.4L12 5.27l4.24 4.38C17.38 10.77 17.99 12 18 14H6z"/></svg>');
-            background-repeat: space;
-            opacity: 0.07;
-            z-index: 0;
-        }
-        
-        .header-content {
-            position: relative;
-            z-index: 1;
-        }
-        
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-        
-        .drop-zone {
-            border: 3px dashed #aedbae;
-            background-color: rgba(216, 243, 220, 0.5);
-            transition: all 0.3s ease;
-            border-radius: 1rem;
-            padding: 3rem;
-            margin-bottom: 2rem;
-        }
-        
-        .drop-zone.dragover {
-            border-color: var(--primary-green);
-            background-color: var(--light-green);
-            transform: scale(1.01);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-        }
-        
-        .drop-zone-icon {
-            color: var(--primary-green);
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 1rem;
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        
-        .upload-panel {
-            background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border-top: 5px solid var(--primary-green);
-            position: relative;
-        }
-        
-        .loading {
-            display: none;
-        }
-        
-        .loading.active {
-            display: flex;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            -webkit-backdrop-filter: blur(5px);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-        }
-        
-        .modal.active {
-            display: flex;
-            animation: fadeIn 0.3s ease forwards;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: auto;
-            padding: 2rem;
-            border-radius: 1rem;
-            width: 90%;
-            max-width: 900px;
-            max-height: 90vh;
-            position: relative;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-            transform: scale(0.95);
-            animation: scaleIn 0.3s ease forwards;
-            overflow: auto;
-        }
-        
-        @keyframes scaleIn {
-            from { transform: scale(0.95); }
-            to { transform: scale(1); }
-        }
-        
-        .close-modal {
-            position: absolute;
-            right: 1rem;
-            top: 1rem;
-            cursor: pointer;
-            font-size: 1.5rem;
-            color: #4a5568;
-            width: 2.5rem;
-            height: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background-color: #f3f4f6;
-            transition: all 0.2s ease;
-            z-index: 10;
-        }
-        
-        .close-modal:hover {
-            background-color: #e5e7eb;
-            color: #000;
-            transform: rotate(90deg);
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 500px;
-            width: 100%;
-            padding: 1rem;
-        }
-        
-        .result-card {
-            background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            padding: 1.5rem;
-            height: 100%;
-            transition: all 0.3s ease;
-            border-left: 5px solid transparent;
-        }
-        
-        .result-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            border-left: 5px solid var(--primary-green);
-        }
-        
-        .result-img-container {
-            height: 250px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.75rem;
-            background-color: #f3f4f6;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        
-        .result-img-container::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
-            border-radius: 0.75rem;
-            pointer-events: none;
-        }
-        
-        .result-img-container img {
-            transition: all 0.3s ease;
-        }
-        
-        .result-card:hover .result-img-container img {
-            transform: scale(1.05);
-        }
-        
-        .prediction-label {
-            color: var(--dark-green);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        
-        .prediction-value {
-            font-size: 1.25rem;
-            color: #333;
-            font-weight: 500;
-        }
-        
-        .prediction-confidence {
-            display: inline-block;
-            padding: 0.3rem 0.75rem;
-            border-radius: 2rem;
-            background-color: var(--light-green);
-            color: var(--dark-green);
-            font-weight: 600;
-            margin-top: 0.75rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-        
-        .result-card:hover .prediction-confidence {
-            transform: scale(1.05);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-green);
-            color: white;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            transition: all 0.3s ease;
-            border: none;
-            box-shadow: 0 4px 8px rgba(56, 176, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: all 0.4s ease;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--secondary-green);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(56, 176, 0, 0.3);
-        }
-        
-        .btn-primary:hover::after {
-            left: 100%;
-        }
-        
-        .animation-pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-        
-        .info-box {
-            border-radius: 1rem;
-            background-color: var(--light-green);
-            border-left: 4px solid var(--primary-green);
-            padding: 1.5rem;
-            margin-top: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .info-box:hover {
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-        
-        .info-box::before {
-            content: '\f05a';
-            font-family: 'Font Awesome 5 Free';
-            font-weight: 900;
-            position: absolute;
-            right: -15px;
-            bottom: -15px;
-            font-size: 8rem;
-            color: rgba(0, 0, 0, 0.03);
-            z-index: 0;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 2rem 0;
-            color: #4b5563;
-            background-color: white;
-            margin-top: 3rem;
-            border-top: 1px solid #e5e7eb;
-            position: relative;
-        }
-        
-        .footer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(90deg, var(--primary-green), var(--bright-green), var(--primary-green));
-            opacity: 0.7;
-        }
-        
-        /* Spinner Animation */
-        .spinner {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            margin: 0 auto;
-        }
-        
-        .spinner-inner {
-            box-sizing: border-box;
-            display: block;
-            position: absolute;
-            width: 64px;
-            height: 64px;
-            margin: 8px;
-            border: 6px solid var(--primary-green);
-            border-radius: 50%;
-            animation: spinner 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            border-color: var(--primary-green) transparent transparent transparent;
-        }
-        
-        .spinner-inner:nth-child(1) {
-            animation-delay: -0.45s;
-        }
-        
-        .spinner-inner:nth-child(2) {
-            animation-delay: -0.3s;
-        }
-        
-        .spinner-inner:nth-child(3) {
-            animation-delay: -0.15s;
-        }
-        
-        @keyframes spinner {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-        
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .header-gradient {
-                padding: 1.5rem 0;
-                margin-bottom: 1rem;
-            }
-            
-            .drop-zone {
-                padding: 2rem;
-            }
-            
-            .upload-panel {
-                padding: 1.5rem;
-            }
-            
-            .result-img-container {
-                height: 200px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Header Section -->
-    <div class="header-gradient">
-        <div class="main-container header-content">
-            <div class="flex items-center justify-center mb-4">
-                <i class="fas fa-leaf text-4xl mr-3"></i>
-                <h1 class="text-4xl font-bold text-center">Leaf Disease Detection</h1>
+{% extends "base.html" %}
+
+{% block title %}Bitki Tanıma{% endblock %}
+{% block nav_disease %}active{% endblock %}
+{% block page_title %}Bitki Tanıma & Sağlık Teşhisi{% endblock %}
+{% block page_sub %}Yaprak görüntüsü yükle — AI ile bitki türü tanıma ve sağlık değerlendirmesi{% endblock %}
+
+{% block head_styles %}
+.upload-zone {
+    border: 2px dashed rgba(34,197,94,0.3);
+    background: rgba(34,197,94,0.04);
+    border-radius: var(--radius);
+    padding: 50px 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .25s ease;
+    position: relative;
+}
+.upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--green);
+    background: rgba(34,197,94,0.08);
+}
+.upload-zone .upload-icon {
+    font-size: 48px;
+    color: var(--green);
+    margin-bottom: 14px;
+    display: block;
+    animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+}
+.upload-zone h3 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.upload-zone p  { font-size: 13px; color: var(--sub); margin-bottom: 18px; }
+.upload-zone .format-badges { display: flex; gap: 6px; justify-content: center; }
+
+.result-section { display: none; }
+.result-section.visible { display: block; }
+
+.plant-image-wrap {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg2);
+    aspect-ratio: 4/3;
+    display: flex; align-items: center; justify-content: center;
+}
+.plant-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.confidence-meter {
+    margin: 14px 0;
+}
+.confidence-meter .cm-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--sub);
+    margin-bottom: 6px;
+}
+.confidence-meter .cm-bar {
+    height: 8px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.confidence-meter .cm-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+}
+.plant-name-display {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    line-height: 1.3;
+}
+.health-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.spinner-wrap {
+    display: none;
+    text-align: center;
+    padding: 40px;
+}
+.spinner-wrap.visible { display: block; }
+.spin-circle {
+    width: 56px; height: 56px;
+    border: 3px solid rgba(34,197,94,0.15);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+.history-item:last-child { border-bottom: none; }
+.history-thumb {
+    width: 48px; height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg2);
+}
+.history-thumb-placeholder {
+    width: 48px; height: 48px;
+    border-radius: 8px;
+    background: var(--card2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--sub);
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.history-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.history-time { font-size: 11px; color: var(--sub); }
+.history-conf { font-size: 12px; font-weight: 700; }
+
+.info-tip {
+    background: var(--green-dim);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--sub2);
+    margin-top: 14px;
+}
+.info-tip i { color: var(--green); flex-shrink: 0; margin-top: 1px; }
+
+/* Problems section */
+.problem-item {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+}
+.problem-item:last-child { margin-bottom: 0; }
+.problem-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+.problem-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+.problem-recommendation {
+    font-size: 12px;
+    color: var(--sub2);
+    line-height: 1.6;
+}
+.disclaimer-box {
+    background: var(--blue-dim);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 11px;
+    color: var(--sub2);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+.disclaimer-box i { color: var(--blue); flex-shrink: 0; margin-top: 1px; }
+{% endblock %}
+
+{% block content %}
+<div class="grid" style="grid-template-columns: 1fr 380px; gap: 18px; align-items: start;">
+    <!-- Sol: Yükleme + Sonuçlar -->
+    <div>
+        <!-- Yükleme Alanı -->
+        <div class="card" id="upload-card">
+            <div id="drop-zone" class="upload-zone">
+                <i class="fas fa-leaf upload-icon"></i>
+                <h3>Bitki Görüntüsü Yükle</h3>
+                <p>Sürükle-bırak veya tıkla</p>
+                <div class="format-badges">
+                    <span class="badge badge-green">PNG</span>
+                    <span class="badge badge-green">JPG</span>
+                    <span class="badge badge-green">JPEG</span>
+                    <span class="badge badge-blue">Max 16MB</span>
+                </div>
+                <input type="file" id="file-input" style="display:none;" accept=".png,.jpg,.jpeg">
             </div>
-            <p class="text-center text-xl opacity-90">Upload a leaf image to diagnose plant diseases with AI</p>
+
+            <div class="info-tip" style="margin-top:16px;">
+                <i class="fas fa-circle-info"></i>
+                <span>En iyi sonuçlar için: Tek bitki/yaprak, iyi aydınlatılmış, net fotoğraf yükleyin. AI modelimiz 47 ev bitkisi türünü tanıyabilir ve sensör verinizle sağlık teşhisi yapar.</span>
+            </div>
         </div>
-    </div>
 
-    <div class="main-container">
-        <div class="upload-panel">
-            <div id="drop-zone" class="drop-zone cursor-pointer">
-                <div class="text-center">
-                    <i class="fas fa-cloud-upload-alt drop-zone-icon text-5xl"></i>
-                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Upload Your Leaf Image</h3>
-                    <p class="text-gray-600 mb-4">Drag and drop your image here or click to browse</p>
-                    <button class="btn-primary">
-                        <i class="fas fa-file-image mr-2"></i>Choose Image
+        <!-- Yükleniyor -->
+        <div class="card spinner-wrap" id="loading-card">
+            <div class="spin-circle"></div>
+            <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;">Bitki analiz ediliyor...</div>
+            <div style="font-size:12px;color:var(--sub);">AI modelimiz görüntüyü inceliyor</div>
+        </div>
+
+        <!-- Sonuçlar -->
+        <div class="result-section" id="result-section">
+            <!-- Ana sonuç kartı -->
+            <div class="card" style="margin-bottom:18px;">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title"><i class="fas fa-seedling" style="color:var(--green)"></i> Tanı Sonucu</div>
+                        <div class="card-sub">AI analiz tamamlandı</div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="resetUpload()">
+                        <i class="fas fa-rotate"></i> Yeni Analiz
                     </button>
-                    <input type="file" id="file-input" class="hidden" accept="image/*" aria-label="Upload leaf image">
                 </div>
-            </div>
 
-            <div id="loading" class="loading items-center justify-center py-8">
-                <div class="text-center">
-                    <div class="spinner">
-                        <div class="spinner-inner"></div>
-                        <div class="spinner-inner"></div>
-                        <div class="spinner-inner"></div>
-                        <div class="spinner-inner"></div>
-                    </div>
-                    <p class="mt-5 text-lg text-gray-700">Analyzing your leaf image...</p>
-                    <p class="text-sm text-gray-500 mt-2">Our AI is examining the patterns and symptoms</p>
-                </div>
-            </div>
-
-            <div id="result" class="hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="result-card">
-                        <h3 class="text-xl font-bold text-center text-gray-800 mb-4">
-                            <i class="fas fa-microscope mr-2 text-green-600"></i>Diagnosis Results
-                        </h3>
-                        <div class="result-img-container">
-                            <img id="preview-image" class="max-h-full max-w-full rounded-lg" src="" alt="Uploaded leaf">
+                <div class="grid grid-2" style="gap:20px;align-items:start;">
+                    <!-- Görüntü -->
+                    <div>
+                        <div class="plant-image-wrap">
+                            <img id="preview-img" src="" alt="Yüklenen bitki">
                         </div>
-                        <div class="text-center">
-                            <p class="prediction-label">Detected Disease:</p>
-                            <p id="disease-name" class="prediction-value mb-2"></p>
-                            <p id="confidence" class="prediction-confidence"></p>
+                        <div class="info-tip" style="margin-top:12px;">
+                            <i class="fas fa-circle-info"></i>
+                            <span>Tüm tahminler aşağıdaki grafik ile görüntülenebilir.</span>
                         </div>
                     </div>
-                    
-                    <div class="result-card">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-bold text-gray-800">
-                                <i class="fas fa-chart-bar mr-2 text-green-600"></i>Probability Analysis
-                            </h3>
-                            <button id="fullscreen-btn" class="btn-primary flex items-center">
-                                <i class="fas fa-expand-alt mr-2"></i>Fullscreen
+                    <!-- Bitki Bilgisi -->
+                    <div>
+                        <div style="margin-bottom:8px;">
+                            <span id="health-badge" class="health-indicator badge-orange">
+                                <i class="fas fa-circle-question"></i> Analiz Edildi
+                            </span>
+                        </div>
+                        <div class="plant-name-display" id="plant-name">--</div>
+                        <div style="font-size:12px;color:var(--sub);margin-bottom:16px;" id="plant-sub">Bitki türü</div>
+
+                        <div class="confidence-meter">
+                            <div class="cm-label">
+                                <span>Tanıma Güveni</span>
+                                <span id="conf-pct" style="color:var(--green);font-weight:700">--%</span>
+                            </div>
+                            <div class="cm-bar">
+                                <div class="cm-fill" id="conf-bar" style="width:0%;background:linear-gradient(90deg,#22c55e,#06b6d4)"></div>
+                            </div>
+                        </div>
+
+                        <div style="font-size:12px;color:var(--sub);line-height:1.8;">
+                            <div><i class="fas fa-check" style="color:var(--green);width:16px;"></i> MobileNetV2 derin öğrenme modeli</div>
+                            <div><i class="fas fa-check" style="color:var(--green);width:16px;"></i> 47 ev bitkisi türü</div>
+                            <div><i class="fas fa-check" style="color:var(--green);width:16px;"></i> Sensör tabanlı sağlık teşhisi</div>
+                        </div>
+
+                        <div style="margin-top:18px;display:flex;gap:8px;">
+                            <button class="btn btn-primary btn-sm" onclick="resetUpload()">
+                                <i class="fas fa-plus"></i> Yeni Analiz
                             </button>
-                        </div>
-                        <div class="h-64 md:h-80">
-                            <canvas id="predictions-chart"></canvas>
+                            <a href="/alerts_page" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-bell"></i> Uyarılar
+                            </a>
                         </div>
                     </div>
                 </div>
-                
-                <div class="info-box">
-                    <h3 class="text-lg font-semibold text-green-800 mb-2 relative z-10">
-                        <i class="fas fa-info-circle mr-2"></i>About This Analysis
-                    </h3>
-                    <p class="text-gray-700 relative z-10">
-                        This analysis uses a machine learning model trained on thousands of plant leaf images. The model identifies
-                        patterns associated with various plant diseases and provides a probability score for each possible condition.
-                        For best results, upload clear, well-lit images of individual leaves showing the symptoms.
-                    </p>
+            </div>
+
+            <!-- Sağlık Sorunları -->
+            <div class="card" id="problems-card" style="margin-bottom:18px;display:none;">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title"><i class="fas fa-triangle-exclamation" style="color:var(--orange)"></i> Tespit Edilen Sorunlar</div>
+                        <div class="card-sub" id="problems-sub">Sensör verisi ile değerlendirildi</div>
+                    </div>
                 </div>
-                
-                <div class="mt-6 text-center">
-                    <button id="analyze-again" class="btn-primary mt-4">
-                        <i class="fas fa-redo mr-2"></i>Analyze Another Image
-                    </button>
+                <div id="problems-list"></div>
+            </div>
+
+            <!-- Olasılık Grafiği -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title"><i class="fas fa-chart-bar" style="color:var(--blue)"></i> Tüm Tahminler</div>
+                        <div class="card-sub">Olasılık dağılımı</div>
+                    </div>
                 </div>
+                <canvas id="predictions-chart" height="200"></canvas>
+            </div>
+
+            <!-- Yasal Uyarı -->
+            <div class="disclaimer-box" id="disclaimer-box" style="margin-top:14px;display:none;">
+                <i class="fas fa-circle-info"></i>
+                <span id="disclaimer-text"></span>
             </div>
         </div>
     </div>
 
-    <!-- Fullscreen Modal -->
-    <div id="chart-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Detailed Disease Probability Analysis</h2>
-            <div class="chart-container">
-                <canvas id="fullscreen-chart"></canvas>
+    <!-- Sağ: Geçmiş Paneli -->
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title"><i class="fas fa-clock-rotate-left" style="color:var(--sub)"></i> Analiz Geçmişi</div>
+                    <div class="card-sub" id="history-count-sub">Son analizler</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="loadHistory()">
+                    <i class="fas fa-rotate"></i>
+                </button>
+            </div>
+            <div id="history-list">
+                <div style="text-align:center;padding:24px;color:var(--sub);">
+                    <i class="fas fa-circle-notch fa-spin" style="color:var(--green);font-size:20px;"></i>
+                    <div style="margin-top:10px;font-size:13px;">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- İpuçları -->
+        <div class="card" style="margin-top:18px;">
+            <div class="card-title" style="margin-bottom:14px;">
+                <i class="fas fa-lightbulb" style="color:var(--orange)"></i> İpuçları
+            </div>
+            <div style="font-size:12px;color:var(--sub);line-height:2;">
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Güneş ışığında net fotoğraf çekin</div>
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Tek bir bitkiye/yaprağa odaklanın</div>
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Bulanık veya karanlık fotoğraftan kaçının</div>
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>PNG veya JPG formatı kullanın</div>
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Sensör bağlıysa daha detaylı teşhis alırsınız</div>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <footer class="footer">
-        <div class="main-container">
-            <div class="flex items-center justify-center mb-3">
-                <i class="fas fa-leaf text-green-600 mr-2"></i>
-                <p class="font-semibold">Agricultural Analysis Suite - Leaf Disease Detection</p>
-            </div>
-            <p class="text-sm mt-2">Powered by advanced AI to help identify plant diseases</p>
-            <p class="text-xs mt-3 text-gray-500">© 2025 All rights reserved</p>
-        </div>
-    </footer>
+{% block scripts %}
+let predictionsChart = null;
 
-    <script>
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-input');
-        const loading = document.getElementById('loading');
-        const result = document.getElementById('result');
-        const previewImage = document.getElementById('preview-image');
-        const diseaseName = document.getElementById('disease-name');
-        const confidence = document.getElementById('confidence');
-        const modal = document.getElementById('chart-modal');
-        const closeModal = document.querySelector('.close-modal');
-        const fullscreenBtn = document.getElementById('fullscreen-btn');
-        const analyzeAgainBtn = document.getElementById('analyze-again');
-        let predictionsChart = null;
-        let fullscreenChart = null;
+const dropZone  = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
 
-        // Modal event listeners
-        fullscreenBtn.addEventListener('click', () => {
-            modal.classList.add('active');
-            createFullscreenChart();
-        });
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
 
-        closeModal.addEventListener('click', () => {
-            modal.classList.remove('active');
-        });
+['dragenter','dragover','dragleave','drop'].forEach(ev => {
+    dropZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+    document.body.addEventListener(ev, e => e.preventDefault());
+});
+['dragenter','dragover'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.add('dragover')));
+['dragleave','drop'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.remove('dragover')));
+dropZone.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+});
 
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.remove('active');
-            }
-        });
-        
-        // Analyze again button
-        analyzeAgainBtn.addEventListener('click', () => {
-            result.classList.add('hidden');
-            dropZone.style.display = 'block';
-            // Clear previous results
-            if (predictionsChart) {
-                predictionsChart.destroy();
-                predictionsChart = null;
-            }
-        });
+function showState(state) {
+    document.getElementById('upload-card').style.display   = state === 'upload'  ? 'block' : 'none';
+    document.getElementById('loading-card').style.display  = state === 'loading' ? 'block' : 'none';
+    document.getElementById('result-section').classList.toggle('visible', state === 'result');
+}
 
-        // Prevent default drag behaviors
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-            document.body.addEventListener(eventName, preventDefaults, false);
-        });
+async function handleFile(file) {
+    if (!file) return;
+    if (!['image/png','image/jpeg','image/jpg'].includes(file.type)) {
+        showToast('Sadece PNG, JPG veya JPEG dosyaları desteklenir.', 'warning');
+        return;
+    }
 
-        // Highlight drop zone when item is dragged over it
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, highlight, false);
-        });
+    const reader = new FileReader();
+    reader.onload = e => document.getElementById('preview-img').src = e.target.result;
+    reader.readAsDataURL(file);
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, unhighlight, false);
-        });
+    showState('loading');
+    fileInput.value = '';
 
-        // Handle dropped files
-        dropZone.addEventListener('drop', handleDrop, false);
-        dropZone.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', handleFiles);
+    const form = new FormData();
+    form.append('file', file);
 
-        function preventDefaults (e) {
-            e.preventDefault();
-            e.stopPropagation();
+    try {
+        const r = await fetch('/leaf_disease/predict', { method: 'POST', body: form });
+        if (!r.ok) {
+            const err = await r.json();
+            throw new Error(err.detail || 'Sunucu hatası');
         }
+        const data = await r.json();
+        displayResult(data);
+        showState('result');
+        loadHistory();
+    } catch(e) {
+        showToast('Hata: ' + e.message, 'error');
+        showState('upload');
+    }
+}
 
-        function highlight(e) {
-            dropZone.classList.add('dragover');
+function displayResult(data) {
+    // Bitki adı — DiagnosisResponse: plant_display_name
+    const plantName = data.plant_display_name || data.identified_plant || '--';
+    document.getElementById('plant-name').textContent = plantName;
+
+    // Güven skoru — DiagnosisResponse: plant_confidence (string like "85.43%")
+    let confNum = 0;
+    if (typeof data.plant_confidence === 'string') {
+        confNum = parseFloat(data.plant_confidence.replace('%', ''));
+    } else if (typeof data.plant_confidence === 'number') {
+        confNum = data.plant_confidence * 100;
+    }
+
+    document.getElementById('conf-pct').textContent = isNaN(confNum) ? '--' : confNum.toFixed(1) + '%';
+    document.getElementById('conf-bar').style.width = Math.min(isNaN(confNum) ? 0 : confNum, 100) + '%';
+
+    // Güvenilirlik kontrolü — model %50 altında güvenle tahmin yaptıysa
+    const isUnreliable = (data.plant_display_name || '').startsWith('Tanımlanamadı');
+
+    // Bilgi tabanı durumu
+    const inKB = data.plant_in_knowledge_base;
+    if (isUnreliable) {
+        document.getElementById('plant-sub').textContent =
+            'Model bu bitkiyi yeterli güvenle tanıyamadı — grafikteki dağılıma bakın';
+    } else {
+        document.getElementById('plant-sub').textContent = inKB
+            ? 'Bilgi tabanında bulundu — sağlık teşhisi yapıldı'
+            : 'Bitki türü tanındı — bilgi tabanında bulunamadı';
+    }
+
+    // Güven çubuğu rengini düşük güvende kırmızıya çevir
+    const barEl = document.getElementById('conf-bar');
+    if (isUnreliable) {
+        barEl.style.background = 'linear-gradient(90deg,#ef4444,#f97316)';
+    } else {
+        barEl.style.background = 'linear-gradient(90deg,#22c55e,#06b6d4)';
+    }
+
+    // Genel sağlık durumu badge
+    const badge = document.getElementById('health-badge');
+    const health = data.overall_health || 'unknown';
+    if (isUnreliable) {
+        badge.className = 'health-indicator badge-purple';
+        badge.innerHTML = '<i class="fas fa-circle-question"></i> Düşük Güven';
+    } else if (health === 'healthy') {
+        badge.className = 'health-indicator badge-green';
+        badge.innerHTML = '<i class="fas fa-circle-check"></i> Sağlıklı';
+    } else if (health === 'critical') {
+        badge.className = 'health-indicator badge-red';
+        badge.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Kritik Sorun';
+    } else if (health === 'attention') {
+        badge.className = 'health-indicator badge-orange';
+        badge.innerHTML = '<i class="fas fa-circle-exclamation"></i> Dikkat Gerekiyor';
+    } else {
+        badge.className = 'health-indicator badge-blue';
+        badge.innerHTML = '<i class="fas fa-circle-question"></i> Bilinmiyor';
+    }
+
+    // Sağlık sorunlarını göster — DiagnosisResponse: problems[]
+    const problems = data.problems || [];
+    const problemsCard = document.getElementById('problems-card');
+    const problemsList = document.getElementById('problems-list');
+    const problemsSub  = document.getElementById('problems-sub');
+
+    if (problems.length > 0) {
+        problemsCard.style.display = 'block';
+        problemsSub.textContent = `${problems.length} sorun tespit edildi`;
+        problemsList.innerHTML = problems.map(p => {
+            const sevColor = p.severity === 'critical' ? 'var(--red)' :
+                             p.severity === 'warning'  ? 'var(--orange)' : 'var(--blue)';
+            const sevBadge = p.severity === 'critical' ? 'badge-red' :
+                             p.severity === 'warning'  ? 'badge-orange' : 'badge-blue';
+            const sevIcon  = p.severity === 'critical' ? 'fa-triangle-exclamation' :
+                             p.severity === 'warning'  ? 'fa-circle-exclamation' : 'fa-circle-info';
+            return `
+                <div class="problem-item">
+                    <div class="problem-header">
+                        <div class="problem-name">${p.name}</div>
+                        <span class="badge ${sevBadge}">
+                            <i class="fas ${sevIcon}"></i> ${p.severity}
+                        </span>
+                    </div>
+                    <div class="problem-recommendation">${p.recommendation}</div>
+                    ${p.metric ? `<div style="font-size:11px;color:var(--sub);margin-top:4px;">${p.metric}: ${p.sensor_value} (eşik: ${p.threshold})</div>` : ''}
+                </div>`;
+        }).join('');
+    } else {
+        problemsCard.style.display = 'none';
+    }
+
+    // Yasal uyarı
+    if (data.disclaimer) {
+        document.getElementById('disclaimer-box').style.display = 'flex';
+        document.getElementById('disclaimer-text').textContent = data.disclaimer;
+    }
+
+    // Grafik — DiagnosisResponse: all_candidates[{label, confidence, score}]
+    buildChart(data.all_candidates || []);
+}
+
+function buildChart(candidates) {
+    if (predictionsChart) { predictionsChart.destroy(); predictionsChart = null; }
+    const ctx = document.getElementById('predictions-chart').getContext('2d');
+    const labels = candidates.map(p => p.label);
+    const vals   = candidates.map(p => {
+        if (typeof p.confidence === 'string') {
+            const parsed = parseFloat(p.confidence.replace('%', ''));
+            return isNaN(parsed) ? (p.score || 0) * 100 : parsed;
         }
-
-        function unhighlight(e) {
-            dropZone.classList.remove('dragover');
-        }
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            handleFiles({ target: { files: files } });
-        }
-
-        function handleFiles(e) {
-            const file = e.target.files[0];
-            if (file) {
-                // Display loading state
-                loading.classList.add('active');
-                dropZone.style.display = 'none';
-                
-                // Create FormData
-                const formData = new FormData();
-                formData.append('file', file);
-                
-                // Create preview
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-                
-                // Send to server
-                fetch('/leaf_disease/predict', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Hide loading
-                    loading.classList.remove('active');
-                    
-                    // Show results
-                    result.classList.remove('hidden');
-                    
-                    // Update UI with top prediction
-                    diseaseName.textContent = data.top_prediction.disease;
-                    confidence.textContent = data.top_prediction.confidence;
-                    
-                    // Create chart
-                    createChart(data.predictions);
-                })
-                .catch(error => {
-                    alert('Error: ' + error);
-                    loading.classList.remove('active');
-                    dropZone.style.display = 'block';
-                });
-            }
-        }
-
-        function createChart(predictions) {
-            const ctx = document.getElementById('predictions-chart').getContext('2d');
-            
-            // Extract data for chart
-            const labels = predictions.map(p => p.disease);
-            const data = predictions.map(p => p.score);
-            
-            // Use a variety of colors for better visual differentiation
-            const colors = [
-                'rgba(56, 176, 0, 0.8)',    // Green
-                'rgba(54, 162, 235, 0.8)',  // Blue
-                'rgba(255, 99, 132, 0.8)',  // Red
-                'rgba(255, 159, 64, 0.8)',  // Orange
-                'rgba(153, 102, 255, 0.8)', // Purple
-                'rgba(255, 206, 86, 0.8)',  // Yellow
-                'rgba(75, 192, 192, 0.8)',  // Teal
-                'rgba(232, 62, 140, 0.8)'   // Pink
-            ];
-            
-            // Create colors array based on number of predictions
-            const chartColors = data.map((_, index) => colors[index % colors.length]);
-            const chartBorderColors = chartColors.map(color => color.replace('0.8', '1'));
-            
-            // Destroy previous chart if exists
-            if (predictionsChart) {
-                predictionsChart.destroy();
-            }
-            
-            // Create new chart
-            predictionsChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Probability Score',
-                        data: data,
-                        backgroundColor: chartColors,
-                        borderColor: chartBorderColors,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Probability: ${(context.raw * 100).toFixed(2)}%`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            max: 1,
-                            ticks: {
-                                callback: function(value) {
-                                    return (value * 100) + '%';
-                                }
-                            }
-                        }
+        return (p.score || 0) * 100;
+    });
+    const colors = [
+        '#22c55e','#3b82f6','#f59e0b','#ef4444','#a855f7',
+        '#06b6d4','#ec4899','#84cc16','#f97316','#6366f1'
+    ];
+    predictionsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                data: vals,
+                backgroundColor: labels.map((_,i) => colors[i % colors.length] + '30'),
+                borderColor:     labels.map((_,i) => colors[i % colors.length]),
+                borderWidth: 1.5,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `Olasılık: ${ctx.raw.toFixed(2)}%`
                     }
                 }
-            });
+            },
+            scales: {
+                x: {
+                    max: 100,
+                    ticks: { color: '#64748b', font: { size: 10 }, callback: v => v + '%' },
+                    grid: { color: 'rgba(255,255,255,0.04)' }
+                },
+                y: {
+                    ticks: { color: '#94a3b8', font: { size: 11 } },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function resetUpload() {
+    if (predictionsChart) { predictionsChart.destroy(); predictionsChart = null; }
+    document.getElementById('preview-img').src = '';
+    document.getElementById('conf-bar').style.width = '0%';
+    document.getElementById('problems-card').style.display = 'none';
+    document.getElementById('disclaimer-box').style.display = 'none';
+    showState('upload');
+}
+
+async function loadHistory() {
+    try {
+        const r = await fetch('/api/leaf-history?limit=15');
+        const data = await r.json();
+        const list = document.getElementById('history-list');
+        const sub  = document.getElementById('history-count-sub');
+
+        if (!data.length) {
+            sub.textContent = '0 analiz';
+            list.innerHTML = `<div style="text-align:center;padding:24px;color:var(--sub);font-size:13px;">
+                <i class="fas fa-leaf" style="font-size:24px;opacity:.3;display:block;margin-bottom:8px;"></i>
+                Henüz analiz yapılmadı
+            </div>`;
+            return;
         }
 
-        function createFullscreenChart() {
-            // Only create if we have data
-            if (!predictionsChart) return;
-            
-            const ctx = document.getElementById('fullscreen-chart').getContext('2d');
-            
-            // If fullscreen chart exists, destroy it
-            if (fullscreenChart) {
-                fullscreenChart.destroy();
-            }
-            
-            // Clone options and data from the existing chart
-            fullscreenChart = new Chart(ctx, {
-                type: predictionsChart.config.type,
-                data: JSON.parse(JSON.stringify(predictionsChart.config.data)),
-                options: JSON.parse(JSON.stringify(predictionsChart.config.options))
-            });
-        }
-    </script>
-</body>
-</html> 
+        sub.textContent = `${data.length} kayıt`;
+        list.innerHTML = data.map(item => {
+            const d = new Date(item.timestamp);
+            const conf = item.confidence != null ? (item.confidence * 100).toFixed(1) + '%' : '--';
+            const confColor = parseFloat(conf) > 70 ? 'var(--green)' : 'var(--orange)';
+            return `
+                <div class="history-item">
+                    ${item.image_path
+                        ? `<img src="${item.image_path}" class="history-thumb" alt="bitki" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="history-thumb-placeholder" style="display:none;"><i class="fas fa-leaf"></i></div>`
+                        : `<div class="history-thumb-placeholder"><i class="fas fa-leaf"></i></div>`
+                    }
+                    <div style="flex:1;min-width:0;">
+                        <div class="history-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${item.label}">${item.label || '--'}</div>
+                        <div class="history-time">${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</div>
+                    </div>
+                    <div class="history-conf" style="color:${confColor};">${conf}</div>
+                </div>`;
+        }).join('');
+    } catch(e) {}
+}
+
+showState('upload');
+loadHistory();
+{% endblock %}

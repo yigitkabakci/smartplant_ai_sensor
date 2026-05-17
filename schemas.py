@@ -25,19 +25,50 @@ class SensorReadingResponse(BaseModel):
     light_lux: Optional[float]
 
 
-# --- Leaf Disease ---
+# --- Plant Identification & Diagnosis ---
 
-class DiseaseResult(BaseModel):
-    disease: str
+class PlantCandidate(BaseModel):
+    label: str
     confidence: str
     score: float
 
 
-class LeafAnalysisResponse(BaseModel):
+class SensorStatus(BaseModel):
+    label: str
+    unit: str
+    value: float
+    min: float
+    max: float
+    state: str  # "ok" | "low" | "high"
+
+
+class HealthProblem(BaseModel):
+    name: str
+    symptoms: List[str]
+    recommendation: str
+    severity: str   # "info" | "warning" | "critical"
+    sensor_value: float
+    threshold: float
+    metric: str
+
+
+class DiagnosisResponse(BaseModel):
     success: bool
-    predictions: List[DiseaseResult]
-    top_prediction: DiseaseResult
     image_path: str
+    # Bitki tanıma
+    identified_plant: Optional[str]
+    plant_display_name: Optional[str]
+    plant_confidence: Optional[str]
+    plant_in_knowledge_base: bool
+    all_candidates: List[PlantCandidate]
+    # Sensör durumu
+    sensor_used: bool
+    device_mac: Optional[str]
+    sensor_status: Optional[dict]   # metric → SensorStatus
+    # Teşhis
+    problems: List[HealthProblem]
+    overall_health: str             # "healthy" | "attention" | "critical" | "unknown"
+    disclaimer: str
 
 
 # --- Alerts ---

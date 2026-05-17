@@ -12,5 +12,6 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
     DATABASE_PATH = os.path.join(BASE_DIR, 'project_data.db')
+    MODEL_DIR = os.path.join(BASE_DIR, 'models', 'leaf_disease_model')
     PORT = int(os.environ.get('PORT', 8000))
-    DEBUG = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'

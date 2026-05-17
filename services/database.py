@@ -18,7 +18,6 @@ def init_db(db_path: str):
         connect_args={"check_same_thread": False},
     )
     SessionLocal = sessionmaker(bind=_engine, autocommit=False, autoflush=False)
-    Base.metadata.drop_all(bind=_engine)
     Base.metadata.create_all(bind=_engine)
     logger.info("Veritabanı başlatıldı: %s", db_path)
 
