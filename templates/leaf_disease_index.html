@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Bitki Tanıma{% endblock %}
+{% block title %}Hastalık Tespiti{% endblock %}
 {% block nav_disease %}active{% endblock %}
-{% block page_title %}Bitki Tanıma & Sağlık Teşhisi{% endblock %}
-{% block page_sub %}Yaprak görüntüsü yükle — AI ile bitki türü tanıma ve sağlık değerlendirmesi{% endblock %}
+{% block page_title %}Hastalık Tespiti{% endblock %}
+{% block page_sub %}Yaprak görüntüsü yükle — AI ile anında bitki hastalığı tespiti{% endblock %}
 
 {% block head_styles %}
 .upload-zone {
@@ -38,7 +38,7 @@
 .result-section { display: none; }
 .result-section.visible { display: block; }
 
-.plant-image-wrap {
+.disease-image-wrap {
     position: relative;
     border-radius: var(--radius);
     overflow: hidden;
@@ -46,7 +46,7 @@
     aspect-ratio: 4/3;
     display: flex; align-items: center; justify-content: center;
 }
-.plant-image-wrap img {
+.disease-image-wrap img {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -72,14 +72,14 @@
     border-radius: 4px;
     transition: width 1s ease;
 }
-.plant-name-display {
+.disease-name-display {
     font-size: 20px;
     font-weight: 700;
     color: var(--text);
     margin-bottom: 6px;
     line-height: 1.3;
 }
-.health-indicator {
+.severity-indicator {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -128,7 +128,7 @@
     font-size: 18px;
     flex-shrink: 0;
 }
-.history-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.history-disease { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
 .history-time { font-size: 11px; color: var(--sub); }
 .history-conf { font-size: 12px; font-weight: 700; }
 
@@ -144,55 +144,17 @@
     margin-top: 14px;
 }
 .info-tip i { color: var(--green); flex-shrink: 0; margin-top: 1px; }
-
-/* Problems section */
-.problem-item {
-    background: var(--card2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    margin-bottom: 10px;
-}
-.problem-item:last-child { margin-bottom: 0; }
-.problem-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 6px;
-}
-.problem-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-}
-.problem-recommendation {
-    font-size: 12px;
-    color: var(--sub2);
-    line-height: 1.6;
-}
-.disclaimer-box {
-    background: var(--blue-dim);
-    border: 1px solid rgba(59,130,246,0.2);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    font-size: 11px;
-    color: var(--sub2);
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-}
-.disclaimer-box i { color: var(--blue); flex-shrink: 0; margin-top: 1px; }
 {% endblock %}
 
 {% block content %}
 <div class="grid" style="grid-template-columns: 1fr 380px; gap: 18px; align-items: start;">
-    <!-- Sol: Yükleme + Sonuçlar -->
+    <!-- Left: Upload + Results -->
     <div>
-        <!-- Yükleme Alanı -->
+        <!-- Upload Area -->
         <div class="card" id="upload-card">
             <div id="drop-zone" class="upload-zone">
                 <i class="fas fa-leaf upload-icon"></i>
-                <h3>Bitki Görüntüsü Yükle</h3>
+                <h3>Yaprak Görüntüsü Yükle</h3>
                 <p>Sürükle-bırak veya tıkla</p>
                 <div class="format-badges">
                     <span class="badge badge-green">PNG</span>
@@ -205,24 +167,24 @@
 
             <div class="info-tip" style="margin-top:16px;">
                 <i class="fas fa-circle-info"></i>
-                <span>En iyi sonuçlar için: Tek bitki/yaprak, iyi aydınlatılmış, net fotoğraf yükleyin. AI modelimiz 47 ev bitkisi türünü tanıyabilir ve sensör verinizle sağlık teşhisi yapar.</span>
+                <span>En iyi sonuçlar için: Tek yaprak, iyi aydınlatılmış, net fotoğraf yükleyin. AI modelimiz 50+ bitki hastalığını %98 doğrulukla tanıyabilir.</span>
             </div>
         </div>
 
-        <!-- Yükleniyor -->
+        <!-- Loading -->
         <div class="card spinner-wrap" id="loading-card">
             <div class="spin-circle"></div>
-            <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;">Bitki analiz ediliyor...</div>
+            <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;">Yaprak analiz ediliyor...</div>
             <div style="font-size:12px;color:var(--sub);">AI modelimiz görüntüyü inceliyor</div>
         </div>
 
-        <!-- Sonuçlar -->
+        <!-- Results -->
         <div class="result-section" id="result-section">
-            <!-- Ana sonuç kartı -->
+            <!-- Main result card -->
             <div class="card" style="margin-bottom:18px;">
                 <div class="card-header">
                     <div>
-                        <div class="card-title"><i class="fas fa-seedling" style="color:var(--green)"></i> Tanı Sonucu</div>
+                        <div class="card-title"><i class="fas fa-microscope" style="color:var(--green)"></i> Tanı Sonucu</div>
                         <div class="card-sub">AI analiz tamamlandı</div>
                     </div>
                     <button class="btn btn-secondary btn-sm" onclick="resetUpload()">
@@ -231,29 +193,29 @@
                 </div>
 
                 <div class="grid grid-2" style="gap:20px;align-items:start;">
-                    <!-- Görüntü -->
+                    <!-- Image -->
                     <div>
-                        <div class="plant-image-wrap">
-                            <img id="preview-img" src="" alt="Yüklenen bitki">
+                        <div class="disease-image-wrap">
+                            <img id="preview-img" src="" alt="Yüklenen yaprak">
                         </div>
                         <div class="info-tip" style="margin-top:12px;">
                             <i class="fas fa-circle-info"></i>
                             <span>Tüm tahminler aşağıdaki grafik ile görüntülenebilir.</span>
                         </div>
                     </div>
-                    <!-- Bitki Bilgisi -->
+                    <!-- Disease Info -->
                     <div>
                         <div style="margin-bottom:8px;">
-                            <span id="health-badge" class="health-indicator badge-orange">
-                                <i class="fas fa-circle-question"></i> Analiz Edildi
+                            <span id="severity-badge" class="severity-indicator badge-orange">
+                                <i class="fas fa-circle-exclamation"></i> Analiz Edildi
                             </span>
                         </div>
-                        <div class="plant-name-display" id="plant-name">--</div>
-                        <div style="font-size:12px;color:var(--sub);margin-bottom:16px;" id="plant-sub">Bitki türü</div>
+                        <div class="disease-name-display" id="disease-name">--</div>
+                        <div style="font-size:12px;color:var(--sub);margin-bottom:16px;" id="disease-family">Bitki hastalığı</div>
 
                         <div class="confidence-meter">
                             <div class="cm-label">
-                                <span>Tanıma Güveni</span>
+                                <span>Güven Skoru</span>
                                 <span id="conf-pct" style="color:var(--green);font-weight:700">--%</span>
                             </div>
                             <div class="cm-bar">
@@ -263,8 +225,8 @@
 
                         <div style="font-size:12px;color:var(--sub);line-height:1.8;">
                             <div><i class="fas fa-check" style="color:var(--green);width:16px;"></i> MobileNetV2 derin öğrenme modeli</div>
-                            <div><i class="fas fa-check" style="color:var(--green);width:16px;"></i> 47 ev bitkisi türü</div>
-                            <div><i class="fas fa-check" style="color:var(--green);width:16px;"></i> Sensör tabanlı sağlık teşhisi</div>
+                            <div><i class="fas fa-check" style="color:var(--green);width:16px;"></i> 50+ hastalık sınıfı</div>
+                            <div><i class="fas fa-check" style="color:var(--green);width:16px;"></i> %98 doğruluk oranı</div>
                         </div>
 
                         <div style="margin-top:18px;display:flex;gap:8px;">
@@ -279,18 +241,7 @@
                 </div>
             </div>
 
-            <!-- Sağlık Sorunları -->
-            <div class="card" id="problems-card" style="margin-bottom:18px;display:none;">
-                <div class="card-header">
-                    <div>
-                        <div class="card-title"><i class="fas fa-triangle-exclamation" style="color:var(--orange)"></i> Tespit Edilen Sorunlar</div>
-                        <div class="card-sub" id="problems-sub">Sensör verisi ile değerlendirildi</div>
-                    </div>
-                </div>
-                <div id="problems-list"></div>
-            </div>
-
-            <!-- Olasılık Grafiği -->
+            <!-- Probability Chart -->
             <div class="card">
                 <div class="card-header">
                     <div>
@@ -300,16 +251,10 @@
                 </div>
                 <canvas id="predictions-chart" height="200"></canvas>
             </div>
-
-            <!-- Yasal Uyarı -->
-            <div class="disclaimer-box" id="disclaimer-box" style="margin-top:14px;display:none;">
-                <i class="fas fa-circle-info"></i>
-                <span id="disclaimer-text"></span>
-            </div>
         </div>
     </div>
 
-    <!-- Sağ: Geçmiş Paneli -->
+    <!-- Right: History Panel -->
     <div>
         <div class="card">
             <div class="card-header">
@@ -329,17 +274,17 @@
             </div>
         </div>
 
-        <!-- İpuçları -->
+        <!-- Tips Card -->
         <div class="card" style="margin-top:18px;">
             <div class="card-title" style="margin-bottom:14px;">
                 <i class="fas fa-lightbulb" style="color:var(--orange)"></i> İpuçları
             </div>
             <div style="font-size:12px;color:var(--sub);line-height:2;">
                 <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Güneş ışığında net fotoğraf çekin</div>
-                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Tek bir bitkiye/yaprağa odaklanın</div>
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Tek bir yaprağa odaklanın</div>
+                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Hastalıklı bölgeyi çerçevede tutun</div>
                 <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Bulanık veya karanlık fotoğraftan kaçının</div>
                 <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>PNG veya JPG formatı kullanın</div>
-                <div><i class="fas fa-circle" style="font-size:4px;vertical-align:middle;color:var(--green);margin-right:8px;"></i>Sensör bağlıysa daha detaylı teşhis alırsınız</div>
             </div>
         </div>
     </div>
@@ -349,6 +294,7 @@
 {% block scripts %}
 let predictionsChart = null;
 
+// Drop zone
 const dropZone  = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 
@@ -379,6 +325,7 @@ async function handleFile(file) {
         return;
     }
 
+    // Preview
     const reader = new FileReader();
     reader.onload = e => document.getElementById('preview-img').src = e.target.result;
     reader.readAsDataURL(file);
@@ -406,115 +353,48 @@ async function handleFile(file) {
 }
 
 function displayResult(data) {
-    // Bitki adı — DiagnosisResponse: plant_display_name
-    const plantName = data.plant_display_name || data.identified_plant || '--';
-    document.getElementById('plant-name').textContent = plantName;
+    const top = data.top_prediction;
+    document.getElementById('disease-name').textContent = top.disease || '--';
 
-    // Güven skoru — DiagnosisResponse: plant_confidence (string like "85.43%")
+    // Parse confidence
     let confNum = 0;
-    if (typeof data.plant_confidence === 'string') {
-        confNum = parseFloat(data.plant_confidence.replace('%', ''));
-    } else if (typeof data.plant_confidence === 'number') {
-        confNum = data.plant_confidence * 100;
+    if (typeof top.confidence === 'string') {
+        confNum = parseFloat(top.confidence.replace('%',''));
+    } else if (top.score != null) {
+        confNum = top.score * 100;
     }
 
-    document.getElementById('conf-pct').textContent = isNaN(confNum) ? '--' : confNum.toFixed(1) + '%';
-    document.getElementById('conf-bar').style.width = Math.min(isNaN(confNum) ? 0 : confNum, 100) + '%';
+    document.getElementById('conf-pct').textContent = confNum.toFixed(1) + '%';
+    document.getElementById('conf-bar').style.width = Math.min(confNum, 100) + '%';
 
-    // Güvenilirlik kontrolü — model %50 altında güvenle tahmin yaptıysa
-    const isUnreliable = (data.plant_display_name || '').startsWith('Tanımlanamadı');
+    // Family / category from label
+    const label = (top.disease || '').toLowerCase();
+    const isHealthy = label.includes('healthy');
+    document.getElementById('disease-family').textContent = isHealthy ? 'Sağlıklı yaprak' : 'Bitki hastalığı tespit edildi';
 
-    // Bilgi tabanı durumu
-    const inKB = data.plant_in_knowledge_base;
-    if (isUnreliable) {
-        document.getElementById('plant-sub').textContent =
-            'Model bu bitkiyi yeterli güvenle tanıyamadı — grafikteki dağılıma bakın';
-    } else {
-        document.getElementById('plant-sub').textContent = inKB
-            ? 'Bilgi tabanında bulundu — sağlık teşhisi yapıldı'
-            : 'Bitki türü tanındı — bilgi tabanında bulunamadı';
-    }
-
-    // Güven çubuğu rengini düşük güvende kırmızıya çevir
-    const barEl = document.getElementById('conf-bar');
-    if (isUnreliable) {
-        barEl.style.background = 'linear-gradient(90deg,#ef4444,#f97316)';
-    } else {
-        barEl.style.background = 'linear-gradient(90deg,#22c55e,#06b6d4)';
-    }
-
-    // Genel sağlık durumu badge
-    const badge = document.getElementById('health-badge');
-    const health = data.overall_health || 'unknown';
-    if (isUnreliable) {
-        badge.className = 'health-indicator badge-purple';
-        badge.innerHTML = '<i class="fas fa-circle-question"></i> Düşük Güven';
-    } else if (health === 'healthy') {
-        badge.className = 'health-indicator badge-green';
+    const badge = document.getElementById('severity-badge');
+    if (isHealthy) {
+        badge.className = 'severity-indicator badge-green';
         badge.innerHTML = '<i class="fas fa-circle-check"></i> Sağlıklı';
-    } else if (health === 'critical') {
-        badge.className = 'health-indicator badge-red';
-        badge.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Kritik Sorun';
-    } else if (health === 'attention') {
-        badge.className = 'health-indicator badge-orange';
-        badge.innerHTML = '<i class="fas fa-circle-exclamation"></i> Dikkat Gerekiyor';
+    } else if (confNum > 70) {
+        badge.className = 'severity-indicator badge-red';
+        badge.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Hastalık Tespit Edildi';
     } else {
-        badge.className = 'health-indicator badge-blue';
-        badge.innerHTML = '<i class="fas fa-circle-question"></i> Bilinmiyor';
+        badge.className = 'severity-indicator badge-orange';
+        badge.innerHTML = '<i class="fas fa-circle-question"></i> Belirsiz';
     }
 
-    // Sağlık sorunlarını göster — DiagnosisResponse: problems[]
-    const problems = data.problems || [];
-    const problemsCard = document.getElementById('problems-card');
-    const problemsList = document.getElementById('problems-list');
-    const problemsSub  = document.getElementById('problems-sub');
-
-    if (problems.length > 0) {
-        problemsCard.style.display = 'block';
-        problemsSub.textContent = `${problems.length} sorun tespit edildi`;
-        problemsList.innerHTML = problems.map(p => {
-            const sevColor = p.severity === 'critical' ? 'var(--red)' :
-                             p.severity === 'warning'  ? 'var(--orange)' : 'var(--blue)';
-            const sevBadge = p.severity === 'critical' ? 'badge-red' :
-                             p.severity === 'warning'  ? 'badge-orange' : 'badge-blue';
-            const sevIcon  = p.severity === 'critical' ? 'fa-triangle-exclamation' :
-                             p.severity === 'warning'  ? 'fa-circle-exclamation' : 'fa-circle-info';
-            return `
-                <div class="problem-item">
-                    <div class="problem-header">
-                        <div class="problem-name">${p.name}</div>
-                        <span class="badge ${sevBadge}">
-                            <i class="fas ${sevIcon}"></i> ${p.severity}
-                        </span>
-                    </div>
-                    <div class="problem-recommendation">${p.recommendation}</div>
-                    ${p.metric ? `<div style="font-size:11px;color:var(--sub);margin-top:4px;">${p.metric}: ${p.sensor_value} (eşik: ${p.threshold})</div>` : ''}
-                </div>`;
-        }).join('');
-    } else {
-        problemsCard.style.display = 'none';
-    }
-
-    // Yasal uyarı
-    if (data.disclaimer) {
-        document.getElementById('disclaimer-box').style.display = 'flex';
-        document.getElementById('disclaimer-text').textContent = data.disclaimer;
-    }
-
-    // Grafik — DiagnosisResponse: all_candidates[{label, confidence, score}]
-    buildChart(data.all_candidates || []);
+    // Chart
+    buildChart(data.predictions || []);
 }
 
-function buildChart(candidates) {
+function buildChart(predictions) {
     if (predictionsChart) { predictionsChart.destroy(); predictionsChart = null; }
     const ctx = document.getElementById('predictions-chart').getContext('2d');
-    const labels = candidates.map(p => p.label);
-    const vals   = candidates.map(p => {
-        if (typeof p.confidence === 'string') {
-            const parsed = parseFloat(p.confidence.replace('%', ''));
-            return isNaN(parsed) ? (p.score || 0) * 100 : parsed;
-        }
-        return (p.score || 0) * 100;
+    const labels = predictions.map(p => p.disease);
+    const vals   = predictions.map(p => {
+        if (typeof p.confidence === 'string') return parseFloat(p.confidence) || (p.score * 100);
+        return (p.score ?? 0) * 100;
     });
     const colors = [
         '#22c55e','#3b82f6','#f59e0b','#ef4444','#a855f7',
@@ -563,8 +443,6 @@ function resetUpload() {
     if (predictionsChart) { predictionsChart.destroy(); predictionsChart = null; }
     document.getElementById('preview-img').src = '';
     document.getElementById('conf-bar').style.width = '0%';
-    document.getElementById('problems-card').style.display = 'none';
-    document.getElementById('disclaimer-box').style.display = 'none';
     showState('upload');
 }
 
@@ -588,15 +466,16 @@ async function loadHistory() {
         list.innerHTML = data.map(item => {
             const d = new Date(item.timestamp);
             const conf = item.confidence != null ? (item.confidence * 100).toFixed(1) + '%' : '--';
-            const confColor = parseFloat(conf) > 70 ? 'var(--green)' : 'var(--orange)';
+            const isHealthy = (item.label || '').toLowerCase().includes('healthy');
+            const confColor = isHealthy ? 'var(--green)' : parseFloat(conf) > 70 ? 'var(--red)' : 'var(--orange)';
             return `
                 <div class="history-item">
                     ${item.image_path
-                        ? `<img src="${item.image_path}" class="history-thumb" alt="bitki" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="history-thumb-placeholder" style="display:none;"><i class="fas fa-leaf"></i></div>`
+                        ? `<img src="${item.image_path}" class="history-thumb" alt="yaprak" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="history-thumb-placeholder" style="display:none;"><i class="fas fa-leaf"></i></div>`
                         : `<div class="history-thumb-placeholder"><i class="fas fa-leaf"></i></div>`
                     }
                     <div style="flex:1;min-width:0;">
-                        <div class="history-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${item.label}">${item.label || '--'}</div>
+                        <div class="history-disease" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${item.label}">${item.label || '--'}</div>
                         <div class="history-time">${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</div>
                     </div>
                     <div class="history-conf" style="color:${confColor};">${conf}</div>
