@@ -12,3 +12,7 @@ python-dotenv
 numpy
 pytest
 httpx
+passlib[bcrypt]
+python-jose[cryptography]
+starlette
+itsdangerous

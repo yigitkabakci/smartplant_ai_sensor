@@ -3,9 +3,12 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 from config import Config
 from services import ml_service, database
 from routers import main as main_router, leaf_disease, sensor, devices
+from routers import auth as auth_router
+from routers import admin as admin_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -14,6 +17,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 cfg = Config()
+
+SECRET_KEY = "agrosense-secret-key-change-in-prod"
 
 
 @asynccontextmanager
@@ -33,8 +38,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+app.include_router(auth_router.router)
+app.include_router(admin_router.router)
 app.include_router(main_router.router)
 app.include_router(leaf_disease.router)
 app.include_router(sensor.router)

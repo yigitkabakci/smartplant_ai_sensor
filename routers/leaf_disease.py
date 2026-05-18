@@ -4,7 +4,7 @@ import shutil
 import logging
 from datetime import datetime
 from fastapi import APIRouter, Request, UploadFile, File, Form, HTTPException, Depends
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -14,6 +14,7 @@ from services.database import get_db
 from services.plant_knowledge import find_plant, evaluate_problems, get_optimal_status
 from models import LeafAnalysis, SensorReading
 from schemas import DiagnosisResponse, PlantCandidate, HealthProblem
+from dependencies import get_current_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Leaf Disease"])
@@ -61,8 +62,11 @@ def _get_latest_sensor(db: Session, device_mac: Optional[str]) -> Optional[dict]
 
 
 @router.get("/leaf_disease", response_class=HTMLResponse)
-async def leaf_index(request: Request):
-    return templates.TemplateResponse(request, "leaf_disease_index.html")
+async def leaf_index(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+    return templates.TemplateResponse(request, "leaf_disease_index.html", {"current_user": user})
 
 
 @router.post("/leaf_disease/predict", response_model=DiagnosisResponse)

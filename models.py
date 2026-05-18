@@ -1,10 +1,30 @@
 from datetime import datetime
 from sqlalchemy import (
-    Column, Integer, String, Float, DateTime, ForeignKey, UniqueConstraint
+    Column, Integer, String, Float, DateTime, ForeignKey, UniqueConstraint,
+    Boolean, Enum as SAEnum
 )
 from sqlalchemy.orm import declarative_base, relationship
+import enum
 
 Base = declarative_base()
+
+
+class UserRole(enum.Enum):
+    user = "user"
+    admin = "admin"
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(100), nullable=False)
+    email = Column(String(200), unique=True, nullable=False, index=True)
+    password_hash = Column(String(200), nullable=False)
+    role = Column(SAEnum(UserRole), default=UserRole.user, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_login = Column(DateTime, nullable=True)
 
 
 class PlantLibrary(Base):
