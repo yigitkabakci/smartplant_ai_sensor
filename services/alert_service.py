@@ -12,9 +12,10 @@ REQ-F-005: Geçersiz veya eksik sensör verisi loglama mekanizmasıyla
 
 import logging
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
-from models import SensorReading, Alert
+from models import SensorReading, Alert, Device, PlantLibrary
+from services.plant_thresholds import get_thresholds_for_plant
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ THRESHOLDS: dict[str, dict] = {
 # Çekirdek Eşik Kontrol Fonksiyonu (REQ-F-030, REQ-F-031)
 # ---------------------------------------------------------------------------
 
-def check_thresholds(reading: SensorReading) -> List[Alert]:
+def check_thresholds(reading: SensorReading, custom_thresholds: Optional[dict] = None) -> List[Alert]:
     """
     Tek bir SensorReading kaydını THRESHOLDS sözlüğüyle kıyaslar ve
     ihlal edilen her parametre için bir Alert nesnesi döndürür.
@@ -97,8 +98,13 @@ def check_thresholds(reading: SensorReading) -> List[Alert]:
         Sıfır veya daha fazla Alert ORM nesnesi. Boş liste → ihlal yok.
     """
     alerts: List[Alert] = []
+    effective = THRESHOLDS.copy()
+    if custom_thresholds:
+        for field, limits in custom_thresholds.items():
+            if field in effective:
+                effective[field] = {**effective[field], **limits}
 
-    for field, cfg in THRESHOLDS.items():
+    for field, cfg in effective.items():
         value = getattr(reading, field, None)
 
         # REQ-F-005: Eksik veya None değerli parametre → loglayıp geç
@@ -155,26 +161,59 @@ def check_thresholds(reading: SensorReading) -> List[Alert]:
     return alerts
 
 
+def _get_plant_thresholds(db: Session, device_mac: Optional[str]) -> dict:
+    """
+    Cihaza atanmış bitkinin eşik değerlerini döndürür.
+    Cihaz veya bitki yoksa botanik veritabanından genel eşikler alınır.
+    """
+    if not device_mac:
+        return _build_thresholds(None)
+
+    device = db.query(Device).filter(Device.device_mac == device_mac).first()
+    if not device:
+        return _build_thresholds(None)
+
+    # Önce PlantLibrary kaydına bak (kullanıcı elle girdiyse)
+    plant: Optional[PlantLibrary] = None
+    if device.plant_type_id:
+        plant = db.query(PlantLibrary).filter(PlantLibrary.id == device.plant_type_id).first()
+
+    return _build_thresholds(plant, device.plant_name)
+
+
+def _build_thresholds(plant: Optional[PlantLibrary], plant_name: Optional[str] = None) -> dict:
+    """
+    PlantLibrary kaydından veya botanik veritabanından eşik sözlüğü üretir.
+    """
+    # PlantLibrary'de tüm eşikler dolu mu?
+    if plant and all(getattr(plant, f) is not None for f in [
+        "min_moisture", "max_moisture", "ideal_temp_min", "ideal_temp_max",
+        "min_humidity", "max_humidity", "min_light_lux", "max_light_lux"
+    ]):
+        return {
+            "moisture_pct":  {"min": plant.min_moisture,   "max": plant.max_moisture},
+            "temperature_c": {"min": plant.ideal_temp_min, "max": plant.ideal_temp_max},
+            "humidity_pct":  {"min": plant.min_humidity,   "max": plant.max_humidity},
+            "light_lux":     {"min": plant.min_light_lux,  "max": plant.max_light_lux},
+        }
+
+    # Botanik veritabanından al
+    name = (plant.name if plant else None) or plant_name or ""
+    t = get_thresholds_for_plant(name) if name else get_thresholds_for_plant("")
+    return {
+        "moisture_pct":  {"min": t["min_moisture"],   "max": t["max_moisture"]},
+        "temperature_c": {"min": t["ideal_temp_min"], "max": t["ideal_temp_max"]},
+        "humidity_pct":  {"min": t["min_humidity"],   "max": t["max_humidity"]},
+        "light_lux":     {"min": t["min_light_lux"],  "max": t["max_light_lux"]},
+    }
+
+
 def evaluate_and_persist(db: Session, reading: SensorReading) -> List[Alert]:
     """
-    Eşik kontrolünü çalıştırır ve üretilen alertleri veritabanına kaydeder.
-
-    POST /api/sensor endpoint'inden çağrılır; yeni sensör satırı
-    commit edilDİKTEN sonra bu fonksiyon invoke edilir.
-
-    Parametreler
-    ------------
-    db : Session
-        Aktif SQLAlchemy oturumu (get_db() bağımlılığından gelir).
-    reading : SensorReading
-        Yeni kaydedilmiş ORM satırı.
-
-    Döndürür
-    --------
-    List[Alert]
-        Veritabanına yazılan Alert nesneleri.
+    Bitkiye özgü eşik kontrolünü çalıştırır ve alertleri veritabanına kaydeder.
     """
-    generated = check_thresholds(reading)
+    thresholds = _get_plant_thresholds(db, reading.device_mac)
+    generated = check_thresholds(reading, thresholds)
     if generated:
         db.add_all(generated)
         db.commit()

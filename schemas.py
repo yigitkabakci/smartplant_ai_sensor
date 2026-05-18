@@ -176,6 +176,10 @@ class PlantLibraryCreate(BaseModel):
     max_moisture: Optional[float] = None
     ideal_temp_min: Optional[float] = None
     ideal_temp_max: Optional[float] = None
+    min_humidity: Optional[float] = None
+    max_humidity: Optional[float] = None
+    min_light_lux: Optional[float] = None
+    max_light_lux: Optional[float] = None
 
 
 class PlantLibraryResponse(BaseModel):
@@ -187,3 +191,20 @@ class PlantLibraryResponse(BaseModel):
     max_moisture: Optional[float]
     ideal_temp_min: Optional[float]
     ideal_temp_max: Optional[float]
+    min_humidity: Optional[float]
+    max_humidity: Optional[float]
+    min_light_lux: Optional[float]
+    max_light_lux: Optional[float]
+
+
+class PlantThresholdsResponse(BaseModel):
+    plant_name: str
+    source: str  # "database" | "botanical_db" | "default"
+    min_moisture: float
+    max_moisture: float
+    ideal_temp_min: float
+    ideal_temp_max: float
+    min_humidity: float
+    max_humidity: float
+    min_light_lux: float
+    max_light_lux: float

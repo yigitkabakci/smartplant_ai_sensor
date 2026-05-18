@@ -211,6 +211,18 @@
 {% endblock %}
 
 {% block scripts %}
+// ── Dark Background Plugin (gauge ve trend chart için) ──
+const darkBgPlugin = {
+    id: 'darkBg',
+    beforeDraw(chart) {
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(0, 0, chart.width, chart.height);
+        ctx.restore();
+    }
+};
+
 // ── Gauge Factory ──
 function makeGauge(canvasId, color, max) {
     const canvas = document.getElementById(canvasId);
@@ -262,20 +274,6 @@ let trendChart = null;
 let allReadings = [];
 let currentMetric = 'moisture';
 
-// Chart.js plugin: her draw'dan önce canvas'ı dark renkle doldur.
-// Bu olmadan canvas beyaz render olur çünkü HTML canvas varsayılan
-// olarak şeffaf, tarayıcı ise altındaki CSS background'ı değil
-// canvas'ın kendi background'ını kullanır.
-const darkBgPlugin = {
-    id: 'darkBg',
-    beforeDraw(chart) {
-        const ctx = chart.ctx;
-        ctx.save();
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(0, 0, chart.width, chart.height);
-        ctx.restore();
-    }
-};
 
 function initTrendChart() {
     const ctx = document.getElementById('trend-chart').getContext('2d');

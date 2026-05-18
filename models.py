@@ -16,6 +16,10 @@ class PlantLibrary(Base):
     max_moisture = Column(Float, nullable=True)
     ideal_temp_min = Column(Float, nullable=True)
     ideal_temp_max = Column(Float, nullable=True)
+    min_humidity = Column(Float, nullable=True)
+    max_humidity = Column(Float, nullable=True)
+    min_light_lux = Column(Float, nullable=True)
+    max_light_lux = Column(Float, nullable=True)
 
     devices = relationship("Device", back_populates="plant_type")
 

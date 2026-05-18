@@ -417,7 +417,17 @@ async function submitPlant(e) {
 
 async function deletePlant(id, name) {
     if (!confirm(`"${name}" bitkisini silmek istediğinize emin misiniz?`)) return;
-    showToast('Silme işlemi API\'de desteklenmiyor. Lütfen veritabanını manuel güncelleyin.', 'warning');
+    try {
+        const r = await fetch(`/api/plants/${id}`, { method: 'DELETE' });
+        if (r.ok || r.status === 204) {
+            showToast(`"${name}" silindi.`, 'success');
+            await loadAll();
+        } else {
+            showToast('Silme işlemi başarısız.', 'error');
+        }
+    } catch(e) {
+        showToast('Bağlantı hatası.', 'error');
+    }
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
