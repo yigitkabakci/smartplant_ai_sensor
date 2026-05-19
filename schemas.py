@@ -29,7 +29,7 @@ class SensorReadingResponse(BaseModel):
 
 class PlantCandidate(BaseModel):
     label: str
-    confidence: str
+    confidence: float
     score: float
 
 
@@ -55,19 +55,29 @@ class HealthProblem(BaseModel):
 class DiagnosisResponse(BaseModel):
     success: bool
     image_path: str
-    # Bitki tanıma
+    # Bitki tanıma (PlantNet)
     identified_plant: Optional[str]
     plant_display_name: Optional[str]
-    plant_confidence: Optional[str]
+    plant_scientific_name: Optional[str]
+    plant_confidence: Optional[float]
+    plant_confidence_level: Optional[str]   # high / medium / low / unknown
     plant_in_knowledge_base: bool
-    all_candidates: List[PlantCandidate]
+    plantnet_candidates: List[dict]         # PlantNet ilk 5 aday
+    # Hastalık tespiti pipeline
+    diagnosis_stage: Optional[str]          # disease / possible / fallback
+    disease_name: Optional[str]
+    disease_confidence: Optional[float]
+    disease_confidence_level: Optional[str]
+    all_candidates: List[PlantCandidate]    # hastalık modeli top-5
     # Sensör durumu
     sensor_used: bool
     device_mac: Optional[str]
-    sensor_status: Optional[dict]   # metric → SensorStatus
-    # Teşhis
+    sensor_reading_time: Optional[str]   # ISO timestamp (UTC+Z)
+    sensor_status: Optional[dict]
+    # Teşhis sonucu
     problems: List[HealthProblem]
-    overall_health: str             # "healthy" | "attention" | "critical" | "unknown"
+    overall_health: str             # healthy / attention / critical / unknown
+    diagnosis_message: Optional[str]
     disclaimer: str
 
 

@@ -292,15 +292,28 @@ function clearFile() {
   dropZone.style.display = 'block';
 }
 
+function deviceShortName(d) {
+  if (d.plant_name) return d.plant_name;
+  const last4 = d.device_mac.replace(/:/g, '').slice(-4).toUpperCase();
+  return `ESP32-${last4}`;
+}
+function parseUtcDate(str) {
+  if (!str) return null;
+  return new Date(str.endsWith('Z') ? str : str + 'Z');
+}
+
 async function loadDevices() {
   try {
     const r = await fetch('/api/devices');
     const devs = await r.json();
     const sel = document.getElementById('device-select');
     devs.forEach(d => {
+      const syncDate = parseUtcDate(d.last_sync);
+      const online = syncDate && (Date.now() - syncDate.getTime()) < 300000;
+      const name = deviceShortName(d);
       const opt = document.createElement('option');
       opt.value = d.device_mac;
-      opt.textContent = d.plant_name ? `${d.device_mac} (${d.plant_name})` : d.device_mac;
+      opt.textContent = online ? `🟢 ${name}` : `⚪ ${name}`;
       sel.appendChild(opt);
     });
   } catch(e) {}
@@ -409,9 +422,27 @@ function showResult(d) {
   const ss = d.sensor_status;
   if (ss && Object.keys(ss).length) {
     const stateLabel = { ok: 'İyi', low: 'Düşük', high: 'Yüksek' };
-    const stateKeys = Object.keys(ss);
-    sensorHtml = `<div class="section-divider">Sensör Verileri</div><div class="sensor-status-grid">`;
-    stateKeys.forEach(key => {
+
+    // Cihaz adı
+    const mac = d.device_mac || '';
+    const last4 = mac.replace(/:/g, '').slice(-4).toUpperCase();
+    const devName = last4 ? `ESP32-${last4}` : 'Sensör';
+
+    // Ölçüm zamanı
+    let timeStr = '—';
+    if (d.sensor_reading_time) {
+      const dt = new Date(d.sensor_reading_time);
+      timeStr = dt.toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    sensorHtml = `<div class="section-divider">Sensör Verileri</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;padding:.45rem .7rem;background:rgba(200,169,106,.04);border:1px solid rgba(200,169,106,.1);border-radius:2px">
+      <span style="font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)">${devName}</span>
+      <span style="font-size:.62rem;color:rgba(237,232,216,.35)">Ölçüm: ${timeStr}</span>
+    </div>
+    <div class="sensor-status-grid">`;
+
+    Object.keys(ss).forEach(key => {
       const m = ss[key];
       const range = m.max - m.min;
       const pct = range > 0 ? Math.min(100, Math.max(0, ((m.value - m.min) / range) * 100)) : 50;

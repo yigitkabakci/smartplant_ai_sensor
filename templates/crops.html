@@ -240,6 +240,7 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
       </div>
       <div class="ml-auto" style="display:flex;gap:.7rem;align-items:center">
         <button class="agro-btn" onclick="loadAll()">↻ Yenile</button>
+        <a href="/dashboard#sensor-gauges" class="agro-btn" style="text-decoration:none" title="Dashboard'ta sensör verilerini görüntüle">⬡ Dashboard</a>
         <button class="agro-btn agro-btn-primary" onclick="openModal('modal-add-plant')">+ Yeni Bitki Ekle</button>
       </div>
     </div>
@@ -449,12 +450,16 @@ async function loadDevices() {
     }
     tbody.innerHTML = allDevices.map(d => {
       const plant = allPlants.find(p => p.id === d.plant_type_id);
-      const syncDate = d.last_sync ? new Date(d.last_sync) : null;
+      const syncDate = parseUtcDate(d.last_sync);
       const syncStr = syncDate ? syncDate.toLocaleString('tr-TR', {dateStyle:'short',timeStyle:'short'}) : '—';
       const isRecent = syncDate && (Date.now() - syncDate.getTime()) < 300000;
+      const shortName = deviceShortName(d);
       return `<tr>
         <td><span class="status-dot ${isRecent ? 'online' : 'offline'}"></span></td>
-        <td><span class="mac-mono">${d.device_mac}</span></td>
+        <td>
+          <span style="font-size:.82rem;color:var(--cream);font-weight:400">${shortName}</span>
+          <br><span class="mac-mono" style="font-size:.6rem;opacity:.4">${d.device_mac}</span>
+        </td>
         <td style="color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:.95rem">${d.plant_name || '—'}</td>
         <td>${plant ? `<span class="plant-chip">${plant.name}</span>` : '<span class="plant-chip unknown-chip">Belirsiz</span>'}</td>
         <td style="color:rgba(237,232,216,.35);font-size:.72rem">${syncStr}</td>
@@ -521,7 +526,7 @@ async function deletePlant(id, name) {
 
 function openModal(id) {
   document.getElementById(id).classList.add('open');
-  if (id === 'modal-add-plant') populateDevicePills();
+  if (id === 'modal-add-plant') populateDevicePillsFresh();
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
@@ -529,23 +534,47 @@ function closeModal(id) {
   document.querySelectorAll('.device-pill').forEach(p => p.classList.remove('active'));
 }
 
+function deviceShortName(d) {
+  if (d.plant_name) return d.plant_name;
+  // MAC'in son 4 hanesi → ESP32-E484
+  const last4 = d.device_mac.replace(/:/g, '').slice(-4).toUpperCase();
+  return `ESP32-${last4}`;
+}
+
+function parseUtcDate(str) {
+  if (!str) return null;
+  // API UTC döndürüyor ama Z eki yok — ekle
+  return new Date(str.endsWith('Z') ? str : str + 'Z');
+}
+
+async function populateDevicePillsFresh() {
+  const container = document.getElementById('device-pills-modal');
+  container.innerHTML = '<span class="no-devices-msg" style="opacity:.5">Yükleniyor...</span>';
+  try {
+    const r = await fetch('/api/devices');
+    allDevices = await r.json();
+  } catch(e) {}
+  populateDevicePills();
+}
+
 function populateDevicePills() {
   const container = document.getElementById('device-pills-modal');
   if (!allDevices.length) {
-    container.innerHTML = '<span class="no-devices-msg">Kayıtlı cihaz yok</span>';
+    container.innerHTML = '<span class="no-devices-msg">Bağlı cihaz yok — ESP32\'nin sunucuya veri gönderdiğinden emin olun</span>';
     return;
   }
   container.innerHTML = allDevices.map(d => {
-    const syncDate = d.last_sync ? new Date(d.last_sync) : null;
+    const syncDate = parseUtcDate(d.last_sync);
     const online = syncDate && (Date.now() - syncDate.getTime()) < 300000;
-    const shortMac = d.device_mac.slice(-5);
-    const label = d.plant_name ? `${shortMac} · ${d.plant_name}` : shortMac;
+    const label = deviceShortName(d);
+    const syncAgo = syncDate ? Math.round((Date.now() - syncDate.getTime()) / 1000) : null;
+    const agoStr = syncAgo !== null ? (syncAgo < 60 ? `${syncAgo}s önce` : `${Math.round(syncAgo/60)}dk önce`) : '?';
     if (online) {
-      return `<button type="button" class="device-pill online" onclick="pullSensorData('${d.device_mac}', this)">
+      return `<button type="button" class="device-pill online" onclick="pullSensorData('${d.device_mac}', this)" title="${d.device_mac} · ${agoStr}">
         <span class="pill-dot on"></span>${label}
       </button>`;
     } else {
-      return `<span class="device-pill offline" title="Çevrimdışı – son 5 dakikada veri yok">
+      return `<span class="device-pill offline" title="${d.device_mac} · Son veri: ${agoStr}">
         <span class="pill-dot off"></span>${label}
       </span>`;
     }
