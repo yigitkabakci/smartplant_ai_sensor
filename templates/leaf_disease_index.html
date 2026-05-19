@@ -113,6 +113,28 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
 .candidate-pct{font-size:.65rem;color:rgba(200,169,106,.6);width:40px;text-align:right}
 .disclaimer{font-size:.65rem;color:rgba(237,232,216,.22);margin-top:1.4rem;padding:.8rem;border:1px solid rgba(200,169,106,.06);line-height:1.6;letter-spacing:.03em}
 
+/* YENİ: Stage badge */
+.stage-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.32rem .9rem;border-radius:30px;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.6rem}
+.stage-disease{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+.stage-possible{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+.stage-fallback{background:rgba(100,116,139,.1);color:#94a3b8;border:1px solid rgba(100,116,139,.2)}
+.stage-healthy{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.25)}
+
+/* YENİ: Bilimsel isim */
+.result-sci{font-size:.72rem;color:rgba(237,232,216,.3);font-style:italic;margin-bottom:.25rem;letter-spacing:.04em}
+
+/* YENİ: Hastalık satırı */
+.disease-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);margin-bottom:1rem}
+.disease-name{font-size:.85rem;color:#f87171;font-weight:400}
+.disease-conf{font-size:.65rem;color:rgba(239,68,68,.6);letter-spacing:.1em}
+
+/* YENİ: Bilgi kutusu (fallback) */
+.info-box{padding:.85rem 1rem;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);margin-bottom:1rem;font-size:.72rem;color:rgba(147,197,253,.8);line-height:1.6}
+
+/* YENİ: PlantNet adayları */
+.section-divider{font-size:.55rem;letter-spacing:.26em;text-transform:uppercase;color:rgba(200,169,106,.4);margin:1.2rem 0 .65rem;display:flex;align-items:center;gap:.6rem}
+.section-divider::after{content:'';flex:1;height:1px;background:rgba(200,169,106,.08)}
+
 .history-card{background:var(--card);border:1px solid var(--border);padding:2rem 2.4rem;margin-top:1px;position:relative;overflow:hidden;grid-column:1/-1}
 .history-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,169,106,.35),transparent)}
 .agro-table{width:100%;border-collapse:collapse;font-size:.72rem}
@@ -200,6 +222,7 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
         <div class="result-inner" id="result-inner">
           <img id="result-img" class="result-image" alt="Analiz">
           <div class="result-plant" id="result-plant"></div>
+          <div class="result-sci" id="result-sci"></div>
           <div class="result-confidence" id="result-confidence"></div>
           <div id="result-health-badge"></div>
           <div id="result-problems"></div>
@@ -326,30 +349,83 @@ function showResult(d) {
   document.getElementById('result-placeholder').style.display = 'none';
   document.getElementById('result-inner').style.display = 'block';
   document.getElementById('result-img').src = d.image_path;
-  document.getElementById('result-plant').innerHTML = `<em>${d.plant_display_name}</em>`;
-  document.getElementById('result-confidence').textContent = `Güven: ${(d.plant_confidence * 100).toFixed(1)}%`;
-  const badgeMap = {
-    healthy:   ['health-healthy',   '✓ Sağlıklı'],
-    attention: ['health-attention', '⚠ Dikkat Gerekiyor'],
-    critical:  ['health-critical',  '✗ Kritik'],
-    unknown:   ['health-unknown',   '? Tanımlanamadı'],
+
+  // --- Bitki adı ---
+  document.getElementById('result-plant').innerHTML = `<em>${d.plant_display_name || 'Bilinmeyen Bitki'}</em>`;
+
+  // Bilimsel isim
+  const sciEl = document.getElementById('result-sci');
+  if (sciEl) sciEl.textContent = d.plant_scientific_name ? `${d.plant_scientific_name}` : '';
+
+  // PlantNet güveni
+  const pnConf = (d.plant_confidence != null && !isNaN(d.plant_confidence))
+    ? (d.plant_confidence * 100).toFixed(0) + '%' : '—';
+  const confLvlMap = { high: 'Yüksek', medium: 'Orta', low: 'Düşük', unknown: 'Belirsiz' };
+  document.getElementById('result-confidence').textContent =
+    `AgroSense AI Tanıma: ${pnConf} güven (${confLvlMap[d.plant_confidence_level] || '—'})`;
+
+  // --- Diagnosis stage badge ---
+  const stageMap = {
+    disease:  ['stage-disease',  '🔴 Hastalık Tespit Edildi'],
+    possible: ['stage-possible', '🟡 Olası Hastalık'],
+    fallback: ['stage-fallback', '🔵 Bakım Rehberi'],
+    healthy:  ['stage-healthy',  '🟢 Sağlıklı Görünüyor'],
   };
-  const [cls, label] = badgeMap[d.overall_health] || badgeMap.unknown;
-  document.getElementById('result-health-badge').innerHTML = `<span class="health-badge ${cls}">${label}</span>`;
-  let probHtml = '';
+  const stage = (d.is_healthy === true && d.diagnosis_stage === 'disease') ? 'healthy' : (d.diagnosis_stage || 'fallback');
+  const [stageCls, stageLabel] = stageMap[stage] || stageMap.fallback;
+  document.getElementById('result-health-badge').innerHTML = `<span class="stage-badge ${stageCls}">${stageLabel}</span>`;
+
+  // --- Hastalık satırı veya bilgi kutusu ---
+  let middleHtml = '';
+  if (d.disease_name && (d.diagnosis_stage === 'disease' || d.diagnosis_stage === 'possible')) {
+    const dConf = d.disease_confidence != null ? (d.disease_confidence * 100).toFixed(0) + '%' : '—';
+    middleHtml = `<div class="disease-row">
+      <span class="disease-name">⚠ ${d.disease_name}</span>
+      <span class="disease-conf">Model güveni: ${dConf}</span>
+    </div>`;
+  }
+  if (d.diagnosis_message) {
+    middleHtml += `<div class="info-box">${d.diagnosis_message}</div>`;
+  }
+
+  // --- Sorunlar ---
+  let probHtml = middleHtml;
   if (d.problems && d.problems.length) {
-    probHtml = `<div class="problems-title">Tespit Edilen Sorunlar</div>`;
+    probHtml += `<div class="problems-title">Tespit Edilen Sorunlar</div>`;
     d.problems.forEach(p => {
-      probHtml += `<div class="problem-item severity-${p.severity}"><div class="problem-name">${p.name}</div><div class="problem-rec">${p.recommendation}</div></div>`;
+      probHtml += `<div class="problem-item severity-${p.severity}">
+        <div class="problem-name">${p.name}</div>
+        <div class="problem-rec">${p.recommendation}</div>
+      </div>`;
     });
   }
   document.getElementById('result-problems').innerHTML = probHtml;
+
+  // --- PlantNet adayları ---
   let candHtml = '';
-  if (d.all_candidates && d.all_candidates.length > 1) {
-    candHtml = `<div class="candidates-title">Diğer Olasılıklar</div>`;
+  if (d.plantnet_candidates && d.plantnet_candidates.length) {
+    candHtml += `<div class="section-divider">Bitki Tanıma Adayları</div>`;
+    d.plantnet_candidates.slice(0, 5).forEach(c => {
+      const pct = ((c.confidence || 0) * 100).toFixed(1);
+      const name = c.common_names?.[0] || c.scientific_name || '—';
+      candHtml += `<div class="candidate-row">
+        <div class="candidate-label">${name} <span style="color:rgba(237,232,216,.25);font-size:.65rem">${c.scientific_name || ''}</span></div>
+        <div class="candidate-bar-wrap"><div class="candidate-bar" style="width:${Math.min(pct,100)}%"></div></div>
+        <div class="candidate-pct">${pct}%</div>
+      </div>`;
+    });
+  }
+
+  // --- Hastalık modeli adayları ---
+  if (d.all_candidates && d.all_candidates.length) {
+    candHtml += `<div class="section-divider">Hastalık Modeli Tahminleri</div>`;
     d.all_candidates.slice(0, 5).forEach(c => {
-      const pct = (c.confidence * 100).toFixed(1);
-      candHtml += `<div class="candidate-row"><div class="candidate-label">${c.label}</div><div class="candidate-bar-wrap"><div class="candidate-bar" style="width:${pct}%"></div></div><div class="candidate-pct">${pct}%</div></div>`;
+      const pct = ((c.score || 0) * 100).toFixed(1);
+      candHtml += `<div class="candidate-row">
+        <div class="candidate-label">${c.label}</div>
+        <div class="candidate-bar-wrap"><div class="candidate-bar" style="width:${Math.min(pct,100)}%"></div></div>
+        <div class="candidate-pct">${pct}%</div>
+      </div>`;
     });
   }
   document.getElementById('result-candidates').innerHTML = candHtml;
