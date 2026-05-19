@@ -8,6 +8,7 @@ import { getSensorReadings } from '../services/api';
 import Card from '../components/Card';
 import SectionHeader from '../components/SectionHeader';
 import { Colors, Typography, Radius } from '../constants/theme';
+import FallingLeaves from '../components/FallingLeaves';
 
 const { width } = Dimensions.get('window');
 const CHART_W = width - 48;
@@ -81,14 +82,16 @@ export default function AnalyticsScreen() {
   );
 
   if (loading) return (
-    <View style={styles.center}><ActivityIndicator size="large" color={Colors.green} /></View>
+    <View style={styles.center}><ActivityIndicator size="large" color={Colors.gold} /></View>
   );
 
   return (
+    <View style={styles.container}>
+    <FallingLeaves />
     <ScrollView
-      style={styles.container}
+      style={styles.scroll}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.green} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.gold} />}
     >
       {/* Period Selector */}
       <View style={styles.periodRow}>
@@ -114,7 +117,7 @@ export default function AnalyticsScreen() {
         <SummaryBox icon="💧" label="Ort. Toprak" unit="%"
           value={avg(filtered,'moisture_pct')} mm={minMaxOf(filtered,'moisture_pct')} color={Colors.blue} />
         <SummaryBox icon="☀️" label="Ort. Işık" unit="lx"
-          value={avg(filtered,'light_lux')} mm={minMaxOf(filtered,'light_lux')} color={Colors.green} />
+          value={avg(filtered,'light_lux')} mm={minMaxOf(filtered,'light_lux')} color={Colors.gold} />
       </View>
 
       {/* Charts */}
@@ -177,11 +180,13 @@ export default function AnalyticsScreen() {
         {filtered.length === 0 && <Text style={styles.noData}>Veri yok</Text>}
       </Card>
     </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container:  { flex: 1, backgroundColor: Colors.bg },
+  scroll:    { flex: 1 },
   content:    { padding: 16, paddingBottom: 40 },
   center:     { flex: 1, alignItems:'center', justifyContent:'center' },
   periodRow:  { flexDirection: 'row', gap: 8, marginBottom: 10 },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl,
   TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator,
@@ -56,14 +56,14 @@ export default function DevicesScreen() {
   };
 
   if (loading) return (
-    <View style={styles.center}><ActivityIndicator size="large" color={Colors.green} /></View>
+    <View style={styles.center}><ActivityIndicator size="large" color={Colors.gold} /></View>
   );
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.green} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.gold} />}
     >
       {/* Stats */}
       <View style={styles.statsRow}>

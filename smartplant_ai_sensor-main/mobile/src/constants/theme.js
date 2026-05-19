@@ -1,36 +1,44 @@
-export const Colors = {
-  // Backgrounds
-  bg:        '#F8FAFC',
-  bgCard:    '#FFFFFF',
-  bgCard2:   '#F1F5F9',
+﻿export const Colors = {
+  // Dark Luxury Backgrounds
+  bg:        '#070a06',
+  bg2:       '#0a0f08',
+  card:      '#111a0e',
+  card2:     '#162012',
 
-  // Brand green
+  // Gold accent (primary brand)
+  gold:      '#c8a96a',
+  goldDim:   'rgba(200,169,106,0.12)',
+  goldGlow:  'rgba(200,169,106,0.25)',
+
+  // Text (cream palette)
+  cream:     '#ede8d8',
+  sub:       'rgba(237,232,216,0.45)',
+  sub2:      'rgba(237,232,216,0.65)',
+
+  // Semantic accents
   green:     '#22c55e',
   greenDark: '#16a34a',
-  greenDim:  'rgba(34,197,94,0.10)',
-  greenGlow: 'rgba(34,197,94,0.20)',
-
-  // Accents
+  greenDim:  'rgba(34,197,94,0.12)',
   blue:      '#3b82f6',
-  blueDim:   'rgba(59,130,246,0.10)',
+  blueDim:   'rgba(59,130,246,0.12)',
   orange:    '#f59e0b',
-  orangeDim: 'rgba(245,158,11,0.10)',
+  orangeDim: 'rgba(245,158,11,0.12)',
   red:       '#ef4444',
-  redDim:    'rgba(239,68,68,0.10)',
+  redDim:    'rgba(239,68,68,0.12)',
   purple:    '#a855f7',
-  purpleDim: 'rgba(168,85,247,0.10)',
+  purpleDim: 'rgba(168,85,247,0.12)',
 
-  // Text
-  text:      '#0f172a',
-  textSub:   '#64748b',
-  textMuted: '#94a3b8',
+  // Borders (gold-tinted like web)
+  border:    'rgba(200,169,106,0.12)',
+  borderDim: 'rgba(200,169,106,0.06)',
 
-  // Border
-  border:    '#E2E8F0',
-  borderDim: '#F1F5F9',
-
-  // Shadows
-  shadow:    'rgba(15,23,42,0.08)',
+  // Backward-compat aliases used throughout screens
+  text:      '#ede8d8',
+  textSub:   'rgba(237,232,216,0.65)',
+  textMuted: 'rgba(237,232,216,0.45)',
+  bgCard:    '#111a0e',
+  bgCard2:   '#162012',
+  shadow:    'rgba(0,0,0,0.5)',
 };
 
 export const Typography = {
@@ -45,32 +53,32 @@ export const Typography = {
 };
 
 export const Radius = {
-  sm:  8,
-  md:  12,
-  lg:  16,
-  xl:  20,
+  sm:   8,
+  md:   12,
+  lg:   16,
+  xl:   20,
   full: 999,
 };
 
 export const Shadow = {
   sm: {
-    shadowColor: '#0f172a',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 2,
   },
   md: {
-    shadowColor: '#0f172a',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.09,
+    shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 4,
   },
   lg: {
-    shadowColor: '#0f172a',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.5,
     shadowRadius: 20,
     elevation: 8,
   },

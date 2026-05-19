@@ -8,6 +8,7 @@ import Card from '../components/Card';
 import Badge from '../components/Badge';
 import SectionHeader from '../components/SectionHeader';
 import { Colors, Typography, Radius, Shadow } from '../constants/theme';
+import FallingLeaves from '../components/FallingLeaves';
 
 const FILTERS = [
   { key:'', label:'Tümü' },
@@ -55,10 +56,12 @@ export default function AlertsScreen() {
   );
 
   return (
+    <View style={styles.container}>
+    <FallingLeaves />
     <ScrollView
-      style={styles.container}
+      style={styles.scroll}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.green} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.gold} />}
     >
       {/* Stats */}
       <View style={styles.statsRow}>
@@ -179,11 +182,13 @@ export default function AlertsScreen() {
         ))}
       </Card>
     </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container:   { flex:1, backgroundColor:Colors.bg },
+  scroll:    { flex: 1 },
   content:     { padding:16, paddingBottom:40 },
   center:      { flex:1, alignItems:'center', justifyContent:'center' },
   statsRow:    { flexDirection:'row', backgroundColor:Colors.bgCard, borderRadius:Radius.lg, padding:14, marginBottom:14, ...Shadow.sm, borderWidth:1, borderColor:Colors.border },
@@ -200,9 +205,9 @@ const styles = StyleSheet.create({
   activeMsg:   { fontSize:Typography.sm, fontWeight:'600', color:Colors.text },
   activeTime:  { fontSize:Typography.xs, color:Colors.textSub, marginTop:1 },
   filterChip:  { paddingHorizontal:14, paddingVertical:7, borderRadius:Radius.full, backgroundColor:Colors.bgCard2, borderWidth:1, borderColor:Colors.border },
-  filterChipActive:{ backgroundColor:Colors.greenDim, borderColor:Colors.green },
+  filterChipActive:{ backgroundColor:Colors.goldDim, borderColor:Colors.gold },
   filterText:  { fontSize:Typography.xs, fontWeight:'600', color:Colors.textSub },
-  filterTextActive:{ color:Colors.greenDark },
+  filterTextActive:{ color:Colors.gold },
   histRow:     { flexDirection:'row', alignItems:'center', gap:10, paddingVertical:10, borderBottomWidth:1, borderBottomColor:Colors.borderDim },
   histIcon:    { width:36, height:36, borderRadius:Radius.sm, alignItems:'center', justifyContent:'center' },
   histMsg:     { fontSize:Typography.sm, fontWeight:'600', color:Colors.text },

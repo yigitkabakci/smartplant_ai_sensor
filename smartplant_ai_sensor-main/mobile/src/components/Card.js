@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Colors, Radius, Shadow } from '../constants/theme';
+﻿import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Colors, Radius, Shadow, Typography } from '../constants/theme';
 
 export default function Card({ children, style }) {
   return (
@@ -12,11 +12,11 @@ export default function Card({ children, style }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.bgCard,
+    backgroundColor: Colors.card,
     borderRadius: Radius.lg,
     padding: 16,
-    ...Shadow.md,
     borderWidth: 1,
     borderColor: Colors.border,
+    ...Shadow.md,
   },
 });

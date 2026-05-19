@@ -1,11 +1,11 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Colors, Radius, Shadow, Typography } from '../constants/theme';
 
 export default function MetricCard({ icon, label, value, unit, color, subText }) {
   return (
     <View style={[styles.card, { borderTopColor: color }]}>
-      <View style={[styles.iconWrap, { backgroundColor: color + '18' }]}>
+      <View style={[styles.iconWrap, { backgroundColor: color + '1a', borderColor: color + '33' }]}>
         <Text style={{ fontSize: 20 }}>{icon}</Text>
       </View>
       <Text style={[styles.value, { color }]}>{value ?? '--'}</Text>
@@ -18,16 +18,15 @@ export default function MetricCard({ icon, label, value, unit, color, subText })
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.bgCard,
+    backgroundColor: Colors.card,
     borderRadius: Radius.lg,
     padding: 14,
     borderTopWidth: 3,
     alignItems: 'center',
     flex: 1,
-    ...Shadow.sm,
     borderWidth: 1,
     borderColor: Colors.border,
-    borderTopWidth: 3,
+    ...Shadow.sm,
   },
   iconWrap: {
     width: 44,
@@ -36,30 +35,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
+    borderWidth: 1,
   },
   value: {
     fontSize: Typography.xxl,
-    fontWeight: '800',
+    fontWeight: '700',
     lineHeight: 28,
   },
   unit: {
     fontSize: Typography.sm,
-    color: Colors.textSub,
+    color: Colors.sub,
     marginTop: 1,
   },
   label: {
     fontSize: Typography.xs,
-    color: Colors.textSub,
+    color: Colors.sub2,
     fontWeight: '600',
     marginTop: 6,
     textAlign: 'center',
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
   },
   sub: {
     fontSize: 10,
-    color: Colors.textMuted,
+    color: Colors.sub,
     marginTop: 3,
     textAlign: 'center',
+    letterSpacing: 0.3,
   },
 });

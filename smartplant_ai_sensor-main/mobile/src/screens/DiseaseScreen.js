@@ -10,6 +10,7 @@ import Card from '../components/Card';
 import Badge from '../components/Badge';
 import SectionHeader from '../components/SectionHeader';
 import { Colors, Typography, Radius, Shadow } from '../constants/theme';
+import FallingLeaves from '../components/FallingLeaves';
 
 const { width } = Dimensions.get('window');
 
@@ -90,7 +91,9 @@ export default function DiseaseScreen() {
   const isHealthy = (result?.top_prediction?.disease || '').toLowerCase().includes('healthy');
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <View style={styles.container}>
+    <FallingLeaves />
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
 
       {/* Upload Area */}
       {!image && !loading && (
@@ -116,7 +119,7 @@ export default function DiseaseScreen() {
       {/* Loading */}
       {loading && (
         <Card style={styles.loadingCard}>
-          <ActivityIndicator size="large" color={Colors.green} />
+          <ActivityIndicator size="large" color={Colors.gold} />
           <Text style={styles.loadingTitle}>Yaprak analiz ediliyor...</Text>
           <Text style={styles.loadingSubtitle}>AI modelimiz görüntüyü inceliyor</Text>
           {image && <Image source={{ uri: image }} style={styles.previewSmall} />}
@@ -194,7 +197,7 @@ export default function DiseaseScreen() {
       <Card style={{ marginTop: 14 }}>
         <SectionHeader title="🕐 Analiz Geçmişi" subtitle={`${history.length} kayıt`} />
         {histLoading ? (
-          <ActivityIndicator color={Colors.green} />
+          <ActivityIndicator color={Colors.gold} />
         ) : history.length === 0 ? (
           <Text style={styles.noData}>Henüz analiz yapılmadı</Text>
         ) : (
@@ -223,11 +226,14 @@ export default function DiseaseScreen() {
         )}
       </Card>
     </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container:    { flex:1, backgroundColor:Colors.bg },
+  scroll:        { flex: 1 },
+  scroll:    { flex: 1 },
   content:      { padding:16, paddingBottom:40 },
   uploadCard:   { alignItems:'center', paddingVertical:30 },
   uploadEmoji:  { fontSize:64, marginBottom:12 },
