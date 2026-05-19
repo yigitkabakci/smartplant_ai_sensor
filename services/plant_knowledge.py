@@ -19,7 +19,7 @@ from typing import Optional
 PLANTS: dict = {
     "monstera": {
         "display_name": "Monstera",
-        "keywords": ["monstera", "swiss cheese"],
+        "keywords": ["monstera", "swiss cheese", "monstera deliciosa", "monstera adansonii"],
         "optimal": {
             "moisture":    (40, 60),
             "temperature": (18, 27),
@@ -67,7 +67,7 @@ PLANTS: dict = {
 
     "pothos": {
         "display_name": "Pothos (Devil's Ivy)",
-        "keywords": ["pothos", "devil", "epipremnum", "efemera"],
+        "keywords": ["pothos", "devil", "epipremnum", "epipremnum aureum", "scindapsus", "efemera"],
         "optimal": {
             "moisture":    (30, 60),
             "temperature": (15, 30),
@@ -101,7 +101,7 @@ PLANTS: dict = {
 
     "ficus": {
         "display_name": "Ficus (İncir Ağacı)",
-        "keywords": ["ficus", "fig", "benjamina", "weeping fig"],
+        "keywords": ["ficus", "fig", "benjamina", "weeping fig", "ficus benjamina", "ficus lyrata", "fiddle leaf"],
         "optimal": {
             "moisture":    (40, 60),
             "temperature": (16, 24),
@@ -135,7 +135,7 @@ PLANTS: dict = {
 
     "dracaena": {
         "display_name": "Dracaena",
-        "keywords": ["dracaena", "dragon tree", "corn plant"],
+        "keywords": ["dracaena", "dragon tree", "corn plant", "dracaena fragrans", "dracaena marginata", "dracaena trifasciata"],
         "optimal": {
             "moisture":    (30, 50),
             "temperature": (18, 27),
@@ -169,7 +169,7 @@ PLANTS: dict = {
 
     "orchid": {
         "display_name": "Orkide (Phalaenopsis)",
-        "keywords": ["orchid", "phalaenopsis", "orkide"],
+        "keywords": ["orchid", "phalaenopsis", "orkide", "orchidaceae", "cattleya", "dendrobium"],
         "optimal": {
             "moisture":    (40, 60),
             "temperature": (18, 29),
@@ -210,7 +210,7 @@ PLANTS: dict = {
 
     "aloe_vera": {
         "display_name": "Aloe Vera",
-        "keywords": ["aloe", "aloe vera"],
+        "keywords": ["aloe", "aloe vera", "aloe barbadensis"],
         "optimal": {
             "moisture":    (15, 35),
             "temperature": (18, 30),
@@ -244,7 +244,7 @@ PLANTS: dict = {
 
     "spider_plant": {
         "display_name": "Örümcek Bitkisi (Chlorophytum)",
-        "keywords": ["spider", "chlorophytum", "airplane"],
+        "keywords": ["spider", "chlorophytum", "chlorophytum comosum", "airplane"],
         "optimal": {
             "moisture":    (40, 60),
             "temperature": (13, 27),
@@ -271,7 +271,7 @@ PLANTS: dict = {
 
     "philodendron": {
         "display_name": "Filodendron (Philodendron)",
-        "keywords": ["philodendron", "filodendron", "heartleaf"],
+        "keywords": ["philodendron", "filodendron", "heartleaf", "philodendron hederaceum", "philodendron scandens"],
         "optimal": {
             "moisture":    (40, 60),
             "temperature": (18, 29),
@@ -305,7 +305,7 @@ PLANTS: dict = {
 
     "zz_plant": {
         "display_name": "ZZ Bitkisi (Zamioculcas)",
-        "keywords": ["zamioculcas", "zz plant", "zz bitkisi", "zanzibar"],
+        "keywords": ["zamioculcas", "zamioculcas zamiifolia", "zz plant", "zz bitkisi", "zanzibar"],
         "optimal": {
             "moisture":    (20, 40),
             "temperature": (15, 30),
@@ -420,7 +420,7 @@ PLANTS: dict = {
 
     "schefflera": {
         "display_name": "Schefflera (Şemsiye Bitkisi)",
-        "keywords": ["schefflera", "umbrella", "dwarf umbrella"],
+        "keywords": ["schefflera", "umbrella", "dwarf umbrella", "schefflera actinophylla", "heptapleurum"],
         "optimal": {
             "moisture":    (40, 60),
             "temperature": (15, 24),
@@ -543,6 +543,692 @@ PLANTS: dict = {
                 "metric": "light", "op": "lt", "threshold": 3000,
                 "recommendation": "Parlak ışığa taşıyın. Çiçek açması için günde 12 saat karanlık periyodu gerekir.",
                 "severity": "info",
+            },
+        ],
+    },
+
+    # ── Yeni Ev Bitkileri ──────────────────────────────────────────
+
+    "snake_plant": {
+        "display_name": "Dil Çiçeği (Sansevieria)",
+        "keywords": [
+            "sansevieria", "sansevieria trifasciata", "snake plant",
+            "dil çiçeği", "mother-in-law", "dracaena trifasciata",
+        ],
+        "optimal": {
+            "moisture":    (20, 40),
+            "temperature": (15, 29),
+            "humidity":    (30, 60),
+            "light":       (500, 10000),
+        },
+        "problems": [
+            {
+                "name": "Aşırı Sulama (Kritik)",
+                "symptoms": ["Sarı/yumuşak yapraklar", "Kötü koku", "Gövde tabanında çürüme"],
+                "metric": "moisture", "op": "gt", "threshold": 55,
+                "recommendation": "Sansevieria çok az su ister. 3-6 haftada bir sulama yeterli. Toprağın tamamen kurumasına izin verin.",
+                "severity": "critical",
+            },
+            {
+                "name": "Soğuk Hasar",
+                "symptoms": ["Yapraklarda yumuşama", "Kahverengi lekeler"],
+                "metric": "temperature", "op": "lt", "threshold": 10,
+                "recommendation": "Minimum 10°C üzerinde tutun. Pencere camından uzaklaştırın.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "peace_lily": {
+        "display_name": "Barış Çiçeği (Spathiphyllum)",
+        "keywords": [
+            "spathiphyllum", "peace lily", "barış çiçeği", "spath",
+        ],
+        "optimal": {
+            "moisture":    (50, 70),
+            "temperature": (18, 27),
+            "humidity":    (50, 80),
+            "light":       (500, 5000),
+        },
+        "problems": [
+            {
+                "name": "Yetersiz Sulama",
+                "symptoms": ["Sarkık yapraklar", "Kahverengileşme"],
+                "metric": "moisture", "op": "lt", "threshold": 35,
+                "recommendation": "Barış çiçeği nemi sever. Toprağın üstü kuruyunca sulayın ve yaprakları sislendirin.",
+                "severity": "warning",
+            },
+            {
+                "name": "Düşük Nem",
+                "symptoms": ["Yaprak uçlarında kahverengileşme", "Kıvrılma"],
+                "metric": "humidity", "op": "lt", "threshold": 40,
+                "recommendation": "Günlük sislendirin veya nem tepsisi kullanın. %50+ nem idealdir.",
+                "severity": "warning",
+            },
+            {
+                "name": "Aşırı Işık",
+                "symptoms": ["Yaprak yanması", "Sarı lekeler"],
+                "metric": "light", "op": "gt", "threshold": 8000,
+                "recommendation": "Doğrudan güneş ışığından uzaklaştırın. Dolaylı ışık tercih edilir.",
+                "severity": "warning",
+            },
+            {
+                "name": "Düşük Sıcaklık",
+                "symptoms": ["Yaprak kararması", "Büyüme durması"],
+                "metric": "temperature", "op": "lt", "threshold": 13,
+                "recommendation": "Minimum 18°C ortam sağlayın. Soğuk hava akımlarından koruyun.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "calathea": {
+        "display_name": "Calathea / Maranta",
+        "keywords": [
+            "calathea", "maranta", "goeppertia", "prayer plant", "dua bitkisi",
+            "calathea orbifolia", "calathea lancifolia", "calathea medallion",
+        ],
+        "optimal": {
+            "moisture":    (50, 70),
+            "temperature": (18, 27),
+            "humidity":    (60, 90),
+            "light":       (500, 3000),
+        },
+        "problems": [
+            {
+                "name": "Düşük Hava Nemi (En Yaygın Sorun)",
+                "symptoms": ["Yaprak uçlarında kahverengileşme", "Kıvrılmış yapraklar"],
+                "metric": "humidity", "op": "lt", "threshold": 50,
+                "recommendation": "Calathea yüksek nem ister (%60+). Teraryum içinde, nem tepsisiyle veya nemlendirici yakınında tutun.",
+                "severity": "warning",
+            },
+            {
+                "name": "Aşırı Işık",
+                "symptoms": ["Yaprak yanması", "Renk solması"],
+                "metric": "light", "op": "gt", "threshold": 5000,
+                "recommendation": "Calathea doğrudan güneş ışığından zarar görür. Gölgeli, dolaylı ışıklı konuma taşıyın.",
+                "severity": "warning",
+            },
+            {
+                "name": "Klorlu Su Zararı",
+                "symptoms": ["Yaprak kenarlarında kahverengi yanma"],
+                "metric": "humidity", "op": "lt", "threshold": 40,
+                "recommendation": "Musluk suyu yerine 24 saat bekletilmiş veya damıtılmış su kullanın.",
+                "severity": "info",
+            },
+            {
+                "name": "Düşük Sıcaklık",
+                "symptoms": ["Yaprak kıvrılması", "Büyüme durması"],
+                "metric": "temperature", "op": "lt", "threshold": 15,
+                "recommendation": "Calathea soğuğa hassastır. Minimum 18°C ortam sağlayın.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "rubber_plant": {
+        "display_name": "Kauçuk Bitkisi (Ficus elastica)",
+        "keywords": [
+            "ficus elastica", "rubber plant", "rubber tree", "kauçuk",
+            "elastic fig",
+        ],
+        "optimal": {
+            "moisture":    (40, 60),
+            "temperature": (15, 27),
+            "humidity":    (40, 70),
+            "light":       (2000, 10000),
+        },
+        "problems": [
+            {
+                "name": "Aşırı Sulama",
+                "symptoms": ["Sarı yapraklar", "Yaprak dökümü", "Küf"],
+                "metric": "moisture", "op": "gt", "threshold": 70,
+                "recommendation": "Toprağın üst yarısı kuruyunca sulayın. Kışın sulamayı azaltın.",
+                "severity": "warning",
+            },
+            {
+                "name": "Düşük Işık",
+                "symptoms": ["Soluk yapraklar", "Yavaş büyüme", "Yaprak dökümü"],
+                "metric": "light", "op": "lt", "threshold": 1000,
+                "recommendation": "Parlak dolaylı ışık alan pencere önüne taşıyın.",
+                "severity": "info",
+            },
+            {
+                "name": "Soğuk Stres",
+                "symptoms": ["Yaprak dökümü", "Kahverengi lekeler"],
+                "metric": "temperature", "op": "lt", "threshold": 12,
+                "recommendation": "Kauçuk bitkisi 15°C altına toleranssızdır. Isıtıcı yakınına alın.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "ivy": {
+        "display_name": "Sarmaşık (Hedera)",
+        "keywords": [
+            "hedera", "hedera helix", "ivy", "english ivy", "sarmaşık",
+        ],
+        "optimal": {
+            "moisture":    (40, 60),
+            "temperature": (10, 21),
+            "humidity":    (50, 70),
+            "light":       (1000, 5000),
+        },
+        "problems": [
+            {
+                "name": "Kuru Hava / Kırmızıörümcek",
+                "symptoms": ["Yaprak altında ince ağcıklar", "Küçülen yapraklar"],
+                "metric": "humidity", "op": "lt", "threshold": 40,
+                "recommendation": "Nem artırın ve yaprakları düzenli ıslak bezle silin. Kırmızıörümcek için sabunlu su spreyi kullanın.",
+                "severity": "warning",
+            },
+            {
+                "name": "Aşırı Sıcaklık",
+                "symptoms": ["Yaprak dökümü", "Solar renk"],
+                "metric": "temperature", "op": "gt", "threshold": 25,
+                "recommendation": "Sarmaşık serin ortamı sever. Sıcak ve kuru havadan uzaklaştırın.",
+                "severity": "info",
+            },
+            {
+                "name": "Aşırı Sulama",
+                "symptoms": ["Sarı yapraklar", "Kök çürüklüğü"],
+                "metric": "moisture", "op": "gt", "threshold": 70,
+                "recommendation": "Toprağın üstü kuruyunca sulayın. İyi drene olan saksı kullanın.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "geranium": {
+        "display_name": "Sardunya (Pelargonium)",
+        "keywords": [
+            "pelargonium", "geranium", "sardunya", "pelargonium zonale",
+            "pelargonium hortorum",
+        ],
+        "optimal": {
+            "moisture":    (40, 60),
+            "temperature": (15, 25),
+            "humidity":    (30, 50),
+            "light":       (10000, 40000),
+        },
+        "problems": [
+            {
+                "name": "Aşırı Sulama / Kök Çürüklüğü",
+                "symptoms": ["Sarı yapraklar", "Yumuşak gövde", "Küf"],
+                "metric": "moisture", "op": "gt", "threshold": 70,
+                "recommendation": "Toprak tamamen kuruyunca sulayın. Saksı altlığında durgunsu bırakmayın.",
+                "severity": "critical",
+            },
+            {
+                "name": "Yetersiz Işık",
+                "symptoms": ["Az çiçek", "Uzama", "Soluk renk"],
+                "metric": "light", "op": "lt", "threshold": 5000,
+                "recommendation": "Sardunya en az 4-6 saat doğrudan güneş ister. Balkon veya pencere önüne taşıyın.",
+                "severity": "warning",
+            },
+            {
+                "name": "Yüksek Nem",
+                "symptoms": ["Gri küf hastalığı (Botrytis)", "Çürüme"],
+                "metric": "humidity", "op": "gt", "threshold": 65,
+                "recommendation": "Havalandırmayı artırın. Sardunya kuru havayı tercih eder.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "anthurium": {
+        "display_name": "Antoryum (Anthurium)",
+        "keywords": [
+            "anthurium", "antoryum", "flamingo flower", "laceleaf",
+            "anthurium andraeanum",
+        ],
+        "optimal": {
+            "moisture":    (50, 70),
+            "temperature": (18, 27),
+            "humidity":    (60, 80),
+            "light":       (1000, 5000),
+        },
+        "problems": [
+            {
+                "name": "Düşük Nem",
+                "symptoms": ["Yaprak uçlarında kahverengileşme", "Küçük çiçekler"],
+                "metric": "humidity", "op": "lt", "threshold": 50,
+                "recommendation": "Antoryum yüksek nem ister. Nemlendirici veya nem tepsisi kullanın.",
+                "severity": "warning",
+            },
+            {
+                "name": "Aşırı Sulama",
+                "symptoms": ["Sarı yapraklar", "Kök çürüklüğü"],
+                "metric": "moisture", "op": "gt", "threshold": 80,
+                "recommendation": "Toprağın üstü kuruyunca sulayın. İyi drene olan orkide karışımı kullanın.",
+                "severity": "critical",
+            },
+            {
+                "name": "Aşırı Işık",
+                "symptoms": ["Yaprak yanması", "Soluk çiçekler"],
+                "metric": "light", "op": "gt", "threshold": 8000,
+                "recommendation": "Doğrudan güneş ışığından koruyun. Parlak dolaylı ışık idealdir.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "dieffenbachia": {
+        "display_name": "Dieffenbachia (Dumb Cane)",
+        "keywords": [
+            "dieffenbachia", "dumb cane", "leopard lily",
+        ],
+        "optimal": {
+            "moisture":    (40, 60),
+            "temperature": (18, 30),
+            "humidity":    (50, 70),
+            "light":       (500, 5000),
+        },
+        "problems": [
+            {
+                "name": "Aşırı Sulama",
+                "symptoms": ["Sarı yapraklar", "Gövde tabanında çürüme"],
+                "metric": "moisture", "op": "gt", "threshold": 70,
+                "recommendation": "Toprağın üst 3 cm'si kuruyunca sulayın.",
+                "severity": "warning",
+            },
+            {
+                "name": "Düşük Sıcaklık",
+                "symptoms": ["Yapraklarda sarı lekeler", "Büyüme durması"],
+                "metric": "temperature", "op": "lt", "threshold": 15,
+                "recommendation": "Sıcaklığı 18°C üzerinde tutun. Soğuk cam ve hava akımından uzaklaştırın.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "cactus": {
+        "display_name": "Kaktüs",
+        "keywords": [
+            "cactus", "cactaceae", "kaktüs", "cereus", "opuntia",
+            "mammillaria", "echinopsis", "echinocactus",
+        ],
+        "optimal": {
+            "moisture":    (10, 25),
+            "temperature": (18, 35),
+            "humidity":    (10, 40),
+            "light":       (15000, 50000),
+        },
+        "problems": [
+            {
+                "name": "Aşırı Sulama (En Yaygın Ölüm Sebebi)",
+                "symptoms": ["Yumuşak şişkin gövde", "Kahverengi çürük dip", "Renk solması"],
+                "metric": "moisture", "op": "gt", "threshold": 35,
+                "recommendation": "Kaktüs çok az su ister. Yazın 2-3 haftada bir, kışın ayda bir sulayın. Toprak tamamen kurumalı.",
+                "severity": "critical",
+            },
+            {
+                "name": "Yetersiz Işık",
+                "symptoms": ["Etiolation (uzama)", "Soluk renk", "Deformite"],
+                "metric": "light", "op": "lt", "threshold": 5000,
+                "recommendation": "Kaktüs maksimum güneş ister. Güneye bakan pencere veya dışarısı idealdir.",
+                "severity": "warning",
+            },
+            {
+                "name": "Yüksek Nem",
+                "symptoms": ["Küf", "Çürüme"],
+                "metric": "humidity", "op": "gt", "threshold": 60,
+                "recommendation": "Kaktüs kuru havayı sever. Havalandırmayı artırın.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    # ── Tarımsal Bitkiler (PlantVillage / PlantNet) ────────────────
+
+    "tomato": {
+        "display_name": "Domates (Solanum lycopersicum)",
+        "keywords": [
+            "tomato", "domates", "solanum lycopersicum",
+            "lycopersicon esculentum",
+        ],
+        "optimal": {
+            "moisture":    (60, 80),
+            "temperature": (18, 29),
+            "humidity":    (40, 70),
+            "light":       (15000, 50000),
+        },
+        "problems": [
+            {
+                "name": "Yetersiz Sulama",
+                "symptoms": ["Sarkık yapraklar", "Çatlak meyveler", "Çiçek dökümü"],
+                "metric": "moisture", "op": "lt", "threshold": 45,
+                "recommendation": "Domatesler düzenli ve derin sulama ister. Toprağın üst 5 cm'si kuruyunca sulayın.",
+                "severity": "warning",
+            },
+            {
+                "name": "Aşırı Sulama",
+                "symptoms": ["Sarı yapraklar", "Kök çürüklüğü", "Küf"],
+                "metric": "moisture", "op": "gt", "threshold": 85,
+                "recommendation": "Sulamayı azaltın. Fazla su kök çürüklüğüne ve mantari hastalıklara zemin hazırlar.",
+                "severity": "warning",
+            },
+            {
+                "name": "Düşük Sıcaklık",
+                "symptoms": ["Meyve oluşmaması", "Mor renk değişimi", "Yavaş büyüme"],
+                "metric": "temperature", "op": "lt", "threshold": 13,
+                "recommendation": "Domates 13°C altında iyi büyümez. Serada veya içeride yetiştirin.",
+                "severity": "warning",
+            },
+            {
+                "name": "Aşırı Sıcaklık",
+                "symptoms": ["Çiçek dökümü", "Meyve tutmama"],
+                "metric": "temperature", "op": "gt", "threshold": 32,
+                "recommendation": "35°C üzerinde çiçek tozu ölür. Gölgeleme ve sulama artırın.",
+                "severity": "critical",
+            },
+            {
+                "name": "Yetersiz Işık",
+                "symptoms": ["Uzama", "Az çiçek", "Küçük meyveler"],
+                "metric": "light", "op": "lt", "threshold": 8000,
+                "recommendation": "Domates günde en az 8 saat doğrudan güneş ışığı ister.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "apple": {
+        "display_name": "Elma (Malus domestica)",
+        "keywords": [
+            "apple", "elma", "malus", "malus domestica",
+        ],
+        "optimal": {
+            "moisture":    (50, 70),
+            "temperature": (15, 24),
+            "humidity":    (40, 70),
+            "light":       (20000, 60000),
+        },
+        "problems": [
+            {
+                "name": "Aşırı Sulama",
+                "symptoms": ["Kök çürüklüğü", "Sarı yapraklar"],
+                "metric": "moisture", "op": "gt", "threshold": 80,
+                "recommendation": "Sulamayı azaltın. Elma ağaçları derin ama seyrek sulama ister.",
+                "severity": "warning",
+            },
+            {
+                "name": "Yetersiz Işık",
+                "symptoms": ["Az meyve", "Küçük ve soluk meyveler"],
+                "metric": "light", "op": "lt", "threshold": 10000,
+                "recommendation": "Elma ağaçları tam güneşe ihtiyaç duyar. En az 6-8 saat doğrudan ışık gerekir.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "grape": {
+        "display_name": "Üzüm (Vitis vinifera)",
+        "keywords": [
+            "grape", "üzüm", "vitis", "vitis vinifera", "grapevine",
+        ],
+        "optimal": {
+            "moisture":    (40, 65),
+            "temperature": (15, 30),
+            "humidity":    (40, 65),
+            "light":       (20000, 60000),
+        },
+        "problems": [
+            {
+                "name": "Yüksek Nem / Külleme Riski",
+                "symptoms": ["Yapraklarda beyaz toz görünümü", "Külleme"],
+                "metric": "humidity", "op": "gt", "threshold": 70,
+                "recommendation": "Havalandırmayı artırın. Külleme için kükürt bazlı fungisit uygulayın.",
+                "severity": "warning",
+            },
+            {
+                "name": "Yetersiz Sulama",
+                "symptoms": ["Küçük taneler", "Yaprak yanması"],
+                "metric": "moisture", "op": "lt", "threshold": 30,
+                "recommendation": "Vejetasyon döneminde düzenli sulayın, özellikle tane irileşme döneminde.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "corn": {
+        "display_name": "Mısır (Zea mays)",
+        "keywords": [
+            "corn", "maize", "mısır", "zea mays", "zea",
+        ],
+        "optimal": {
+            "moisture":    (60, 80),
+            "temperature": (18, 32),
+            "humidity":    (40, 70),
+            "light":       (25000, 60000),
+        },
+        "problems": [
+            {
+                "name": "Yetersiz Sulama",
+                "symptoms": ["Yaprak kıvrılması", "Boş koçan", "Erken olgunlaşma"],
+                "metric": "moisture", "op": "lt", "threshold": 45,
+                "recommendation": "Mısır bol su ister, özellikle tepe çiçeklenmesi döneminde. Toprak nemi %60'ın altına düşmemeli.",
+                "severity": "warning",
+            },
+            {
+                "name": "Düşük Sıcaklık",
+                "symptoms": ["Mor renk değişimi", "Yavaş büyüme"],
+                "metric": "temperature", "op": "lt", "threshold": 10,
+                "recommendation": "Mısır soğuğa hassastır. Don riski varsa serin geçen bölgelerde sezon sonu öne alın.",
+                "severity": "critical",
+            },
+        ],
+    },
+
+    "pepper": {
+        "display_name": "Biber (Capsicum annuum)",
+        "keywords": [
+            "pepper", "biber", "capsicum", "capsicum annuum",
+            "bell pepper", "chili",
+        ],
+        "optimal": {
+            "moisture":    (55, 75),
+            "temperature": (20, 30),
+            "humidity":    (40, 70),
+            "light":       (15000, 50000),
+        },
+        "problems": [
+            {
+                "name": "Çiçek Dökümü",
+                "symptoms": ["Çiçeklerin dökülmesi", "Meyve tutmama"],
+                "metric": "temperature", "op": "gt", "threshold": 35,
+                "recommendation": "35°C üzerinde çiçek tozu ölür. Gölge uygulayın ve sulamayı artırın.",
+                "severity": "warning",
+            },
+            {
+                "name": "Yetersiz Sulama",
+                "symptoms": ["Sarkık yapraklar", "Acımsı tat", "Küçük meyveler"],
+                "metric": "moisture", "op": "lt", "threshold": 40,
+                "recommendation": "Biber düzenli sulama ister. Toprak hiç kurumadan önce sulayın.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "strawberry": {
+        "display_name": "Çilek (Fragaria)",
+        "keywords": [
+            "strawberry", "çilek", "fragaria", "fragaria ananassa",
+        ],
+        "optimal": {
+            "moisture":    (60, 75),
+            "temperature": (15, 26),
+            "humidity":    (50, 75),
+            "light":       (15000, 40000),
+        },
+        "problems": [
+            {
+                "name": "Aşırı Sulama / Gri Küf",
+                "symptoms": ["Meyvede gri küf (Botrytis)", "Çürüme"],
+                "metric": "moisture", "op": "gt", "threshold": 85,
+                "recommendation": "Sulamayı azaltın. Yaprakları ıslatmadan sadece toprağı sulayın. Havalandırmayı artırın.",
+                "severity": "warning",
+            },
+            {
+                "name": "Yetersiz Işık",
+                "symptoms": ["Az meyve", "Soluk meyveler"],
+                "metric": "light", "op": "lt", "threshold": 8000,
+                "recommendation": "Çilek en az 6-8 saat güneş ister. Gölgede tatlı ve bol meyve vermez.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "peach": {
+        "display_name": "Şeftali (Prunus persica)",
+        "keywords": [
+            "peach", "şeftali", "prunus persica", "nectarine",
+        ],
+        "optimal": {
+            "moisture":    (50, 70),
+            "temperature": (15, 28),
+            "humidity":    (40, 65),
+            "light":       (20000, 60000),
+        },
+        "problems": [
+            {
+                "name": "Yüksek Nem / Yaprak Kıvırcıklığı",
+                "symptoms": ["Yaprak kıvırcıklığı", "Mor lekeler"],
+                "metric": "humidity", "op": "gt", "threshold": 75,
+                "recommendation": "Yüksek nem şeftali yaprak kıvırcıklığı hastalığını tetikler. Bakır içerikli fungisit uygulayın.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "cherry": {
+        "display_name": "Kiraz / Vişne (Prunus)",
+        "keywords": [
+            "cherry", "kiraz", "vişne", "prunus avium", "prunus cerasus",
+            "prunus",
+        ],
+        "optimal": {
+            "moisture":    (50, 65),
+            "temperature": (13, 25),
+            "humidity":    (40, 65),
+            "light":       (20000, 60000),
+        },
+        "problems": [
+            {
+                "name": "Aşırı Sulama",
+                "symptoms": ["Meyve çatlaması", "Kök çürüklüğü"],
+                "metric": "moisture", "op": "gt", "threshold": 80,
+                "recommendation": "Hasat öncesi düzensiz sulama meyve çatlamasına neden olur. Nem sabit tutun.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "blueberry": {
+        "display_name": "Yaban Mersini (Vaccinium)",
+        "keywords": [
+            "blueberry", "yaban mersini", "vaccinium", "bilberry",
+        ],
+        "optimal": {
+            "moisture":    (60, 75),
+            "temperature": (13, 25),
+            "humidity":    (50, 70),
+            "light":       (15000, 40000),
+        },
+        "problems": [
+            {
+                "name": "Yüksek Toprak pH",
+                "symptoms": ["Sarı yapraklar (klorozis)", "Yavaş büyüme"],
+                "metric": "moisture", "op": "lt", "threshold": 45,
+                "recommendation": "Yaban mersini asit toprak (pH 4.5-5.5) ister. Turba veya kükürt ekleyin.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "soybean": {
+        "display_name": "Soya Fasulyesi (Glycine max)",
+        "keywords": [
+            "soybean", "soya", "glycine max", "soy",
+        ],
+        "optimal": {
+            "moisture":    (60, 80),
+            "temperature": (20, 30),
+            "humidity":    (50, 75),
+            "light":       (20000, 60000),
+        },
+        "problems": [
+            {
+                "name": "Su Stresi",
+                "symptoms": ["Yaprak kıvrılması", "Erken sarı renk"],
+                "metric": "moisture", "op": "lt", "threshold": 45,
+                "recommendation": "Çiçeklenme ve bakla dolum dönemlerinde su stresi verimde ciddi kayba yol açar. Sulayın.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "orange": {
+        "display_name": "Portakal / Narenciye (Citrus)",
+        "keywords": [
+            "orange", "portakal", "citrus", "citrus sinensis",
+            "citrus limon", "lemon", "limon", "tangerine", "mandarin",
+        ],
+        "optimal": {
+            "moisture":    (50, 70),
+            "temperature": (18, 30),
+            "humidity":    (40, 65),
+            "light":       (15000, 50000),
+        },
+        "problems": [
+            {
+                "name": "Aşırı Sulama / Kök Çürüklüğü",
+                "symptoms": ["Sarı yapraklar", "Yaprak dökümü", "Kötü koku"],
+                "metric": "moisture", "op": "gt", "threshold": 80,
+                "recommendation": "Narenciye iyi drene olan toprak ister. Toprağın üst 5 cm'si kuruyunca sulayın.",
+                "severity": "critical",
+            },
+            {
+                "name": "Düşük Sıcaklık",
+                "symptoms": ["Don hasarı", "Meyve dökümü"],
+                "metric": "temperature", "op": "lt", "threshold": 10,
+                "recommendation": "Narenciye dona hassastır. 10°C altında içeri alın veya koruyucu örtü kullanın.",
+                "severity": "critical",
+            },
+            {
+                "name": "Yetersiz Işık",
+                "symptoms": ["Az çiçek", "Ekşi meyveler", "Soluk renk"],
+                "metric": "light", "op": "lt", "threshold": 8000,
+                "recommendation": "Narenciye bol güneş ister. Günde 8+ saat doğrudan ışık gerekir.",
+                "severity": "warning",
+            },
+        ],
+    },
+
+    "potato": {
+        "display_name": "Patates (Solanum tuberosum)",
+        "keywords": [
+            "potato", "patates", "solanum tuberosum",
+        ],
+        "optimal": {
+            "moisture":    (60, 80),
+            "temperature": (15, 22),
+            "humidity":    (50, 80),
+            "light":       (10000, 40000),
+        },
+        "problems": [
+            {
+                "name": "Aşırı Sulama / Çürüme",
+                "symptoms": ["Gövde tabanı çürümesi", "Yumru çürüğü", "Kötü koku"],
+                "metric": "moisture", "op": "gt", "threshold": 85,
+                "recommendation": "Aşırı su yumru çürüklüğüne (black leg) yol açar. Sulamayı azaltın ve drenajı iyileştirin.",
+                "severity": "critical",
+            },
+            {
+                "name": "Aşırı Sıcaklık",
+                "symptoms": ["Yumru oluşmaması", "İç kararma"],
+                "metric": "temperature", "op": "gt", "threshold": 28,
+                "recommendation": "Patates serin iklimi sever. 30°C üzerinde yumru oluşumu durur.",
+                "severity": "warning",
             },
         ],
     },
