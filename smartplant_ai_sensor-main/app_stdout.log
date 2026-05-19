@@ -1,0 +1,71 @@
+INFO:     127.0.0.1:55172 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:55172 - "GET /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55172 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55172 - "GET /api/sensor?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55172 - "POST /api/predict-watering HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55172 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55172 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55172 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56818 - "GET /leaf_disease HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56818 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58129 - "GET /api/leaf-history?limit=15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56818 - "GET /static/uploads/WhatsApp_Image_2026-05-17_at_10.55.17_PM.jpeg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58129 - "GET /static/uploads/processed_img_Aloe_Rust0023.jpeg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52875 - "GET /static/uploads/img_0072.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63209 - "GET /static/uploads/Spider_Plant_Fungal_leaf_spot_015_jpg.rf.bd92302a397f152f40622c3dff4c135b.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56818 - "POST /leaf_disease/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56818 - "GET /api/leaf-history?limit=15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56818 - "GET /static/uploads/processed_img_Aloe_Rust0061.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56973 - "GET /leaf_disease HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56973 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64317 - "GET /api/leaf-history?limit=15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64317 - "GET /static/uploads/processed_img_Aloe_Rust0061.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57674 - "POST /leaf_disease/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57674 - "GET /api/leaf-history?limit=15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56924 - "GET /alerts_page HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56924 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62509 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56924 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56924 - "GET /api/alerts/history?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53872 - "GET /static/uploads/processed_img_Aloe_Rust0061.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58265 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:58265 - "GET /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63173 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:63173 - "GET /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63173 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60180 - "GET /api/sensor?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63173 - "POST /api/predict-watering HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:60180 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63173 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60180 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54798 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:54798 - "GET /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54798 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54798 - "POST /api/predict-watering HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:54798 - "GET /api/sensor?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54798 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54798 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57613 - "GET /crops HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57613 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57755 - "GET /api/plants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57755 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57755 - "GET /analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57755 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57755 - "GET /api/sensor?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57755 - "GET /leaf_disease HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57755 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51877 - "GET /api/leaf-history?limit=15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51877 - "GET /static/uploads/WhatsApp_Image_2026-05-17_at_10.55.17_PM.jpeg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57755 - "GET /static/uploads/processed_img_Aloe_Rust0061.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58806 - "GET /static/uploads/processed_img_Aloe_Rust0023.jpeg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57755 - "GET /static/uploads/img_0072.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58806 - "GET /static/uploads/Spider_Plant_Fungal_leaf_spot_015_jpg.rf.bd92302a397f152f40622c3dff4c135b.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58806 - "POST /leaf_disease/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58806 - "GET /api/leaf-history?limit=15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58806 - "GET /static/uploads/36.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52337 - "GET /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52337 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60962 - "GET /api/sensor?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52337 - "POST /api/predict-watering HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:60962 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52337 - "GET /api/devices HTTP/1.1" 200 OK
