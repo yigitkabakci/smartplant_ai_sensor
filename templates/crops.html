@@ -268,10 +268,11 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
             <thead>
               <tr>
                 <th>Durum</th>
-                <th>MAC Adresi</th>
+                <th>Cihaz</th>
                 <th>Bitki Adı</th>
                 <th>Bitki Türü</th>
                 <th>Son Senkron</th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="device-plant-tbody">
@@ -463,6 +464,7 @@ async function loadDevices() {
         <td style="color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:.95rem">${d.plant_name || '—'}</td>
         <td>${plant ? `<span class="plant-chip">${plant.name}</span>` : '<span class="plant-chip unknown-chip">Belirsiz</span>'}</td>
         <td style="color:rgba(237,232,216,.35);font-size:.72rem">${syncStr}</td>
+        <td><button onclick="deleteDevice('${d.device_mac}','${shortName}')" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#f87171;font-size:.58rem;letter-spacing:.12em;padding:.28rem .65rem;cursor:pointer;border-radius:2px;transition:all .2s" onmouseover="this.style.background='rgba(239,68,68,.2)'" onmouseout="this.style.background='rgba(239,68,68,.08)'">Kaldır</button></td>
       </tr>`;
     }).join('');
     renderPlants(allPlants);
@@ -507,6 +509,21 @@ async function submitPlant(e) {
 
   btn.disabled = false;
   btn.textContent = '+ Ekle';
+}
+
+async function deleteDevice(mac, name) {
+  if (!confirm(`"${name}" cihazını listeden kaldırmak istediğinize emin misiniz?`)) return;
+  try {
+    const r = await fetch(`/api/devices/${encodeURIComponent(mac)}`, { method: 'DELETE' });
+    if (r.ok || r.status === 204) {
+      showToast(`"${name}" kaldırıldı.`, 'success');
+      await loadDevices();
+    } else {
+      showToast('Kaldırma işlemi başarısız.', 'error');
+    }
+  } catch(e) {
+    showToast('Bağlantı hatası.', 'error');
+  }
 }
 
 async function deletePlant(id, name) {
