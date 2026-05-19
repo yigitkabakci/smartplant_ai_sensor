@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import {
   Text, View, StyleSheet, TouchableOpacity, Modal,
@@ -22,16 +22,16 @@ const Tab = createBottomTabNavigator();
 const EmptyScreen = () => <View style={{ flex: 1, backgroundColor: Colors.bg }} />;
 
 const TAB_ICONS = {
-  Dashboard: 'ğŸŒ¿',
-  Bitkiler:  'ğŸŒ±',
-  Analitik:  'ğŸ“Š',
-  Hastalik:  'ğŸ”¬',
+  Dashboard: '🌿',
+  Bitkiler:  '🌱',
+  Analitik:  '📊',
+  Hastalik:  '🔬',
 };
 
 function ProfileModal({ visible, onClose }) {
   const devices = [
-    { id: 1, name: 'Toprak SensÃ¶rÃ¼', location: 'Sera A',   status: 'online'  },
-    { id: 2, name: 'Hava SensÃ¶rÃ¼',   location: 'Tarla B',  status: 'offline' },
+    { id: 1, name: 'Toprak Sensörü', location: 'Sera A',   status: 'online'  },
+    { id: 2, name: 'Hava Sensörü',   location: 'Tarla B',  status: 'offline' },
   ];
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
@@ -42,17 +42,17 @@ function ProfileModal({ visible, onClose }) {
 
           <LinearGradient colors={['#0d1f0a', '#162012']} style={ms.userRow} start={[0,0]} end={[1,1]}>
             <View style={ms.avatar}>
-              <Text style={{ fontSize: 32 }}>ğŸ‘¤</Text>
+              <Text style={{ fontSize: 32 }}>👤</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={ms.userName}>Berkay AydoÄŸdu</Text>
-              <Text style={ms.userEmail}>agrosense@mail.com</Text>
+              <Text style={ms.userName}>Berkay Aydoğdu</Text>
+              <Text style={ms.userEmail}>berkay42gs@gmail.com</Text>
             </View>
           </LinearGradient>
 
           <View style={ms.divider} />
 
-          <Text style={ms.sectionTitle}>CihazlarÄ±m</Text>
+          <Text style={ms.sectionTitle}>Cihazlarım</Text>
           {devices.map(d => (
             <View key={d.id} style={ms.deviceRow}>
               <View style={[ms.dot, {
@@ -65,7 +65,7 @@ function ProfileModal({ visible, onClose }) {
               <Text style={[ms.deviceStatus, {
                 color: d.status === 'online' ? Colors.green : Colors.sub,
               }]}>
-                {d.status === 'online' ? 'Ã‡evrimiÃ§i' : 'Ã‡evrimdÄ±ÅŸÄ±'}
+                {d.status === 'online' ? 'Çevrimiçi' : 'Çevrimdışı'}
               </Text>
             </View>
           ))}
@@ -164,7 +164,7 @@ export default function App() {
           },
           tabBarIcon: ({ focused }) => (
             <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>
-              {TAB_ICONS[route.name] || 'âš™ï¸'}
+              {TAB_ICONS[route.name] || '⚙️'}
             </Text>
           ),
         })}
@@ -187,7 +187,7 @@ export default function App() {
         <Tab.Screen
           name="Hastalik"
           component={DiseaseScreen}
-          options={{ headerTitle: 'Yaprak Analizi', tabBarLabel: 'HastalÄ±k' }}
+          options={{ headerTitle: 'Yaprak Analizi', tabBarLabel: 'Hastalık' }}
         />
         <Tab.Screen
           name="Profil"
@@ -198,20 +198,20 @@ export default function App() {
                 style={ts.profileBtn}
                 onPress={() => setProfileVisible(true)}
               >
-                <Text style={{ fontSize: 20, opacity: 0.55 }}>ğŸ‘¤</Text>
+                <Text style={{ fontSize: 20, opacity: 0.55 }}>👤</Text>
                 <Text style={ts.profileLabel}>Profil</Text>
               </TouchableOpacity>
             ),
           }}
         />
-        {/* Hidden screens â€” navigable from Dashboard cards, take no tab bar space */}
+        {/* Hidden screens — navigable from Dashboard cards, take no tab bar space */}
         <Tab.Screen
           name="Uyarilar"
           component={AlertsScreen}
           options={{
             tabBarButton: () => null,
             tabBarItemStyle: { display: 'none', width: 0 },
-            headerTitle: 'UyarÄ±lar',
+            headerTitle: 'Uyarılar',
           }}
         />
         <Tab.Screen
@@ -220,7 +220,7 @@ export default function App() {
           options={{
             tabBarButton: () => null,
             tabBarItemStyle: { display: 'none', width: 0 },
-            headerTitle: 'CihazlarÄ±m',
+            headerTitle: 'Cihazlarım',
           }}
         />
       </Tab.Navigator>
@@ -239,4 +239,3 @@ const ts = StyleSheet.create({
     fontSize: 10, fontWeight: '600', marginTop: 2, letterSpacing: 0.2, color: Colors.sub,
   },
 });
-

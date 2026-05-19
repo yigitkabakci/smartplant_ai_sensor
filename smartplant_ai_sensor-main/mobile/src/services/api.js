@@ -1,6 +1,6 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 
-export const BASE_URL = 'http://10.202.0.138:8000';
+export const BASE_URL = 'http://172.20.10.3:8000';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -8,7 +8,7 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// â”€â”€ Mock veri Ã¼retici â”€â”€
+// ── Mock veri üretici ──
 const now = () => new Date().toISOString();
 const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
 
@@ -23,20 +23,20 @@ const MOCK_READINGS = Array.from({ length: 20 }, (_, i) => ({
 }));
 
 const MOCK_ALERTS = [
-  { id: 1, level: 'warning',  message: 'Toprak nemi dÃ¼ÅŸÃ¼k seviyede (%32)', timestamp: ago(15), resolved: false },
-  { id: 2, level: 'info',     message: 'Sulama zamanÄ± yaklaÅŸÄ±yor',         timestamp: ago(42), resolved: false },
-  { id: 3, level: 'critical', message: 'SÄ±caklÄ±k kritik seviyede (38Â°C)',  timestamp: ago(90), resolved: false },
+  { id: 1, level: 'warning',  message: 'Toprak nemi düşük seviyede (%32)', timestamp: ago(15), resolved: false },
+  { id: 2, level: 'info',     message: 'Sulama zamanı yaklaşıyor',         timestamp: ago(42), resolved: false },
+  { id: 3, level: 'critical', message: 'Sıcaklık kritik seviyede (38°C)',  timestamp: ago(90), resolved: false },
 ];
 
 const MOCK_PLANTS = [
   { id: 1, name: 'Domates',  min_moisture: 40, max_moisture: 70, ideal_temp_min: 18, ideal_temp_max: 28, device_mac: 'AA:BB:CC:DD:EE:01' },
   { id: 2, name: 'Biber',    min_moisture: 35, max_moisture: 65, ideal_temp_min: 20, ideal_temp_max: 30, device_mac: null },
-  { id: 3, name: 'SalatalÄ±k',min_moisture: 50, max_moisture: 80, ideal_temp_min: 18, ideal_temp_max: 26, device_mac: null },
+  { id: 3, name: 'Salatalık',min_moisture: 50, max_moisture: 80, ideal_temp_min: 18, ideal_temp_max: 26, device_mac: null },
 ];
 
 const MOCK_DEVICES = [
-  { mac: 'AA:BB:CC:DD:EE:01', name: 'Toprak SensÃ¶rÃ¼ 1', location: 'Sera A', last_seen: ago(2),  firmware: 'v1.2.0' },
-  { mac: 'AA:BB:CC:DD:EE:02', name: 'Hava SensÃ¶rÃ¼ 1',   location: 'Tarla B', last_seen: ago(65), firmware: 'v1.1.3' },
+  { mac: 'AA:BB:CC:DD:EE:01', name: 'Toprak Sensörü 1', location: 'Sera A', last_seen: ago(2),  firmware: 'v1.2.0' },
+  { mac: 'AA:BB:CC:DD:EE:02', name: 'Hava Sensörü 1',   location: 'Tarla B', last_seen: ago(65), firmware: 'v1.1.3' },
 ];
 
 const MOCK_WATERING = {
@@ -52,18 +52,18 @@ const MOCK_LEAF_HISTORY = [
   { id: 3, timestamp: ago(500), disease: 'Early Blight',       confidence: 0.76, image_url: null },
 ];
 
-// â”€â”€ GerÃ§ek API'ye baÄŸlan, hata varsa mock dÃ¶ndÃ¼r â”€â”€
+// ── Gerçek API'ye bağlan, hata varsa mock döndür ──
 const withFallback = (apiFn, mockData) =>
   apiFn().catch(() => mockData);
 
-// â”€â”€ SensÃ¶r â”€â”€
+// ── Sensör ──
 export const getSensorReadings = (limit = 20) =>
   withFallback(
     () => api.get(`/api/sensor?limit=${limit}`).then(r => r.data),
     MOCK_READINGS.slice(0, limit)
   );
 
-// â”€â”€ UyarÄ±lar â”€â”€
+// ── Uyarılar ──
 export const getAlerts = () =>
   withFallback(
     () => api.get('/api/alerts').then(r => r.data),
@@ -78,14 +78,14 @@ export const getAlertHistory = (params = {}) => {
   );
 };
 
-// â”€â”€ Sulama Tahmini â”€â”€
+// ── Sulama Tahmini ──
 export const predictWatering = (device_mac = null) =>
   withFallback(
     () => api.post('/api/predict-watering', { device_mac, history_hours: 24 }).then(r => r.data),
     MOCK_WATERING
   );
 
-// â”€â”€ Bitkiler â”€â”€
+// ── Bitkiler ──
 let localPlants = [...MOCK_PLANTS];
 let nextPlantId = MOCK_PLANTS.length + 1;
 
@@ -108,7 +108,7 @@ export const createPlant = (data) =>
     return newPlant;
   });
 
-// â”€â”€ Cihazlar â”€â”€
+// ── Cihazlar ──
 export const getDevices = () =>
   withFallback(
     () => api.get('/api/devices').then(r => r.data),
@@ -120,7 +120,7 @@ export const createDevice = (data) =>
     return { mac: data.mac || 'NEW:DEVICE', ...data };
   });
 
-// â”€â”€ Yaprak HastalÄ±k â”€â”€
+// ── Yaprak Hastalık ──
 export const predictLeafDisease = async (imageUri) => {
   try {
     const formData = new FormData();
@@ -149,7 +149,7 @@ export const predictLeafDisease = async (imageUri) => {
   }
 };
 
-// â”€â”€ Yaprak GeÃ§miÅŸi â”€â”€
+// ── Yaprak Geçmişi ──
 export const getLeafHistory = (limit = 15) =>
   withFallback(
     () => api.get(`/api/leaf-history?limit=${limit}`).then(r => r.data),
@@ -157,4 +157,3 @@ export const getLeafHistory = (limit = 15) =>
   );
 
 export default api;
-
