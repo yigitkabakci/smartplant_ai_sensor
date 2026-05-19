@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 from services.database import get_db
-from models import Device, PlantLibrary
+from models import Device, PlantLibrary, SensorReading
 from services.plant_thresholds import get_thresholds_for_plant
 from schemas import (
     DeviceCreate, DeviceResponse,
@@ -41,7 +41,33 @@ async def register_device(payload: DeviceCreate, db: Session = Depends(get_db)):
 
 @router.get("/devices", response_model=List[DeviceResponse])
 async def list_devices(db: Session = Depends(get_db)):
-    return db.query(Device).all()
+    registered = db.query(Device).all()
+    registered_macs = {d.device_mac for d in registered}
+
+    # sensor_readings'te olup devices'ta olmayan MAC'leri de ekle
+    seen_macs = (
+        db.query(SensorReading.device_mac)
+        .filter(SensorReading.device_mac.isnot(None))
+        .distinct()
+        .all()
+    )
+    extra = []
+    for (mac,) in seen_macs:
+        if mac not in registered_macs:
+            latest = (
+                db.query(SensorReading)
+                .filter(SensorReading.device_mac == mac)
+                .order_by(SensorReading.log_id.desc())
+                .first()
+            )
+            extra.append(Device(
+                device_mac=mac,
+                plant_name=None,
+                plant_type_id=None,
+                last_sync=latest.timestamp if latest else None,
+            ))
+
+    return registered + extra
 
 
 @router.get("/devices/{device_mac}", response_model=DeviceResponse)

@@ -113,6 +113,22 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
 .candidate-pct{font-size:.65rem;color:rgba(200,169,106,.6);width:40px;text-align:right}
 .disclaimer{font-size:.65rem;color:rgba(237,232,216,.22);margin-top:1.4rem;padding:.8rem;border:1px solid rgba(200,169,106,.06);line-height:1.6;letter-spacing:.03em}
 
+/* Sensör durum barları */
+.sensor-status-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem}
+.sensor-stat{padding:.6rem .8rem;border:1px solid rgba(200,169,106,.08);background:rgba(7,10,6,.4)}
+.sensor-stat-label{font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(237,232,216,.35);margin-bottom:.35rem}
+.sensor-stat-row{display:flex;align-items:center;gap:.5rem}
+.sensor-stat-val{font-size:.82rem;font-weight:400;color:var(--cream);min-width:54px}
+.sensor-stat-bar{flex:1;height:3px;background:rgba(200,169,106,.1);border-radius:2px;overflow:hidden}
+.sensor-stat-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.sensor-ok .sensor-stat-fill{background:#4ade80}
+.sensor-low .sensor-stat-fill{background:#fbbf24}
+.sensor-high .sensor-stat-fill{background:#f87171}
+.sensor-stat-state{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;min-width:36px;text-align:right}
+.sensor-ok .sensor-stat-state{color:#4ade80}
+.sensor-low .sensor-stat-state{color:#fbbf24}
+.sensor-high .sensor-stat-state{color:#f87171}
+
 /* YENİ: Stage badge */
 .stage-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.32rem .9rem;border-radius:30px;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.6rem}
 .stage-disease{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.25)}
@@ -388,6 +404,29 @@ function showResult(d) {
     middleHtml += `<div class="info-box">${d.diagnosis_message}</div>`;
   }
 
+  // --- Sensör durumu ---
+  let sensorHtml = '';
+  const ss = d.sensor_status;
+  if (ss && Object.keys(ss).length) {
+    const stateLabel = { ok: 'İyi', low: 'Düşük', high: 'Yüksek' };
+    const stateKeys = Object.keys(ss);
+    sensorHtml = `<div class="section-divider">Sensör Verileri</div><div class="sensor-status-grid">`;
+    stateKeys.forEach(key => {
+      const m = ss[key];
+      const range = m.max - m.min;
+      const pct = range > 0 ? Math.min(100, Math.max(0, ((m.value - m.min) / range) * 100)) : 50;
+      sensorHtml += `<div class="sensor-stat sensor-${m.state}">
+        <div class="sensor-stat-label">${m.label}</div>
+        <div class="sensor-stat-row">
+          <div class="sensor-stat-val">${m.value}${m.unit}</div>
+          <div class="sensor-stat-bar"><div class="sensor-stat-fill" style="width:${pct}%"></div></div>
+          <div class="sensor-stat-state">${stateLabel[m.state] || m.state}</div>
+        </div>
+      </div>`;
+    });
+    sensorHtml += `</div>`;
+  }
+
   // --- Sorunlar ---
   let probHtml = middleHtml;
   if (d.problems && d.problems.length) {
@@ -399,7 +438,7 @@ function showResult(d) {
       </div>`;
     });
   }
-  document.getElementById('result-problems').innerHTML = probHtml;
+  document.getElementById('result-problems').innerHTML = sensorHtml + probHtml;
 
   // --- PlantNet adayları ---
   let candHtml = '';
