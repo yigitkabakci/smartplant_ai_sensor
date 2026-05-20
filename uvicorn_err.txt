@@ -1,0 +1,8 @@
+INFO:     Started server process [22816]
+INFO:     Waiting for application startup.
+2026-05-20 01:39:43,340 [INFO] services.database: Veritabaný baþlatýldý: C:\Users\yigit\Desktop\smart_plant\SmartAgriculture-Smart-Plant-Monitoring-and-Disease-Detection-System-main\project_data.db
+Loading weights:   0%|          | 0/314 [00:00<?, ?it/s]Loading weights: 100%|##########| 314/314 [00:00<00:00, 4048.29it/s]
+2026-05-20 01:39:51,997 [INFO] services.ml_service: Disease modeli yüklendi: 38 sýnýf
+2026-05-20 01:39:51,997 [INFO] main: Uygulama baþlatýldý.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)

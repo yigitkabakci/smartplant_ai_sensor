@@ -2,8 +2,10 @@ import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Query, HTTPException, Depends
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from services.database import get_db
+from services.plant_knowledge import find_plant, evaluate_problems
 from models import SensorReading, Alert
 from schemas import (
     SensorReadingCreate,
@@ -192,3 +194,107 @@ async def predict_watering(
         )
 
     return WateringPredictionResponse(**result)
+
+
+# ── Sensör Analizi ────────────────────────────────────────────────────────────
+
+class SensorDataIn(BaseModel):
+    humidity:     Optional[float] = None
+    temperature:  Optional[float] = None
+    light:        Optional[float] = None
+    soil_moisture: Optional[float] = None
+
+class SensorAnalysisRequest(BaseModel):
+    plant: str
+    sensor_data: SensorDataIn
+
+
+_METRIC_META = {
+    "humidity":     ("humidity_pct",   "Hava Nemi",    "%",    "humidity"),
+    "temperature":  ("temperature_c",  "Sıcaklık",     "°C",   "temperature"),
+    "light":        ("light_lux",      "Işık",         " lux", "light"),
+    "soil_moisture":("moisture_pct",   "Toprak Nemi",  "%",    "moisture"),
+}
+_FIELD_LABELS = {
+    "humidity": "hava nemi", "temperature": "sıcaklık",
+    "light": "ışık", "soil_moisture": "toprak nemi",
+}
+
+
+@router.post("/analyze-sensor-data")
+async def analyze_sensor_data(payload: SensorAnalysisRequest):
+    sd = payload.sensor_data
+    raw = {
+        "humidity":     sd.humidity,
+        "temperature":  sd.temperature,
+        "light":        sd.light,
+        "soil_moisture": sd.soil_moisture,
+    }
+
+    internal = {
+        "humidity_pct":   sd.humidity,
+        "temperature_c":  sd.temperature,
+        "light_lux":      sd.light,
+        "moisture_pct":   sd.soil_moisture,
+    }
+
+    match = find_plant(payload.plant)
+    plant_data   = match[1] if match else None
+    display_name = plant_data["display_name"] if plant_data else payload.plant
+
+    comments = {}
+    status   = "ok"
+
+    if plant_data:
+        optimal = plant_data.get("optimal", {})
+        for field, (_, label, unit, opt_key) in _METRIC_META.items():
+            val = raw.get(field)
+            if val is None:
+                comments[field] = f"{label} verisi alınamadı."
+                continue
+            rng = optimal.get(opt_key)
+            if not rng:
+                comments[field] = f"{label} uygun görünüyor."
+                continue
+            lo, hi = rng
+            if val < lo:
+                comments[field] = f"{label} düşük ({val}{unit}). İdeal aralık {lo}–{hi}{unit}."
+                if status == "ok":
+                    status = "warning"
+            elif val > hi:
+                comments[field] = f"{label} yüksek ({val}{unit}). İdeal aralık {lo}–{hi}{unit}."
+                if status == "ok":
+                    status = "warning"
+            else:
+                comments[field] = f"{label} uygun ({val}{unit})."
+    else:
+        for field, (_, label, unit, _ok) in _METRIC_META.items():
+            val = raw.get(field)
+            comments[field] = f"{label}: {val}{unit}." if val is not None else f"{label} verisi alınamadı."
+
+    problems        = evaluate_problems(plant_data, internal) if plant_data else []
+    recommendations = [p["recommendation"] for p in problems]
+
+    severities = {p["severity"] for p in problems}
+    if "critical" in severities:
+        status = "critical"
+    elif "warning" in severities and status == "ok":
+        status = "warning"
+
+    bad_fields = [f for f, c in comments.items() if "düşük" in c or "yüksek" in c]
+    if not bad_fields:
+        summary = f"{display_name} için tüm değerler ideal aralıkta. Bitki sağlıklı görünüyor."
+    elif len(bad_fields) == 1:
+        summary = f"{display_name} için {_FIELD_LABELS.get(bad_fields[0], bad_fields[0])} sorunlu, diğer değerler uygun."
+    else:
+        labels  = [_FIELD_LABELS.get(f, f) for f in bad_fields]
+        summary = f"{display_name} için {', '.join(labels)} değerleri ideal aralık dışında."
+
+    return {
+        "success":         True,
+        "plant":           display_name,
+        "status":          status,
+        "summary":         summary,
+        "comments":        comments,
+        "recommendations": recommendations,
+    }

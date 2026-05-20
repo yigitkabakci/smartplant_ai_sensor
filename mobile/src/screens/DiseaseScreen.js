@@ -4,7 +4,6 @@ import {
   Image, ActivityIndicator, Alert, Dimensions,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { BarChart } from 'react-native-chart-kit';
 import { predictLeafDisease, getLeafHistory, BASE_URL } from '../services/api';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
@@ -13,6 +12,18 @@ import { Colors, Typography, Radius, Shadow } from '../constants/theme';
 import FallingLeaves from '../components/FallingLeaves';
 
 const { width } = Dimensions.get('window');
+
+function CareCard({ icon, label, min, max, unit }) {
+  return (
+    <View style={styles.careCard}>
+      <Text style={styles.careIcon}>{icon}</Text>
+      <Text style={styles.careLabel}>{label}</Text>
+      <Text style={styles.careRange}>
+        {min}–{max}{unit}
+      </Text>
+    </View>
+  );
+}
 
 export default function DiseaseScreen() {
   const [image, setImage]       = useState(null);
@@ -68,27 +79,9 @@ export default function DiseaseScreen() {
 
   const reset = () => { setImage(null); setResult(null); };
 
-  // Chart data
-  const chartData = result ? (() => {
-    const preds = result.predictions?.slice(0,6) || [];
-    return {
-      labels: preds.map(p => p.disease?.split(' ').slice(-1)[0]?.substring(0,8) || 'N/A'),
-      datasets: [{
-        data: preds.map(p => {
-          if (typeof p.confidence === 'string') return parseFloat(p.confidence) || (p.score * 100);
-          return (p.score ?? 0) * 100;
-        }),
-      }],
-    };
-  })() : null;
-
-  const confNum = result ? (() => {
-    const top = result.top_prediction;
-    if (typeof top?.confidence === 'string') return parseFloat(top.confidence) || 0;
-    return (top?.score ?? 0) * 100;
-  })() : 0;
-
-  const isHealthy = (result?.top_prediction?.disease || '').toLowerCase().includes('healthy');
+  const confPct = result ? Math.round((result.confidence || 0) * 100) : 0;
+  const isHealthy = !result?.disease;
+  const isFallback = result?.fallback === true;
 
   return (
     <View style={styles.container}>
@@ -129,6 +122,7 @@ export default function DiseaseScreen() {
       {/* Result */}
       {result && !loading && (
         <>
+          {/* Main result card */}
           <Card style={styles.resultCard}>
             <View style={styles.resultHeader}>
               <View>
@@ -140,54 +134,101 @@ export default function DiseaseScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Image */}
             <Image source={{ uri: image }} style={styles.resultImage} resizeMode="cover" />
 
-            {/* Disease Info */}
             <View style={styles.diseaseInfo}>
-              <Badge
-                label={isHealthy ? '✅ Sağlıklı' : '⚠️ Hastalık Tespit Edildi'}
-                variant={isHealthy ? 'green' : confNum > 70 ? 'red' : 'orange'}
-                style={{ marginBottom: 8 }}
-              />
-              <Text style={styles.diseaseName}>{result.top_prediction?.disease || '--'}</Text>
-              <Text style={styles.diseaseType}>{isHealthy ? 'Sağlıklı yaprak' : 'Bitki hastalığı'}</Text>
+              {/* Plant name */}
+              {result.plant ? (
+                <Text style={styles.plantName}>🌿 {result.plant}</Text>
+              ) : null}
 
-              {/* Confidence Bar */}
-              <View style={styles.confRow}>
-                <Text style={styles.confLabel}>Güven Skoru</Text>
-                <Text style={[styles.confPct, { color: isHealthy ? Colors.green : Colors.orange }]}>
-                  {confNum.toFixed(1)}%
-                </Text>
-              </View>
-              <View style={styles.confBar}>
-                <View style={[styles.confFill, {
-                  width: `${Math.min(confNum,100)}%`,
-                  backgroundColor: isHealthy ? Colors.green : confNum > 70 ? Colors.red : Colors.orange,
-                }]} />
-              </View>
+              {isFallback ? (
+                /* Fallback: show care analysis */
+                <>
+                  <Badge label="🔍 Bakım Analizi" variant="orange" style={{ marginBottom: 8 }} />
+                  <Text style={styles.diseaseName}>Yeterli güven sağlanamadı</Text>
+                  <Text style={styles.messageText}>{result.message}</Text>
+                </>
+              ) : isHealthy ? (
+                /* Healthy */
+                <>
+                  <Badge label="✅ Sağlıklı" variant="green" style={{ marginBottom: 8 }} />
+                  <Text style={styles.diseaseName}>Yaprak Sağlıklı</Text>
+                  <Text style={styles.messageText}>{result.message}</Text>
+                  <View style={styles.confRow}>
+                    <Text style={styles.confLabel}>Güven Skoru</Text>
+                    <Text style={[styles.confPct, { color: Colors.green }]}>{confPct}%</Text>
+                  </View>
+                  <View style={styles.confBar}>
+                    <View style={[styles.confFill, { width: `${Math.min(confPct, 100)}%`, backgroundColor: Colors.green }]} />
+                  </View>
+                </>
+              ) : (
+                /* Disease detected */
+                <>
+                  <Badge
+                    label="⚠️ Hastalık Tespit Edildi"
+                    variant={confPct > 70 ? 'red' : 'orange'}
+                    style={{ marginBottom: 8 }}
+                  />
+                  <Text style={styles.diseaseName}>{result.disease}</Text>
+                  <Text style={styles.messageText}>{result.message}</Text>
+                  <View style={styles.confRow}>
+                    <Text style={styles.confLabel}>Güven Skoru</Text>
+                    <Text style={[styles.confPct, { color: confPct > 70 ? Colors.red : Colors.orange }]}>{confPct}%</Text>
+                  </View>
+                  <View style={styles.confBar}>
+                    <View style={[styles.confFill, {
+                      width: `${Math.min(confPct, 100)}%`,
+                      backgroundColor: confPct > 70 ? Colors.red : Colors.orange,
+                    }]} />
+                  </View>
+                </>
+              )}
             </View>
           </Card>
 
-          {/* Chart */}
-          {chartData && (
+          {/* Care cards */}
+          {result.care && (
             <Card style={{ marginTop: 12 }}>
-              <SectionHeader title="📊 Tüm Tahminler" subtitle="Olasılık dağılımı" />
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <BarChart
-                  data={chartData}
-                  width={Math.max(width - 48, chartData.labels.length * 70)}
-                  height={180}
-                  chartConfig={{
-                    backgroundColor: '#fff', backgroundGradientFrom: '#fff', backgroundGradientTo: '#fff',
-                    decimalPlaces: 1, strokeWidth: 2, color: () => Colors.green,
-                    labelColor: () => Colors.textSub,
-                  }}
-                  style={{ borderRadius: 8 }}
-                  showValuesOnTopOfBars
-                  withInnerLines={false}
+              <SectionHeader
+                title={isFallback ? '🌱 Bakım Analizi' : '🌱 Bakım Önerileri'}
+                subtitle="Sensör eşik değerleri"
+              />
+              <View style={styles.careRow}>
+                <CareCard
+                  icon="💧"
+                  label="Nem"
+                  min={result.care.humidity_min}
+                  max={result.care.humidity_max}
+                  unit="%"
                 />
-              </ScrollView>
+                <CareCard
+                  icon="☀️"
+                  label="Işık"
+                  min={result.care.light_min}
+                  max={result.care.light_max}
+                  unit=" lux"
+                />
+                <CareCard
+                  icon="🌍"
+                  label="Toprak"
+                  min={result.care.soil_moisture_min}
+                  max={result.care.soil_moisture_max}
+                  unit="%"
+                />
+              </View>
+              {result.care.watering ? (
+                <View style={styles.wateringBox}>
+                  <Text style={styles.wateringTitle}>💦 Sulama</Text>
+                  <Text style={styles.wateringText}>{result.care.watering}</Text>
+                </View>
+              ) : null}
+              {result.care.notes ? (
+                <View style={styles.notesBox}>
+                  <Text style={styles.notesText}>📝 {result.care.notes}</Text>
+                </View>
+              ) : null}
             </Card>
           )}
         </>
@@ -232,8 +273,7 @@ export default function DiseaseScreen() {
 
 const styles = StyleSheet.create({
   container:    { flex:1, backgroundColor:Colors.bg },
-  scroll:        { flex: 1 },
-  scroll:    { flex: 1 },
+  scroll:       { flex: 1 },
   content:      { padding:16, paddingBottom:40 },
   uploadCard:   { alignItems:'center', paddingVertical:30 },
   uploadEmoji:  { fontSize:64, marginBottom:12 },
@@ -259,13 +299,24 @@ const styles = StyleSheet.create({
   resetBtnText: { fontSize:Typography.sm, fontWeight:'600', color:Colors.textSub },
   resultImage:  { width:'100%', height:200 },
   diseaseInfo:  { padding:14 },
+  plantName:    { fontSize:Typography.sm, color:Colors.textSub, marginBottom:10, fontWeight:'600' },
   diseaseName:  { fontSize:Typography.xl, fontWeight:'800', color:Colors.text, marginBottom:4 },
-  diseaseType:  { fontSize:Typography.sm, color:Colors.textSub, marginBottom:12 },
+  messageText:  { fontSize:Typography.sm, color:Colors.textSub, marginBottom:12, lineHeight:18 },
   confRow:      { flexDirection:'row', justifyContent:'space-between', marginBottom:6 },
   confLabel:    { fontSize:Typography.xs, color:Colors.textSub },
   confPct:      { fontSize:Typography.xs, fontWeight:'700' },
   confBar:      { height:8, backgroundColor:Colors.bgCard2, borderRadius:4, overflow:'hidden' },
   confFill:     { height:'100%', borderRadius:4 },
+  careRow:      { flexDirection:'row', gap:8, marginTop:8, marginBottom:12 },
+  careCard:     { flex:1, backgroundColor:Colors.bgCard2, borderRadius:Radius.md, padding:10, alignItems:'center' },
+  careIcon:     { fontSize:20, marginBottom:4 },
+  careLabel:    { fontSize:Typography.xs, color:Colors.textSub, marginBottom:2 },
+  careRange:    { fontSize:Typography.xs, fontWeight:'700', color:Colors.text, textAlign:'center' },
+  wateringBox:  { backgroundColor:Colors.greenDim, borderRadius:Radius.md, padding:12, marginBottom:8 },
+  wateringTitle:{ fontSize:Typography.sm, fontWeight:'700', color:Colors.greenDark, marginBottom:4 },
+  wateringText: { fontSize:Typography.sm, color:Colors.textSub, lineHeight:18 },
+  notesBox:     { backgroundColor:Colors.bgCard2, borderRadius:Radius.md, padding:10 },
+  notesText:    { fontSize:Typography.xs, color:Colors.textSub, lineHeight:16 },
   histRow:      { flexDirection:'row', alignItems:'center', gap:10, paddingVertical:10, borderBottomWidth:1, borderBottomColor:Colors.borderDim },
   histThumb:    { width:46, height:46, borderRadius:8 },
   histThumbEmpty:{ width:46, height:46, borderRadius:8, backgroundColor:Colors.bgCard2, alignItems:'center', justifyContent:'center' },

@@ -4,12 +4,73 @@ import {
   TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, Image,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { getPlants, createPlant, deletePlant, getDevices } from '../services/api';
+import { getPlants, createPlant, deletePlant, getDevices, getLatestSensorData, analyzeSensorData } from '../services/api';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import SectionHeader from '../components/SectionHeader';
 import FallingLeaves from '../components/FallingLeaves';
 import { Colors, Typography, Radius, Shadow } from '../constants/theme';
+
+const STATUS_CONFIG = {
+  ok:       { color: '#22c55e', label: 'İyi Durum' },
+  warning:  { color: '#f59e0b', label: 'Dikkat' },
+  critical: { color: '#ef4444', label: 'Kritik' },
+};
+const METRIC_ICONS  = { humidity: '💧', temperature: '🌡️', light: '☀️', soil_moisture: '🌍' };
+const METRIC_LABELS = { humidity: 'Hava Nemi', temperature: 'Sıcaklık', light: 'Işık', soil_moisture: 'Toprak Nemi' };
+
+function AnalysisResult({ analysis: a }) {
+  const cfg = STATUS_CONFIG[a.status] || STATUS_CONFIG.ok;
+  return (
+    <View style={aStyles.wrap}>
+      <View style={aStyles.header}>
+        <Text style={aStyles.title}>🔬 Sensör Analizi</Text>
+        <View style={[aStyles.badge, { backgroundColor: cfg.color + '22' }]}>
+          <Text style={[aStyles.badgeText, { color: cfg.color }]}>{cfg.label}</Text>
+        </View>
+      </View>
+      <Text style={aStyles.summary}>{a.summary}</Text>
+      {Object.entries(a.comments || {}).map(([key, val]) => {
+        const isOk = val.includes('uygun') && !val.includes('alınamadı');
+        return (
+          <View key={key} style={aStyles.row}>
+            <Text style={aStyles.rowIcon}>{METRIC_ICONS[key] || '•'}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[aStyles.rowLabel, { color: isOk ? '#22c55e' : cfg.color }]}>
+                {METRIC_LABELS[key] || key}
+              </Text>
+              <Text style={aStyles.rowVal}>{val}</Text>
+            </View>
+          </View>
+        );
+      })}
+      {(a.recommendations || []).length > 0 && (
+        <View style={aStyles.recWrap}>
+          <Text style={aStyles.recTitle}>Öneriler</Text>
+          {a.recommendations.map((r, i) => (
+            <Text key={i} style={aStyles.recItem}>• {r}</Text>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+const aStyles = StyleSheet.create({
+  wrap:      { backgroundColor: '#111a0e', borderRadius: 12, padding: 14, marginBottom: 14, borderWidth: 1, borderColor: 'rgba(200,169,106,.15)' },
+  header:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  title:     { fontSize: 13, fontWeight: '700', color: '#ede8d8' },
+  badge:     { borderRadius: 99, paddingHorizontal: 10, paddingVertical: 3 },
+  badgeText: { fontSize: 11, fontWeight: '700' },
+  summary:   { fontSize: 12, color: 'rgba(237,232,216,.65)', marginBottom: 10, lineHeight: 17 },
+  row:       { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 6, borderTopWidth: 1, borderTopColor: 'rgba(200,169,106,.06)' },
+  rowIcon:   { fontSize: 16, marginTop: 1 },
+  rowLabel:  { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
+  rowVal:    { fontSize: 12, color: 'rgba(237,232,216,.65)', marginTop: 2, lineHeight: 16 },
+  recWrap:   { marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(200,169,106,.1)' },
+  recTitle:  { fontSize: 11, fontWeight: '700', color: '#c8a96a', marginBottom: 6, textTransform: 'uppercase' },
+  recItem:   { fontSize: 12, color: 'rgba(237,232,216,.65)', paddingVertical: 3, lineHeight: 17 },
+});
 
 const EMOJIS      = ['🌿','🌸','🍅','🥬','🌾','💧','🌱','🍇','🌻','🫑','🥦','🍆'];
 const CARD_COLORS = ['#16a34a','#7c3aed','#dc2626','#0284c7','#d97706','#059669'];
@@ -28,6 +89,8 @@ export default function CropsScreen() {
   const [search, setSearch]     = useState('');
   const [form, setForm]         = useState(EMPTY_FORM);
   const [saving, setSaving]     = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -69,6 +132,41 @@ export default function CropsScreen() {
       allowsEditing: true, aspect: [4, 3], quality: 0.7,
     });
     if (!result.canceled) setForm(f => ({ ...f, photo_uri: result.assets[0].uri }));
+  };
+
+  // ── Sensör Analizi ──
+  const runSensorAnalysis = async () => {
+    if (!form.name.trim()) { Alert.alert('Bitki adı girin', 'Analiz için önce bitki adını yazın.'); return; }
+    setAnalyzing(true);
+    setAnalysis(null);
+    try {
+      const latest = await getLatestSensorData();
+      if (!latest) { Alert.alert('Sensör Yok', 'Henüz sensör verisi yok.'); setAnalyzing(false); return; }
+      const result = await analyzeSensorData(form.name.trim(), {
+        humidity:      latest.humidity_pct,
+        temperature:   latest.temperature_c,
+        light:         latest.light_lux,
+        soil_moisture: latest.moisture_pct,
+      });
+      setAnalysis(result);
+      if (latest.moisture_pct != null) {
+        setForm(f => ({
+          ...f,
+          min_moisture:   String(Math.max(0, Math.round(latest.moisture_pct - 10))),
+          max_moisture:   String(Math.min(100, Math.round(latest.moisture_pct + 10))),
+        }));
+      }
+      if (latest.temperature_c != null) {
+        setForm(f => ({
+          ...f,
+          ideal_temp_min: String(Math.round(latest.temperature_c - 5)),
+          ideal_temp_max: String(Math.round(latest.temperature_c + 5)),
+        }));
+      }
+    } catch(e) {
+      Alert.alert('Hata', 'Sensör verisi alınamadı.');
+    }
+    setAnalyzing(false);
   };
 
   // ── Kaydet ──
@@ -319,8 +417,18 @@ export default function CropsScreen() {
                 </View>
               </View>
 
+              {/* Sensör Analiz Butonu */}
+              <TouchableOpacity style={styles.analyzeBtn} onPress={runSensorAnalysis} disabled={analyzing}>
+                {analyzing
+                  ? <ActivityIndicator color={Colors.gold} size="small" />
+                  : <Text style={styles.analyzeBtnText}>🔍 Sensörden Al ve Analiz Et</Text>}
+              </TouchableOpacity>
+
+              {/* Analiz Sonuçları */}
+              {analysis && <AnalysisResult analysis={analysis} />}
+
               <View style={styles.modalActions}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => { setModal(false); setForm(EMPTY_FORM); }}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={() => { setModal(false); setForm(EMPTY_FORM); setAnalysis(null); }}>
                   <Text style={styles.cancelBtnText}>İptal</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.saveBtn} onPress={submit} disabled={saving}>
@@ -397,6 +505,8 @@ const styles = StyleSheet.create({
   inputLabel:  { fontSize: Typography.xs, fontWeight: '600', color: Colors.textSub, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.4 },
   input:       { backgroundColor: Colors.bg, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 10, fontSize: Typography.base, color: Colors.text, marginBottom: 14 },
   inputRow:    { flexDirection: 'row' },
+  analyzeBtn:  { backgroundColor: 'rgba(200,169,106,.12)', borderRadius: Radius.md, paddingVertical: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(200,169,106,.3)', marginBottom: 14 },
+  analyzeBtnText: { color: Colors.gold, fontWeight: '700', fontSize: Typography.base },
   modalActions:{ flexDirection: 'row', gap: 12, marginTop: 8, marginBottom: 8 },
   cancelBtn:   { flex: 1, backgroundColor: Colors.bgCard2, borderRadius: Radius.md, paddingVertical: 12, alignItems: 'center' },
   cancelBtnText: { color: Colors.textSub, fontWeight: '600' },

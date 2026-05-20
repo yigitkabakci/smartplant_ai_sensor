@@ -714,24 +714,28 @@
             <span class="nav-icon"><i class="fas fa-gauge-high"></i></span>
             Dashboard
         </a>
-        <a href="/crops" class="nav-item {% block nav_crops %}{% endblock %}">
-            <span class="nav-icon"><i class="fas fa-plant-wilt"></i></span>
-            Bitkilerim
-        </a>
-        <a href="/analytics" class="nav-item {% block nav_analytics %}{% endblock %}">
+        <a href="/dashboard#analytics-section" class="nav-item {% block nav_analytics %}{% endblock %}">
             <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
             Analitik
         </a>
-
-        <div class="nav-section-label">Araçlar</div>
-        <a href="/devices_page" class="nav-item {% block nav_devices %}{% endblock %}">
-            <span class="nav-icon"><i class="fas fa-microchip"></i></span>
-            Cihazlar
+        <a href="/dashboard#plants-section" class="nav-item {% block nav_crops %}{% endblock %}">
+            <span class="nav-icon"><i class="fas fa-plant-wilt"></i></span>
+            Bitkilerim
         </a>
-        <a href="/alerts_page" class="nav-item {% block nav_alerts %}{% endblock %}" id="nav-alerts-link">
+        <a href="/dashboard#alerts-section" class="nav-item {% block nav_alerts %}{% endblock %}" id="nav-alerts-link">
             <span class="nav-icon"><i class="fas fa-bell"></i></span>
             Uyarılar
             <span class="nav-badge" id="sidebar-alert-count" style="display:none">0</span>
+        </a>
+
+        <div class="nav-section-label">Araçlar</div>
+        <a href="/leaf_disease" class="nav-item {% block nav_disease %}{% endblock %}">
+            <span class="nav-icon"><i class="fas fa-microscope"></i></span>
+            Hastalık Tespiti
+        </a>
+        <a href="/devices_page" class="nav-item {% block nav_devices %}{% endblock %}">
+            <span class="nav-icon"><i class="fas fa-microchip"></i></span>
+            Cihazlar
         </a>
 
         <div class="nav-section-label">Sistem</div>

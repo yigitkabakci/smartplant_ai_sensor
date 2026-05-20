@@ -1,6 +1,7 @@
 ﻿import axios from 'axios';
+import { API_BASE_URL } from '../config/api.config';
 
-export const BASE_URL = 'http://10.202.0.138:8000';
+export const BASE_URL = API_BASE_URL;
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -122,31 +123,20 @@ export const createDevice = (data) =>
 
 // â”€â”€ Yaprak HastalÄ±k â”€â”€
 export const predictLeafDisease = async (imageUri) => {
-  try {
-    const formData = new FormData();
-    const filename = imageUri.split('/').pop();
-    const ext = filename.split('.').pop().toLowerCase();
-    formData.append('file', {
-      uri: imageUri,
-      name: filename,
-      type: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
-    });
-    const r = await axios.post(`${BASE_URL}/leaf_disease/predict`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 30000,
-    });
-    return r.data;
-  } catch {
-    return {
-      top_prediction: { disease: 'Healthy', score: 0.91 },
-      all_predictions: [
-        { disease: 'Healthy',        score: 0.91 },
-        { disease: 'Early Blight',   score: 0.06 },
-        { disease: 'Bacterial Spot', score: 0.03 },
-      ],
-      mock: true,
-    };
-  }
+  const formData = new FormData();
+  const filename = imageUri.split('/').pop();
+  const ext = filename.split('.').pop().toLowerCase();
+  formData.append('file', {
+    uri: imageUri,
+    name: filename,
+    type: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+  });
+  // /predict-disease → yeni mobil endpoint, fallback+care objesi döner
+  const r = await axios.post(`${BASE_URL}/predict-disease`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000,
+  });
+  return r.data;
 };
 
 // â”€â”€ Yaprak GeÃ§miÅŸi â”€â”€
@@ -156,5 +146,19 @@ export const getLeafHistory = (limit = 15) =>
     MOCK_LEAF_HISTORY.slice(0, limit)
   );
 
+// ── Sensör Analizi ──
+export const analyzeSensorData = (plant, sensorData) =>
+  api.post('/api/analyze-sensor-data', { plant, sensor_data: sensorData }).then(r => r.data);
+
+// ── Son Sensör Verisi ──
+export const getLatestSensorData = (device_mac = null) => {
+  const q = device_mac ? `?device_mac=${encodeURIComponent(device_mac)}` : '';
+  return withFallback(
+    () => api.get(`/api/latest-data${q}`).then(r => r.data),
+    null
+  );
+};
+
 export default api;
+
 

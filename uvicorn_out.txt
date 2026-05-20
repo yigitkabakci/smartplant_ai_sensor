@@ -1,0 +1,69 @@
+INFO:     127.0.0.1:63939 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57928 - "GET /api/latest-data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "GET /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54349 - "GET /api/sensor?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "POST /api/predict-watering HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:49671 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54349 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54349 - "GET /api/sensor?limit=500 HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:49671 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54349 - "GET /api/plants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54349 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54349 - "GET /devices_page HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54349 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "GET /api/plants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55483 - "GET /leaf_disease HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50308 - "GET /api/leaf_analyses?limit=10 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55483 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55316 - "GET /sensor_docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51725 - "GET /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51725 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51725 - "GET /api/sensor?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51725 - "POST /api/predict-watering HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:51725 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51725 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51725 - "GET /api/sensor?limit=500 HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:51725 - "GET /api/plants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51725 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51725 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51725 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51725 - "GET /devices_page HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51725 - "GET /api/alerts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65261 - "GET /api/plants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65261 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58704 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63867 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53994 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59020 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58716 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54762 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57875 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59219 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57109 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59798 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54002 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55261 - "GET /api/latest-data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51564 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52533 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52533 - "GET /api/latest-data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64399 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64025 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51869 - "GET /api/latest-data HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60571 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60034 - "GET /crops HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60034 - "GET /api/plants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60034 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60034 - "GET /analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59502 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60034 - "GET /api/sensor?limit=500 HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:60034 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60034 - "GET /leaf_disease HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60034 - "GET /api/devices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60034 - "GET /api/leaf_analyses?limit=10 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55989 - "POST /leaf_disease/predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55989 - "GET /api/leaf_analyses?limit=10 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55989 - "GET /static/uploads/benim_Ev_bitki.jpeg HTTP/1.1" 200 OK

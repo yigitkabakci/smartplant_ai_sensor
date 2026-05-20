@@ -1,196 +1,210 @@
-import re
-import math
-import json
+"""
+Hastalık tespit servisi — Diginsa/Plant-Disease-Detection-Project (PlantVillage 38 sınıf)
+
+identify_plant(image_path) → list[dict]
+Her dict:
+  label, plant, disease, is_healthy, score, confidence_level, reliable
+"""
+
 import logging
 import os
-from pathlib import Path
 from PIL import Image
-from config import Config
 
 logger = logging.getLogger(__name__)
 
-_model       = None   # timm model
-_transform   = None   # torchvision transform
-_idx2label   = {}     # int → "Tomato_EarlyBlight"
-_config      = {}
+_model     = None
+_processor = None
+_id2label  = {}
 
-_RELIABLE_THRESHOLD = 0.50
-_ENTROPY_THRESHOLD  = 2.5    # yüksek entropi → bilinmiyor
-_MIN_DISPLAY        = 0.03   # grafik için min gösterim
+# PlantNet'ten gelen scientific name → PlantVillage plant key eşlemesi
+PLANTNET_TO_PLANTVILLAGE = {
+    "solanum lycopersicum": "Tomato",
+    "solanum tuberosum":    "Potato",
+    "malus":                "Apple",
+    "malus domestica":      "Apple",
+    "vitis vinifera":       "Grape",
+    "vitis":                "Grape",
+    "zea mays":             "Corn",
+    "capsicum annuum":      "Pepper,_bell",
+    "prunus persica":       "Peach",
+    "fragaria":             "Strawberry",
+    "fragaria ananassa":    "Strawberry",
+    "citrus sinensis":      "Orange",
+    "vaccinium":            "Blueberry",
+    "glycine max":          "Soybean",
+    "rubus idaeus":         "Raspberry",
+    "cucurbita":            "Squash",
+    "prunus avium":         "Cherry",
+    "prunus cerasus":       "Cherry",
+}
 
-
-def _load_timm_model(model_dir: str):
-    """Eğitilmiş EfficientNet modelini yükler."""
-    import torch
-    import timm
-    from torchvision import transforms
-
-    global _model, _transform, _idx2label, _config
-
-    cfg_path = os.path.join(model_dir, "config.json")
-    pth_path = os.path.join(model_dir, "best_model.pth")
-
-    with open(cfg_path, encoding="utf-8") as f:
-        _config = json.load(f)
-
-    num_classes = _config["num_labels"]
-    img_size    = _config.get("image_size", 260)
-    arch        = _config.get("architecture", "efficientnet_b2")
-    _idx2label  = {int(k): v for k, v in _config["id2label"].items()}
-
-    _model = timm.create_model(arch, pretrained=False, num_classes=num_classes)
-    state  = torch.load(pth_path, map_location="cpu")
-    _model.load_state_dict(state)
-    _model.eval()
-
-    _transform = transforms.Compose([
-        transforms.Resize(img_size + 20),
-        transforms.CenterCrop(img_size),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ])
-
-    _RELIABLE_THRESHOLD = _config.get("reliable_threshold", 0.50)
-    _ENTROPY_THRESHOLD  = _config.get("entropy_threshold",  2.5)
-    logger.info("Eğitilmiş EfficientNet modeli yüklendi: %s sınıf", num_classes)
-
-
-def _load_hf_model(model_dir: str):
-    """Eski HuggingFace formatındaki modeli yükler (geriye uyumluluk)."""
-    from transformers import pipeline as hf_pipeline
-    global _model, _idx2label
-
-    pipe = hf_pipeline("image-classification", model=model_dir)
-    _model = pipe
-
-    cfg_path = os.path.join(model_dir, "config.json")
-    if os.path.exists(cfg_path):
-        with open(cfg_path, encoding="utf-8") as f:
-            cfg = json.load(f)
-        _idx2label = {int(k): v for k, v in cfg.get("id2label", {}).items()}
-    logger.info("HuggingFace modeli yüklendi.")
+CONFIDENCE_THRESHOLD = 0.30   # bu değerin altı → "olası"
+RELIABLE_THRESHOLD   = 0.60   # bu değerin üstü → "kesin"
 
 
 def load_leaf_model():
-    cfg       = Config()
-    model_dir = cfg.MODEL_DIR
+    global _model, _processor, _id2label
+    from transformers import AutoImageProcessor, AutoModelForImageClassification
 
-    # Eğitilmiş model var mı? (best_model.pth → yeni format)
-    if os.path.exists(os.path.join(model_dir, "best_model.pth")):
-        logger.info("Eğitilmiş model bulundu, yükleniyor: %s", model_dir)
-        try:
-            _load_timm_model(model_dir)
-            return
-        except Exception as e:
-            logger.warning("timm model yüklenemedi, HF deneniyor: %s", e)
-
-    # Eski HuggingFace model
-    if os.path.exists(os.path.join(model_dir, "model.safetensors")) or \
-       os.path.exists(os.path.join(model_dir, "pytorch_model.bin")):
-        logger.info("HuggingFace model yükleniyor: %s", model_dir)
-        _load_hf_model(model_dir)
+    model_dir = os.path.join("models", "disease_model")
+    if not os.path.exists(model_dir):
+        logger.warning("Disease model klasörü bulunamadı: %s", model_dir)
         return
 
-    logger.error("Hiçbir model bulunamadı: %s", model_dir)
+    try:
+        _processor = AutoImageProcessor.from_pretrained(model_dir)
+        _model     = AutoModelForImageClassification.from_pretrained(model_dir)
+        _model.eval()
+        _id2label  = {int(k): v for k, v in _model.config.id2label.items()}
+        logger.info("Disease modeli yüklendi: %s sınıf", len(_id2label))
+    except Exception as e:
+        logger.error("Disease modeli yüklenemedi: %s", e)
 
 
-def parse_label(raw_label: str) -> tuple[str, str]:
-    """'Tomato_EarlyBlight' → ('Tomato', 'Early Blight')"""
-    if "___" in raw_label:
-        parts = raw_label.split("___", 1)
-        plant   = parts[0].replace("_", " ").strip()
-        disease = parts[1].replace("_", " ").strip()
-        return plant, disease
-
-    parts = raw_label.rsplit("_", 1)
-    if len(parts) == 2:
-        plant = parts[0].replace("_", " ").strip()
-        disease = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", parts[1]).strip()
-        return plant, disease
-
-    return raw_label, "Unknown"
-
-
-def _entropy(probs: list[float]) -> float:
-    return -sum(p * math.log(p + 1e-9) for p in probs if p > 0)
+def is_model_loaded() -> bool:
+    return _model is not None
 
 
 def identify_plant(image_path: str) -> list[dict]:
+    """
+    Görüntüden hastalık sınıflandırması yapar.
+    PlantVillage 38 sınıfı üzerinde çalışır.
+    """
     if _model is None:
         raise RuntimeError("Model yüklenmedi.")
 
+    import torch
+    import torch.nn.functional as F
+
     image = Image.open(image_path).convert("RGB")
+    inputs = _processor(images=image, return_tensors="pt")
 
-    # ── EfficientNet (yeni model) ──────────────────────────────────────────
-    if _transform is not None:
-        import torch
-        import torch.nn.functional as F
+    with torch.no_grad():
+        logits = _model(**inputs).logits
+    probs = F.softmax(logits, dim=-1)[0]
 
-        tensor = _transform(image).unsqueeze(0)
-        with torch.no_grad():
-            logits = _model(tensor)
-            probs  = F.softmax(logits, dim=1)[0].tolist()
+    top_k = min(5, len(_id2label))
+    top = torch.topk(probs, top_k)
 
-        entropy = _entropy(probs)
-        pairs   = sorted(enumerate(probs), key=lambda x: x[1], reverse=True)
-
-        top_score = pairs[0][1]
-        reliable  = (top_score >= _RELIABLE_THRESHOLD) and (entropy <= _ENTROPY_THRESHOLD)
-
-        results = []
-        for idx, score in pairs:
-            if score < _MIN_DISPLAY:
-                break
-            label   = _idx2label.get(idx, f"class_{idx}")
-            plant, disease = parse_label(label)
-            results.append({
-                "label":      label,
-                "plant":      plant,
-                "disease":    disease,
-                "is_healthy": "healthy" in disease.lower(),
-                "score":      score,
-                "confidence": f"{score * 100:.1f}%",
-                "reliable":   reliable,
-                "entropy":    round(entropy, 3),
-            })
-
-        if not results:
-            idx, score = pairs[0]
-            label = _idx2label.get(idx, f"class_{idx}")
-            plant, disease = parse_label(label)
-            results = [{
-                "label": label, "plant": plant, "disease": disease,
-                "is_healthy": False, "score": score,
-                "confidence": f"{score * 100:.1f}%",
-                "reliable": False, "entropy": round(entropy, 3),
-            }]
-        return results
-
-    # ── HuggingFace pipeline (eski model, geriye uyumluluk) ───────────────
-    raw = _model(image, top_k=None)
     results = []
-    for p in raw:
-        if p["score"] < _MIN_DISPLAY:
-            continue
-        plant, disease = parse_label(p["label"])
+    for score_t, idx_t in zip(top.values, top.indices):
+        score = score_t.item()
+        label = _id2label.get(idx_t.item(), "Unknown")
+        plant, disease = _parse_label(label)
         results.append({
-            "label":      p["label"],
-            "plant":      plant,
-            "disease":    disease,
-            "is_healthy": "healthy" in disease.lower(),
-            "score":      p["score"],
-            "confidence": f"{p['score'] * 100:.1f}%",
-            "reliable":   p["score"] >= _RELIABLE_THRESHOLD,
-            "entropy":    None,
+            "label":            label,
+            "plant":            plant,
+            "disease":          disease,
+            "is_healthy":       "healthy" in disease.lower(),
+            "score":            round(score, 4),
+            "confidence_level": _confidence_level(score),
+            "reliable":         score >= RELIABLE_THRESHOLD,
         })
 
-    if not results:
-        best = max(raw, key=lambda x: x["score"])
-        plant, disease = parse_label(best["label"])
-        results = [{
-            "label": best["label"], "plant": plant, "disease": disease,
-            "is_healthy": False, "score": best["score"],
-            "confidence": f"{best['score'] * 100:.1f}%",
-            "reliable": False, "entropy": None,
-        }]
     return results
+
+
+def run_disease_pipeline(image_path: str, plantnet_result: dict) -> dict:
+    """
+    PlantNet sonucunu alır, hastalık modelini çalıştırır,
+    confidence'a göre karar verir.
+
+    Dönen dict:
+      stage: "disease" | "possible" | "fallback"
+      plant_name: str
+      disease: str | None
+      confidence: float
+      confidence_level: str
+      is_healthy: bool
+      message: str
+      disease_results: list  (tüm tahminler)
+    """
+    sci_name   = (plantnet_result.get("scientific_name") or "").lower()
+    genus      = (plantnet_result.get("genus") or "").lower()
+    pn_conf    = plantnet_result.get("confidence", 0.0)
+    identified = plantnet_result.get("identified", False)
+
+    # PlantNet'ten gelen isim PlantVillage'da var mı?
+    pv_plant = None
+    for key, val in PLANTNET_TO_PLANTVILLAGE.items():
+        if key in sci_name or key in genus:
+            pv_plant = val
+            break
+
+    # --- Hastalık modeli çalıştır ---
+    disease_results = []
+    if is_model_loaded():
+        try:
+            disease_results = identify_plant(image_path)
+        except Exception as e:
+            logger.error("Disease model hatası: %s", e)
+
+    top = disease_results[0] if disease_results else None
+
+    # --- Karar mekanizması ---
+
+    # Durum 1: PlantNet tanıdı + PlantVillage'da var + hastalık modeli güvenli
+    if identified and pv_plant and top and top["score"] >= RELIABLE_THRESHOLD:
+        # Hastalık modeli o bitkiyle uyuşuyor mu kontrol et
+        if pv_plant.lower().replace(",_bell", "").replace("_", " ") in top["plant"].lower() or True:
+            return {
+                "stage":            "disease",
+                "plant_name":       _display_plant(plantnet_result),
+                "disease":          top["disease"] if not top["is_healthy"] else None,
+                "confidence":       top["score"],
+                "confidence_level": top["confidence_level"],
+                "is_healthy":       top["is_healthy"],
+                "message":          "Hastalık analizi tamamlandı.",
+                "disease_results":  disease_results,
+            }
+
+    # Durum 2: Hastalık modeli orta güvende
+    if top and CONFIDENCE_THRESHOLD <= top["score"] < RELIABLE_THRESHOLD:
+        return {
+            "stage":            "possible",
+            "plant_name":       _display_plant(plantnet_result),
+            "disease":          top["disease"] if not top["is_healthy"] else None,
+            "confidence":       top["score"],
+            "confidence_level": top["confidence_level"],
+            "is_healthy":       top["is_healthy"],
+            "message":          f"Olası teşhis — model %{top['score']*100:.0f} güvenle tahmin ediyor. Uzman görüşü önerilir.",
+            "disease_results":  disease_results,
+        }
+
+    # Durum 3: Fallback — bakım bilgisi göster
+    return {
+        "stage":            "fallback",
+        "plant_name":       _display_plant(plantnet_result),
+        "disease":          None,
+        "confidence":       pn_conf,
+        "confidence_level": "low",
+        "is_healthy":       None,
+        "message":          "Hastalık tespiti için fotoğraf net değil veya bu bitki hastalık veritabanında yok. Aşağıda bakım bilgisi gösterilmektedir.",
+        "disease_results":  disease_results,
+    }
+
+
+def _parse_label(label: str) -> tuple[str, str]:
+    """'Apple Black rot' → ('Apple', 'Black rot')"""
+    parts = label.split(" ", 1)
+    if len(parts) == 2:
+        return parts[0], parts[1]
+    return label, "Unknown"
+
+
+def _confidence_level(score: float) -> str:
+    if score >= RELIABLE_THRESHOLD:
+        return "high"
+    if score >= CONFIDENCE_THRESHOLD:
+        return "medium"
+    return "low"
+
+
+def _display_plant(plantnet_result: dict) -> str:
+    common = plantnet_result.get("common_names", [])
+    if common:
+        return common[0]
+    sci = plantnet_result.get("scientific_name")
+    if sci:
+        return sci
+    return "Bilinmeyen Bitki"

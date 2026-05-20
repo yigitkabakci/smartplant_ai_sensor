@@ -55,6 +55,45 @@
     100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
 }
 .summary-row { display: flex; align-items: center; gap: 6px; }
+
+/* Analytics Section */
+.an-filter-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.an-period-btn { font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:5px 12px; border:1px solid var(--border); color:var(--sub); background:transparent; cursor:pointer; transition:all .2s; border-radius:20px; font-family:'Inter',sans-serif; }
+.an-period-btn:hover { border-color:rgba(200,169,106,.4); color:rgba(200,169,106,.85); }
+.an-period-btn.active { background:rgba(200,169,106,.14); border-color:rgba(200,169,106,.5); color:#c8a96a; }
+.an-select { padding:5px 10px; background:var(--bg2); border:1px solid var(--border); color:var(--sub2); font-family:'Inter',sans-serif; font-size:12px; outline:none; cursor:pointer; border-radius:var(--radius-sm); }
+.an-select:focus { border-color:rgba(200,169,106,.4); }
+.an-select option { background:#0d1526; }
+.an-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+.an-metric { background:var(--card2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px; }
+.an-metric-icon { font-size:1.1rem; margin-bottom:6px; opacity:.7; }
+.an-metric-val { font-size:1.5rem; font-weight:700; color:#c8a96a; line-height:1; margin-bottom:2px; }
+.an-metric-lbl { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--sub); }
+.an-metric-range { font-size:10px; color:var(--sub); margin-top:3px; }
+.an-charts { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+.an-chart-card { background:var(--card2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; }
+.an-chart-title { font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:rgba(200,169,106,.7); margin-bottom:4px; }
+.an-chart-sub { font-size:11px; color:var(--sub); margin-bottom:10px; }
+.an-chart-area { position:relative; height:150px; overflow:hidden; }
+.an-chart-area canvas { position:absolute; inset:0; width:100%!important; height:100%!important; }
+.an-count { font-size:11px; color:var(--sub); margin-left:auto; }
+@media(max-width:900px){ .an-metrics{grid-template-columns:1fr 1fr;} .an-charts{grid-template-columns:1fr;} }
+
+/* Plants Section */
+.plant-grid-dash { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.plant-card-dash { background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; transition: all .2s; }
+.plant-card-dash:hover { border-color: rgba(200,169,106,.35); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.plant-card-head-dash { height: 72px; display: flex; align-items: center; justify-content: center; font-size: 2rem; position: relative; }
+.plant-card-body-dash { padding: 10px 12px; }
+.plant-card-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.plant-card-id { font-size: 10px; color: rgba(200,169,106,.5); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+.plant-card-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+.plant-card-lbl { color: var(--sub); }
+.plant-card-val { font-weight: 600; }
+.plant-card-foot-dash { padding: 7px 12px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.plant-conn-badge { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
+.plant-conn-badge.connected { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,.2); }
+.plant-conn-badge.no-device { background: rgba(255,255,255,.04); color: var(--sub); border: 1px solid var(--border); }
 {% endblock %}
 
 {% block content %}
@@ -119,7 +158,7 @@
 </div>
 
 <!-- Row 2: Chart + Alerts -->
-<div class="grid grid-2 mb-4">
+<div class="grid grid-2 mb-4" id="trend-chart">
     <!-- Trend Chart -->
     <div class="card">
         <div class="card-header">
@@ -135,13 +174,13 @@
                 <button class="btn btn-secondary btn-sm" onclick="setTrendMetric('temp')">Sıcaklık</button>
             </div>
         </div>
-        <div style="position:relative;height:180px;background:var(--card);">
-            <canvas id="trend-chart"></canvas>
+        <div style="position:relative;height:180px;background:var(--card);" id="trend-chart-wrap">
+            <canvas id="canvas-trend-chart" style="position:absolute;inset:0;width:100%!important;height:100%!important;"></canvas>
         </div>
     </div>
 
     <!-- Alerts -->
-    <div class="card">
+    <div class="card" id="alert-section">
         <div class="card-header">
             <div>
                 <div class="card-title">Aktif Uyarılar</div>
@@ -206,6 +245,212 @@
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+
+<!-- Row 4: Analytics Section -->
+<div id="analytics-section" style="margin-top:24px;">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title"><i class="fas fa-chart-line" style="color:#3b82f6"></i> Analitik</div>
+                <div class="card-sub">Sensör geçmişi, trendler ve özet istatistikler</div>
+            </div>
+            <div class="an-filter-row" style="margin-bottom:0">
+                <div style="display:flex;gap:4px;">
+                    <button class="an-period-btn" onclick="anSetPeriod(24)" data-p="24">24s</button>
+                    <button class="an-period-btn active" onclick="anSetPeriod(72)" data-p="72">3G</button>
+                    <button class="an-period-btn" onclick="anSetPeriod(168)" data-p="168">7G</button>
+                    <button class="an-period-btn" onclick="anSetPeriod(720)" data-p="720">30G</button>
+                    <button class="an-period-btn" onclick="anSetPeriod(0)" data-p="0">Tümü</button>
+                </div>
+                <select class="an-select" id="an-mac-filter" onchange="anApplyFilters()">
+                    <option value="">Tüm Cihazlar</option>
+                </select>
+                <button class="btn btn-secondary btn-sm" onclick="anLoadData()"><i class="fas fa-rotate"></i></button>
+                <span class="an-count" id="an-count"></span>
+            </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="an-metrics">
+            <div class="an-metric">
+                <div class="an-metric-icon">🌡</div>
+                <div class="an-metric-val" id="an-avg-temp">—</div>
+                <div class="an-metric-lbl">Ort. Sıcaklık</div>
+                <div class="an-metric-range" id="an-range-temp">Min / Max: —</div>
+            </div>
+            <div class="an-metric">
+                <div class="an-metric-icon">💨</div>
+                <div class="an-metric-val" id="an-avg-humidity" style="color:#a855f7">—</div>
+                <div class="an-metric-lbl">Ort. Hava Nemi</div>
+                <div class="an-metric-range" id="an-range-humidity">Min / Max: —</div>
+            </div>
+            <div class="an-metric">
+                <div class="an-metric-icon">💧</div>
+                <div class="an-metric-val" id="an-avg-moisture" style="color:#3b82f6">—</div>
+                <div class="an-metric-lbl">Ort. Toprak Nemi</div>
+                <div class="an-metric-range" id="an-range-moisture">Min / Max: —</div>
+            </div>
+            <div class="an-metric">
+                <div class="an-metric-icon">☀️</div>
+                <div class="an-metric-val" id="an-avg-light" style="color:#4ade80">—</div>
+                <div class="an-metric-lbl">Ort. Işık</div>
+                <div class="an-metric-range" id="an-range-light">Min / Max: —</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="an-charts">
+            <div class="an-chart-card">
+                <div class="an-chart-title">🌡 Sıcaklık Trendi</div>
+                <div class="an-chart-sub">°C</div>
+                <div class="an-chart-area"><canvas id="an-chart-temp"></canvas></div>
+            </div>
+            <div class="an-chart-card">
+                <div class="an-chart-title" style="color:rgba(168,85,247,.8)">💨 Hava Nemi Trendi</div>
+                <div class="an-chart-sub">%</div>
+                <div class="an-chart-area"><canvas id="an-chart-humidity"></canvas></div>
+            </div>
+        </div>
+        <div class="an-charts" style="margin-bottom:0">
+            <div class="an-chart-card">
+                <div class="an-chart-title" style="color:rgba(59,130,246,.8)">💧 Toprak Nemi Trendi</div>
+                <div class="an-chart-sub">%</div>
+                <div class="an-chart-area"><canvas id="an-chart-moisture"></canvas></div>
+            </div>
+            <div class="an-chart-card">
+                <div class="an-chart-title" style="color:rgba(74,222,128,.8)">☀️ Işık Yoğunluğu</div>
+                <div class="an-chart-sub">lux</div>
+                <div class="an-chart-area"><canvas id="an-chart-light"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 5: Plants Section -->
+<div id="plants-section" style="margin-top:24px;">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title"><i class="fas fa-plant-wilt" style="color:var(--gold)"></i> Bitkilerim</div>
+                <div class="card-sub" id="plants-sub">Kayıtlı bitki kütüphanesi ve eşik değerleri</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button class="btn btn-secondary btn-sm" onclick="loadPlantsDash()"><i class="fas fa-rotate"></i></button>
+                <button class="btn btn-primary btn-sm" onclick="openAddPlantModal()"><i class="fas fa-plus"></i> Yeni Bitki</button>
+            </div>
+        </div>
+        <div class="plant-grid-dash" id="plants-grid-dash">
+            <div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--sub);">
+                <i class="fas fa-circle-notch fa-spin" style="color:var(--green)"></i> Yükleniyor...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Son Yaprak Analizleri -->
+<div id="leaf-analysis-section" style="margin-top:24px;">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title"><i class="fas fa-microscope" style="color:var(--gold)"></i> Son Yaprak Analizleri</div>
+                <div class="card-sub" id="leaf-analysis-sub">Hastalık modeli tahminleri</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button class="btn btn-secondary btn-sm" onclick="loadLeafAnalyses()"><i class="fas fa-rotate"></i></button>
+                <a href="/leaf_disease" class="btn btn-primary btn-sm" style="text-decoration:none"><i class="fas fa-plus"></i> Yeni Analiz</a>
+            </div>
+        </div>
+        <div id="leaf-analysis-list">
+            <div style="text-align:center;padding:32px;color:var(--sub);">
+                <i class="fas fa-circle-notch fa-spin" style="color:var(--gold)"></i> Yükleniyor...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 6: Alerts Section -->
+<div id="alerts-section" style="margin-top:24px;">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title"><i class="fas fa-bell" style="color:var(--orange)"></i> Uyarılar</div>
+                <div class="card-sub" id="alerts-sec-sub">Yükleniyor...</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button class="btn btn-secondary btn-sm" onclick="loadAlertsSec()"><i class="fas fa-rotate"></i></button>
+                <a href="/alerts_page" class="btn btn-secondary btn-sm" style="text-decoration:none;">Tüm Sayfa <i class="fas fa-arrow-up-right-from-square" style="font-size:10px;"></i></a>
+            </div>
+        </div>
+
+        <!-- Stats row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;" id="alerts-stats-row">
+            <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;text-align:center;">
+                <div style="font-size:1.4rem;font-weight:700;color:var(--text);" id="as-total">—</div>
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--sub);margin-top:2px;">Toplam</div>
+            </div>
+            <div style="background:var(--red-dim);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius-sm);padding:12px 14px;text-align:center;">
+                <div style="font-size:1.4rem;font-weight:700;color:var(--red);" id="as-critical">—</div>
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(239,68,68,.7);margin-top:2px;">Kritik</div>
+            </div>
+            <div style="background:var(--orange-dim);border:1px solid rgba(245,158,11,.2);border-radius:var(--radius-sm);padding:12px 14px;text-align:center;">
+                <div style="font-size:1.4rem;font-weight:700;color:var(--orange);" id="as-warning">—</div>
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(245,158,11,.7);margin-top:2px;">Uyarı</div>
+            </div>
+            <div style="background:var(--blue-dim);border:1px solid rgba(59,130,246,.2);border-radius:var(--radius-sm);padding:12px 14px;text-align:center;">
+                <div style="font-size:1.4rem;font-weight:700;color:var(--blue);" id="as-info">—</div>
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(59,130,246,.7);margin-top:2px;">Bilgi</div>
+            </div>
+        </div>
+
+        <!-- Filter chips -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <button class="an-period-btn active" onclick="asFilter('all',this)">Tümü</button>
+            <button class="an-period-btn" style="border-color:rgba(239,68,68,.3);color:rgba(239,68,68,.7);" onclick="asFilter('critical',this)">🔴 Kritik</button>
+            <button class="an-period-btn" style="border-color:rgba(245,158,11,.3);color:rgba(245,158,11,.7);" onclick="asFilter('warning',this)">🟡 Uyarı</button>
+            <button class="an-period-btn" style="border-color:rgba(59,130,246,.3);color:rgba(59,130,246,.7);" onclick="asFilter('info',this)">🔵 Bilgi</button>
+        </div>
+
+        <!-- Alert list -->
+        <div id="alerts-sec-list">
+            <div class="no-data"><i class="fas fa-circle-notch fa-spin" style="color:var(--green)"></i> Yükleniyor...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Plant Modal -->
+<div class="modal-overlay" id="modal-add-plant-dash">
+    <div class="modal-box">
+        <div class="modal-title">Yeni Bitki Ekle</div>
+        <form id="add-plant-form-dash" onsubmit="submitPlantDash(event)">
+            <div class="form-group">
+                <label class="form-label">Bitki Adı *</label>
+                <input class="form-input" type="text" name="name" placeholder="örn. Domates" required>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group">
+                    <label class="form-label">Min. Toprak Nemi (%)</label>
+                    <input class="form-input" type="number" name="min_moisture" placeholder="20" min="0" max="100" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max. Toprak Nemi (%)</label>
+                    <input class="form-input" type="number" name="max_moisture" placeholder="80" min="0" max="100" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Min. Sıcaklık (°C)</label>
+                    <input class="form-input" type="number" name="ideal_temp_min" placeholder="15" min="-10" max="60" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max. Sıcaklık (°C)</label>
+                    <input class="form-input" type="number" name="ideal_temp_max" placeholder="30" min="-10" max="60" step="0.1">
+                </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+                <button type="button" class="btn btn-secondary" onclick="closeAddPlantModal()">İptal</button>
+                <button type="submit" class="btn btn-primary" id="btn-add-plant-dash">Ekle</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
@@ -276,7 +521,7 @@ let currentMetric = 'moisture';
 
 
 function initTrendChart() {
-    const ctx = document.getElementById('trend-chart').getContext('2d');
+    const ctx = document.getElementById('canvas-trend-chart').getContext('2d');
     trendChart = new Chart(ctx, {
         type: 'line',
         plugins: [darkBgPlugin],
@@ -295,7 +540,7 @@ function initTrendChart() {
             }]
         },
         options: {
-            responsive: true,
+            responsive: false,
             maintainAspectRatio: false,
             animation: { duration: 0 },
             plugins: { legend: { display: false } },
@@ -520,4 +765,316 @@ loadAll();
 fetchWatering();
 setInterval(loadSensorData, 30000);
 setInterval(loadAlerts, 60000);
+
+// ── Analytics Section ──
+let anData = [], anPeriod = 72, anMac = '', anCharts = {};
+
+function anMakeChart(id, color) {
+    const ctx = document.getElementById(id).getContext('2d');
+    return new Chart(ctx, {
+        type: 'line',
+        data: { labels: [], datasets: [{ data: [], borderColor: color, backgroundColor: color + '18', fill: true, tension: 0.4, pointRadius: 1.5, borderWidth: 2 }] },
+        options: {
+            responsive: false, maintainAspectRatio: false, animation: { duration: 0 },
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: 'rgba(255,255,255,.3)', font: { size: 9 }, maxTicksLimit: 6 }, grid: { color: 'rgba(255,255,255,.04)' } },
+                y: { ticks: { color: 'rgba(255,255,255,.3)', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } }
+            }
+        }
+    });
+}
+
+function anInitCharts() {
+    anCharts.temp     = anMakeChart('an-chart-temp',     '#f59e0b');
+    anCharts.humidity = anMakeChart('an-chart-humidity', '#a855f7');
+    anCharts.moisture = anMakeChart('an-chart-moisture', '#3b82f6');
+    anCharts.light    = anMakeChart('an-chart-light',    '#4ade80');
+}
+
+function anSetPeriod(h) {
+    anPeriod = h;
+    document.querySelectorAll('.an-period-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.p) === h));
+    anApplyFilters();
+}
+
+function anApplyFilters() {
+    anMac = document.getElementById('an-mac-filter').value;
+    let f = [...anData];
+    if (anMac) f = f.filter(r => r.device_mac === anMac);
+    if (anPeriod > 0) { const cut = Date.now() - anPeriod * 3600000; f = f.filter(r => new Date(r.timestamp).getTime() >= cut); }
+    anRender(f);
+}
+
+function anAvg(arr, key) { const v = arr.map(r => r[key]).filter(x => x != null); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null; }
+function anMinMax(arr, key) { const v = arr.map(r => r[key]).filter(x => x != null); return v.length ? {min:Math.min(...v),max:Math.max(...v)} : null; }
+
+function anRender(data) {
+    const sorted = [...data].sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
+    const labels = sorted.map(r => { const d = new Date(r.timestamp); return `${d.getMonth()+1}/${d.getDate()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; });
+    const upd = (chart, key) => { chart.data.labels = labels; chart.data.datasets[0].data = sorted.map(r => r[key] ?? null); chart.update('none'); };
+    upd(anCharts.temp,'temperature_c'); upd(anCharts.humidity,'humidity_pct'); upd(anCharts.moisture,'moisture_pct'); upd(anCharts.light,'light_lux');
+
+    const setA = (id, v, u='') => document.getElementById(id).textContent = v != null ? v.toFixed(1)+u : '—';
+    const setR = (id, mm, u='') => document.getElementById(id).textContent = mm ? `Min: ${mm.min.toFixed(1)}${u} / Max: ${mm.max.toFixed(1)}${u}` : 'Min / Max: —';
+    setA('an-avg-temp', anAvg(data,'temperature_c'), '°C');
+    setA('an-avg-humidity', anAvg(data,'humidity_pct'), '%');
+    setA('an-avg-moisture', anAvg(data,'moisture_pct'), '%');
+    const aL = anAvg(data,'light_lux');
+    document.getElementById('an-avg-light').textContent = aL != null ? (aL >= 1000 ? (aL/1000).toFixed(1)+'k' : aL.toFixed(0)) : '—';
+    setR('an-range-temp', anMinMax(data,'temperature_c'), '°C');
+    setR('an-range-humidity', anMinMax(data,'humidity_pct'), '%');
+    setR('an-range-moisture', anMinMax(data,'moisture_pct'), '%');
+    setR('an-range-light', anMinMax(data,'light_lux'), ' lx');
+    document.getElementById('an-count').textContent = `${data.length} okuma`;
+}
+
+async function anLoadData() {
+    try {
+        document.getElementById('an-count').textContent = 'Yükleniyor...';
+        const [sr, dr] = await Promise.all([fetch('/api/sensor?limit=500'), fetch('/api/devices')]);
+        anData = await sr.json();
+        const devs = await dr.json();
+        const sel = document.getElementById('an-mac-filter');
+        sel.innerHTML = '<option value="">Tüm Cihazlar</option>' + devs.map(d => `<option value="${d.device_mac}">${d.plant_name || d.device_mac}</option>`).join('');
+        anApplyFilters();
+    } catch(e) { document.getElementById('an-count').textContent = 'Yüklenemedi'; }
+}
+
+anInitCharts();
+anLoadData();
+
+// ── Plants Section ──
+const plantThemes = [
+    { bg: 'linear-gradient(135deg,#052e16,#14532d)', emoji: '🌿' },
+    { bg: 'linear-gradient(135deg,#1e1b4b,#3730a3)', emoji: '🌸' },
+    { bg: 'linear-gradient(135deg,#431407,#9a3412)', emoji: '🍅' },
+    { bg: 'linear-gradient(135deg,#14532d,#15803d)', emoji: '🥬' },
+    { bg: 'linear-gradient(135deg,#1a2e05,#365314)', emoji: '🌾' },
+    { bg: 'linear-gradient(135deg,#082f49,#0369a1)', emoji: '💧' },
+    { bg: 'linear-gradient(135deg,#1c1917,#44403c)', emoji: '🌱' },
+    { bg: 'linear-gradient(135deg,#2d1657,#7c3aed)', emoji: '🍇' },
+];
+
+async function loadPlantsDash() {
+    const grid = document.getElementById('plants-grid-dash');
+    try {
+        const [plantRes, deviceRes] = await Promise.all([fetch('/api/plants'), fetch('/api/devices')]);
+        const plants = await plantRes.json();
+        const devices = await deviceRes.json();
+
+        document.getElementById('plants-sub').textContent = `${plants.length} bitki kayıtlı`;
+
+        if (!plants.length) {
+            grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--sub);">
+                <i class="fas fa-seedling" style="font-size:28px;opacity:.3;display:block;margin-bottom:10px;"></i>
+                Henüz bitki eklenmedi. "Yeni Bitki" butonunu kullanın.
+            </div>`;
+            return;
+        }
+
+        const devMap = {};
+        devices.forEach(d => { if (d.plant_type_id) devMap[d.plant_type_id] = (devMap[d.plant_type_id] || 0) + 1; });
+
+        grid.innerHTML = plants.map(p => {
+            const theme = plantThemes[(p.id ?? p.name.charCodeAt(0)) % plantThemes.length];
+            const devCount = devMap[p.id] || 0;
+            const minM = p.min_moisture != null ? p.min_moisture.toFixed(0) + '%' : '--';
+            const maxM = p.max_moisture != null ? p.max_moisture.toFixed(0) + '%' : '--';
+            const minT = p.ideal_temp_min != null ? p.ideal_temp_min.toFixed(0) + '°C' : '--';
+            const maxT = p.ideal_temp_max != null ? p.ideal_temp_max.toFixed(0) + '°C' : '--';
+            return `
+            <div class="plant-card-dash">
+                <div class="plant-card-head-dash" style="background:${theme.bg}">
+                    <span>${theme.emoji}</span>
+                    ${devCount > 0 ? `<span style="position:absolute;top:6px;right:6px;font-size:10px;background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);border-radius:20px;padding:2px 7px;">📡 ${devCount}</span>` : ''}
+                </div>
+                <div class="plant-card-body-dash">
+                    <div class="plant-card-name">${p.name}</div>
+                    <div class="plant-card-id">ID · ${p.id}</div>
+                    <div class="plant-card-row">
+                        <span class="plant-card-lbl">💧 Nem</span>
+                        <span class="plant-card-val" style="color:#60a5fa">${minM} – ${maxM}</span>
+                    </div>
+                    <div class="plant-card-row">
+                        <span class="plant-card-lbl">🌡 Sıcaklık</span>
+                        <span class="plant-card-val" style="color:#fbbf24">${minT} – ${maxT}</span>
+                    </div>
+                </div>
+                <div class="plant-card-foot-dash">
+                    <span class="plant-conn-badge ${devCount > 0 ? 'connected' : 'no-device'}">${devCount > 0 ? `✓ ${devCount} Cihaz` : 'Cihaz Yok'}</span>
+                    <button onclick="deletePlantDash(${p.id},'${p.name.replace(/'/g,"\\'")}') " style="font-size:10px;background:none;border:1px solid rgba(239,68,68,.2);color:rgba(248,113,113,.5);padding:2px 8px;border-radius:4px;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(239,68,68,.1)';this.style.color='#f87171'" onmouseout="this.style.background='none';this.style.color='rgba(248,113,113,.5)'">Sil</button>
+                </div>
+            </div>`;
+        }).join('');
+    } catch(e) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--sub);">Bitkiler yüklenemedi</div>`;
+    }
+}
+
+async function deletePlantDash(id, name) {
+    if (!confirm(`"${name}" bitkisini silmek istediğinize emin misiniz?`)) return;
+    try {
+        const r = await fetch(`/api/plants/${id}`, { method: 'DELETE' });
+        if (r.ok || r.status === 204) { showToast(`"${name}" silindi.`, 'success'); loadPlantsDash(); }
+        else showToast('Silme başarısız.', 'error');
+    } catch(e) { showToast('Bağlantı hatası.', 'error'); }
+}
+
+function openAddPlantModal() { document.getElementById('modal-add-plant-dash').classList.add('open'); }
+function closeAddPlantModal() { document.getElementById('modal-add-plant-dash').classList.remove('open'); }
+document.getElementById('modal-add-plant-dash').addEventListener('click', function(e) { if (e.target === this) closeAddPlantModal(); });
+
+async function submitPlantDash(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-add-plant-dash');
+    btn.disabled = true; btn.textContent = '...';
+    const form = e.target;
+    const data = {
+        name: form.name.value,
+        min_moisture:   parseFloat(form.min_moisture.value) || null,
+        max_moisture:   parseFloat(form.max_moisture.value) || null,
+        ideal_temp_min: parseFloat(form.ideal_temp_min.value) || null,
+        ideal_temp_max: parseFloat(form.ideal_temp_max.value) || null,
+    };
+    try {
+        const r = await fetch('/api/plants', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        if (r.status === 409) showToast('Bu isimde bir bitki zaten kayıtlı!', 'warning');
+        else if (r.ok) { showToast('Bitki eklendi!', 'success'); closeAddPlantModal(); form.reset(); loadPlantsDash(); }
+        else showToast('Hata oluştu.', 'error');
+    } catch(err) { showToast('Bağlantı hatası.', 'error'); }
+    btn.disabled = false; btn.textContent = 'Ekle';
+}
+
+loadPlantsDash();
+
+// ── Alerts Section ──
+let asAllAlerts = [], asActiveFilter = 'all';
+
+async function loadAlertsSec() {
+    try {
+        document.getElementById('alerts-sec-sub').textContent = 'Yükleniyor...';
+        const r = await fetch('/api/alerts');
+        asAllAlerts = await r.json();
+        const total    = asAllAlerts.length;
+        const critical = asAllAlerts.filter(a => a.level === 'critical').length;
+        const warning  = asAllAlerts.filter(a => a.level === 'warning').length;
+        const info     = asAllAlerts.filter(a => a.level === 'info').length;
+        document.getElementById('as-total').textContent    = total;
+        document.getElementById('as-critical').textContent = critical;
+        document.getElementById('as-warning').textContent  = warning;
+        document.getElementById('as-info').textContent     = info;
+        document.getElementById('alerts-sec-sub').textContent = total > 0 ? `${total} aktif uyarı` : 'Aktif uyarı yok';
+        asRenderList();
+    } catch(e) {
+        document.getElementById('alerts-sec-sub').textContent = 'Yüklenemedi';
+    }
+}
+
+function asFilter(level, btn) {
+    asActiveFilter = level;
+    document.querySelectorAll('#alerts-section .an-period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    asRenderList();
+}
+
+function asRenderList() {
+    const list = document.getElementById('alerts-sec-list');
+    let data = asActiveFilter === 'all' ? asAllAlerts : asAllAlerts.filter(a => a.level === asActiveFilter);
+    if (!data.length) {
+        list.innerHTML = `<div class="no-data"><i class="fas fa-circle-check" style="color:var(--green)"></i>${asActiveFilter === 'all' ? 'Aktif uyarı yok' : 'Bu kategoride uyarı yok'}</div>`;
+        return;
+    }
+    const iconMap  = { warning: 'fa-triangle-exclamation', critical: 'fa-circle-xmark', info: 'fa-circle-info' };
+    const colorMap = { warning: 'var(--orange)', critical: 'var(--red)', info: 'var(--blue)' };
+    const bgMap    = { warning: 'var(--orange-dim)', critical: 'var(--red-dim)', info: 'var(--blue-dim)' };
+    list.innerHTML = data.map(a => `
+        <div class="alert-item">
+            <div class="alert-icon ${a.level}" style="background:${bgMap[a.level]||'var(--card2)'};">
+                <i class="fas ${iconMap[a.level] || 'fa-bell'}" style="color:${colorMap[a.level]||'var(--sub2)'}"></i>
+            </div>
+            <div style="flex:1">
+                <div class="alert-msg">${a.message}</div>
+                <div class="alert-time">${a.timestamp}</div>
+            </div>
+            <span class="badge ${a.level==='critical'?'badge-red':a.level==='warning'?'badge-orange':'badge-blue'}" style="font-size:10px;flex-shrink:0;">${a.level==='critical'?'Kritik':a.level==='warning'?'Uyarı':'Bilgi'}</span>
+        </div>
+    `).join('');
+}
+
+loadAlertsSec();
+
+async function loadLeafAnalyses() {
+    const list = document.getElementById('leaf-analysis-list');
+    const sub  = document.getElementById('leaf-analysis-sub');
+    try {
+        const r    = await fetch('/api/leaf-history?limit=6');
+        const rows = await r.json();
+        sub.textContent = `${rows.length} kayıt`;
+        if (!rows.length) {
+            list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--sub);">Henüz yaprak analizi yapılmadı. <a href="/leaf_disease" style="color:var(--gold)">Analiz başlat →</a></div>';
+            return;
+        }
+        list.innerHTML = rows.map(item => {
+            const conf    = item.confidence != null ? (item.confidence * 100).toFixed(1) : null;
+            const pct     = conf ? Math.min(parseFloat(conf), 100) : 0;
+            const label   = item.label || 'Bilinmeyen';
+            const healthy = label.toLowerCase().includes('healthy');
+            const barColor = healthy ? 'var(--green)' : (pct > 70 ? 'var(--red)' : 'var(--gold)');
+            const d       = new Date(item.timestamp);
+            const dateStr = d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
+            return `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(200,169,106,.06)">
+                <div style="font-size:20px">${healthy ? '✅' : '🔬'}</div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}</div>
+                    <div style="font-size:10px;color:var(--sub);margin-top:2px">${dateStr}</div>
+                    ${conf ? `
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+                        <div style="flex:1;height:3px;background:rgba(200,169,106,.08);border-radius:2px;overflow:hidden">
+                            <div style="height:100%;width:${pct}%;background:${barColor};border-radius:2px;transition:width .6s ease"></div>
+                        </div>
+                        <span style="font-size:10px;color:${barColor};font-weight:700;width:36px;text-align:right">${conf}%</span>
+                    </div>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+    } catch(e) {
+        list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--sub);">Veri alınamadı.</div>';
+    }
+}
+loadLeafAnalyses();
+
+// Anchor highlight: sayfaya #anchor ile gelindiğinde ilgili bölümü vurgula
+(function() {
+    const hash = window.location.hash;
+    if (!hash) return;
+    // Prevent browser native anchor scroll from conflicting
+    if (window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname);
+    }
+    // Wait for all data loads + chart renders to settle before scrolling
+    setTimeout(() => {
+        const target = document.querySelector(hash);
+        if (!target) return;
+        const pageContent = document.querySelector('.page-content');
+        if (pageContent) {
+            const targetTop = target.offsetTop - 16;
+            pageContent.scrollTo({ top: targetTop, behavior: 'smooth' });
+        } else {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        target.style.transition = 'box-shadow 0.4s ease, outline 0.4s ease';
+        target.style.outline = '1.5px solid rgba(200,169,106,0.6)';
+        target.style.boxShadow = '0 0 24px rgba(200,169,106,0.15)';
+        setTimeout(() => {
+            target.style.outline = '';
+            target.style.boxShadow = '';
+            // Restore hash in URL without triggering scroll
+            if (window.history.replaceState) {
+                window.history.replaceState(null, '', hash);
+            }
+        }, 2500);
+    }, 2200);
+})();
 {% endblock %}

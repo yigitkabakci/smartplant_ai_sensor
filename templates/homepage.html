@@ -256,6 +256,7 @@ footer{border-top:1px solid rgba(200,169,106,.12);padding:2.8rem 8%;display:flex
     <a href="{{ '/crops' if current_user else '/login' }}">Bitkiler</a>
     <a href="{{ '/analytics' if current_user else '/login' }}">Analitik</a>
     <a href="{{ '/alerts_page' if current_user else '/login' }}">Uyarılar</a>
+    <a href="{{ '/leaf_disease' if current_user else '/login' }}">Hastalık Tespiti</a>
   </div>
   <div class="nr">
     {% if current_user %}
@@ -296,6 +297,7 @@ footer{border-top:1px solid rgba(200,169,106,.12);padding:2.8rem 8%;display:flex
     <div class="hbtns">
       {% if current_user %}
         <a href="/dashboard" class="bto bto-gold">Dashboard'a Git <svg viewBox="0 0 20 10"><path d="M0 5h18M13 1l6 4-6 4"/></svg></a>
+        <a href="/leaf_disease" class="bto">Hastalık Tespiti <svg viewBox="0 0 20 10"><path d="M0 5h18M13 1l6 4-6 4"/></svg></a>
         <a href="/crops" class="bto">Bitkilerimi Yönet <svg viewBox="0 0 20 10"><path d="M0 5h18M13 1l6 4-6 4"/></svg></a>
       {% else %}
         <a href="/register" class="bto bto-gold">Ücretsiz Başla <svg viewBox="0 0 20 10"><path d="M0 5h18M13 1l6 4-6 4"/></svg></a>
@@ -408,7 +410,7 @@ footer{border-top:1px solid rgba(200,169,106,.12);padding:2.8rem 8%;display:flex
     </div>
 
     <!-- Disease Detection -->
-    <div class="preview-card" onclick="goTo('{{ '/dashboard' if current_user else '/login' }}')">
+    <div class="preview-card" onclick="goTo('{{ '/leaf_disease' if current_user else '/login' }}')">
       <div class="preview-visual" style="background:linear-gradient(135deg,rgba(7,10,6,.9),rgba(10,14,8,.8));">
         <div class="preview-visual-inner" style="flex-direction:column;gap:12px">
           <div class="mock-leaf-icon">🍃</div>
@@ -424,7 +426,7 @@ footer{border-top:1px solid rgba(200,169,106,.12);padding:2.8rem 8%;display:flex
       <div class="preview-body">
         <div class="preview-title">Hastalık <em>Tespiti</em></div>
         <p class="preview-desc">Bitkinin yaprağından fotoğraf yükleyin — yapay zeka modeli 100'den fazla hastalık sınıfını yüksek doğrulukla saniyeler içinde tespit eder ve güven oranını raporlar.</p>
-        <a class="preview-cta" onclick="event.stopPropagation();goTo('{{ '/dashboard' if current_user else '/login' }}')">
+        <a class="preview-cta" onclick="event.stopPropagation();goTo('{{ '/leaf_disease' if current_user else '/login' }}')">
           {% if current_user %}Hastalık Tespitine Git{% else %}Giriş Yaparak Gör{% endif %}
           <svg viewBox="0 0 20 10"><path d="M0 5h18M13 1l6 4-6 4"/></svg>
         </a>
@@ -606,6 +608,7 @@ reveal();
 
 /* LOADER */
 window.addEventListener('load', () => { document.getElementById('loader').classList.add('hide'); });
+window.addEventListener('pageshow', (e) => { if (e.persisted) document.getElementById('loader').classList.add('hide'); });
 document.addEventListener('click', e => {
   const a = e.target.closest('a[href]');
   if (!a) return;

@@ -12,7 +12,7 @@ from config import Config
 from services import ml_service
 from services import plantnet_service
 from services.database import get_db
-from services.plant_knowledge import find_plant, evaluate_problems, get_optimal_status
+from services.plant_knowledge import find_plant, evaluate_problems, get_optimal_status, PLANTS
 from models import LeafAnalysis, SensorReading
 from schemas import DiagnosisResponse, PlantCandidate, HealthProblem
 from dependencies import get_current_user
@@ -207,3 +207,127 @@ async def leaf_predict(
         diagnosis_message=diag_message,
         disclaimer=DISCLAIMER,
     )
+
+
+# ── Mobil Uygulama Endpoint'i ─────────────────────────────────────────────────
+
+def _build_care(plant_data: Optional[dict]) -> dict:
+    """plant_knowledge verisinden mobil care objesi üret."""
+    if not plant_data:
+        return {
+            "humidity_min": 40, "humidity_max": 70,
+            "light_min": 1000, "light_max": 10000,
+            "soil_moisture_min": 30, "soil_moisture_max": 60,
+            "watering": "Toprağın üst katmanı kuruyunca sulayın.",
+            "notes": "Genel bitki bakımı önerileri uygulanıyor.",
+        }
+    opt = plant_data.get("optimal", {})
+    m_min, m_max = opt.get("moisture", (30, 60))
+    t_min, t_max = opt.get("temperature", (15, 28))
+    h_min, h_max = opt.get("humidity", (40, 70))
+    l_min, l_max = opt.get("light", (1000, 10000))
+
+    # Sulama ve notlar için problem listesinden ipucu çek
+    watering_hint = "Toprağın üst katmanı kuruyunca sulayın."
+    notes_hint    = f"İdeal sıcaklık {t_min}–{t_max}°C arasında tutun."
+    for p in plant_data.get("problems", []):
+        if p.get("metric") == "moisture" and p.get("op") == "gt":
+            watering_hint = p.get("recommendation", watering_hint)
+            break
+
+    return {
+        "humidity_min":       h_min,
+        "humidity_max":       h_max,
+        "light_min":          l_min,
+        "light_max":          l_max,
+        "soil_moisture_min":  m_min,
+        "soil_moisture_max":  m_max,
+        "watering":           watering_hint,
+        "notes":              notes_hint,
+    }
+
+
+@router.post("/predict-disease")
+async def predict_disease_mobile(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    """
+    Mobil uygulama için basitleştirilmiş hastalık tespiti endpoint'i.
+    Multipart/form-data ile görsel alır; JSON döner.
+    """
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Dosya seçilmedi.")
+
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Desteklenen formatlar: jpg, jpeg, png.")
+
+    # Dosya boyutu kontrolü (10 MB)
+    contents = await file.read()
+    if len(contents) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Dosya 10 MB sınırını aşıyor.")
+
+    filename = _secure_filename(file.filename)
+    filepath = os.path.join(cfg.UPLOAD_FOLDER, filename)
+    with open(filepath, "wb") as f:
+        f.write(contents)
+
+    # --- PlantNet ile bitki tanıma ---
+    try:
+        plantnet_result = plantnet_service.identify_plant(filepath)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception:
+        logger.exception("PlantNet hatası (mobile)")
+        raise HTTPException(status_code=500, detail="Bitki tanıma servisi hatası.")
+
+    # --- Hastalık pipeline ---
+    pipeline = ml_service.run_disease_pipeline(filepath, plantnet_result)
+
+    stage        = pipeline["stage"]
+    disease_name = pipeline.get("disease")
+    confidence   = pipeline.get("confidence", 0.0)
+    is_healthy   = pipeline.get("is_healthy")
+
+    fallback = stage == "fallback" or (confidence < 0.60 and stage != "disease")
+
+    # --- Bitki bilgi tabanı ---
+    plant_display = plantnet_result.get("common_names", [None])[0] \
+                    or plantnet_result.get("scientific_name") \
+                    or "Bilinmeyen Bitki"
+    sci_name      = plantnet_result.get("scientific_name", "")
+    match         = find_plant(plant_display) or find_plant(sci_name)
+    plant_data    = match[1] if match else None
+    care          = _build_care(plant_data)
+
+    # --- Mesaj ---
+    if fallback:
+        message = "Model hastalık tahmininden emin değil. Bakım analizine geçildi."
+        disease_out = None
+    elif is_healthy:
+        message = "Yaprak sağlıklı görünüyor."
+        disease_out = None
+    else:
+        message = "Hastalık analizi tamamlandı."
+        disease_out = disease_name
+
+    # --- DB kayıt ---
+    label_str = f"{plant_display} — {disease_name}" if disease_name else plant_display
+    db.add(LeafAnalysis(
+        image_path=f"/static/uploads/{filename}",
+        label=label_str,
+        confidence=confidence,
+        timestamp=datetime.utcnow(),
+    ))
+    db.commit()
+
+    return {
+        "success":    True,
+        "plant":      plant_display,
+        "disease":    disease_out,
+        "confidence": round(confidence, 4),
+        "fallback":   fallback,
+        "message":    message,
+        "care":       care,
+    }

@@ -486,18 +486,7 @@ function showResult(d) {
     });
   }
 
-  // --- Hastalık modeli adayları ---
-  if (d.all_candidates && d.all_candidates.length) {
-    candHtml += `<div class="section-divider">Hastalık Modeli Tahminleri</div>`;
-    d.all_candidates.slice(0, 5).forEach(c => {
-      const pct = ((c.score || 0) * 100).toFixed(1);
-      candHtml += `<div class="candidate-row">
-        <div class="candidate-label">${c.label}</div>
-        <div class="candidate-bar-wrap"><div class="candidate-bar" style="width:${Math.min(pct,100)}%"></div></div>
-        <div class="candidate-pct">${pct}%</div>
-      </div>`;
-    });
-  }
+  // Hastalık modeli tahminleri dashboard'da gösteriliyor
   document.getElementById('result-candidates').innerHTML = candHtml;
   document.getElementById('result-disclaimer').textContent = d.disclaimer || '';
 }

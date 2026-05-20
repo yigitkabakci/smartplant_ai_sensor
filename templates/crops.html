@@ -90,6 +90,24 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
 .plant-progress{height:2px;background:rgba(255,255,255,.05);border-radius:1px;margin:.5rem 0 .2rem;overflow:hidden}
 .plant-progress-fill{height:100%;border-radius:1px;background:linear-gradient(90deg,#3b82f6,#06b6d4);transition:width .6s ease}
 .plant-card-foot{padding:.9rem 1.5rem;border-top:1px solid rgba(200,169,106,.07);display:flex;align-items:center;justify-content:space-between}
+/* Environment Analysis */
+.env-wrap{margin:.9rem 0 .4rem;padding:.85rem;background:rgba(0,0,0,.18);border-radius:8px;border:1px solid rgba(200,169,106,.07)}
+.env-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.55rem}
+.env-badge{font-size:.55rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:.22rem .6rem;border-radius:99px}
+.env-badge.healthy{background:rgba(34,197,94,.15);color:#4ade80}
+.env-badge.warning{background:rgba(245,158,11,.15);color:#fbbf24}
+.env-badge.critical{background:rgba(239,68,68,.15);color:#f87171}
+.env-badge.unknown{background:rgba(200,169,106,.1);color:rgba(200,169,106,.6)}
+.env-score-wrap{display:flex;align-items:center;gap:.4rem}
+.env-score-bar{width:54px;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.env-score-fill{height:100%;border-radius:2px;transition:width .7s ease}
+.env-score-num{font-size:.6rem;font-weight:700;color:rgba(237,232,216,.45)}
+.env-sensors{display:grid;grid-template-columns:1fr 1fr;gap:.3rem .6rem;margin-bottom:.55rem}
+.env-sensor{font-size:.6rem;color:rgba(237,232,216,.45)}
+.env-sensor span{color:rgba(237,232,216,.75);font-weight:600}
+.env-summary{font-size:.62rem;color:rgba(237,232,216,.55);line-height:1.5;margin-bottom:.45rem}
+.env-seasonal{font-size:.58rem;color:rgba(200,169,106,.55);line-height:1.45;padding:.4rem .6rem;background:rgba(200,169,106,.05);border-left:2px solid rgba(200,169,106,.25);border-radius:0 4px 4px 0}
+.env-loading{font-size:.58rem;color:rgba(237,232,216,.25);text-align:center;padding:.4rem 0;letter-spacing:.06em}
 .plant-dev-badge{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;padding:.22rem .7rem;border-radius:20px;border:1px solid rgba(200,169,106,.2);color:rgba(200,169,106,.6)}
 .plant-dev-badge.connected{border-color:rgba(34,197,94,.25);color:#4ade80;background:rgba(34,197,94,.07)}
 .delete-btn{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;padding:.26rem .7rem;border:1px solid rgba(239,68,68,.2);color:rgba(248,113,113,.6);background:transparent;cursor:pointer;transition:all .3s;border-radius:2px;font-family:var(--fb)}
@@ -302,6 +320,8 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
           </div>
           <div class="sensor-fill-msg" id="sensor-fill-msg">✓ Sensör verisi aktarıldı</div>
         </div>
+        <!-- Sensör Analiz Sonuçları -->
+        <div id="sensor-analysis" style="display:none;margin-bottom:16px"></div>
         <div class="form-group">
           <label class="form-label">Bitki Adı *</label>
           <input class="form-input" type="text" name="name" placeholder="örn. Domates" required>
@@ -404,6 +424,9 @@ function renderPlants(plants) {
             <div class="plant-progress-fill" style="width:${progressW}%"></div>
           </div>
           <div style="font-size:.58rem;color:rgba(237,232,216,.25);letter-spacing:.08em">Nem optimum: ${minM} – ${maxM}</div>
+          <div id="env-${p.id}" class="env-wrap">
+            <div class="env-loading">⟳ Canlı durum yükleniyor...</div>
+          </div>
         </div>
         <div class="plant-card-foot">
           <span class="plant-dev-badge ${devCount > 0 ? 'connected' : ''}">
@@ -419,6 +442,43 @@ function filterPlants() {
   const q = document.getElementById('search-input').value.toLowerCase();
   const filtered = allPlants.filter(p => p.name.toLowerCase().includes(q));
   renderPlants(filtered);
+  filtered.forEach(p => loadEnvAnalysis(p.id));
+}
+
+async function loadEnvAnalysis(plantId) {
+  const box = document.getElementById(`env-${plantId}`);
+  if (!box) return;
+  try {
+    const r = await fetch(`/api/plants/${plantId}/environment-analysis`);
+    const a = await r.json();
+    const sv = a.sensor_values;
+    const scoreColor = a.status === 'healthy' ? '#4ade80' : a.status === 'warning' ? '#fbbf24' : a.status === 'critical' ? '#f87171' : 'rgba(200,169,106,.5)';
+    const scoreW = a.score != null ? a.score : 0;
+
+    const sensorsHtml = sv ? `
+      <div class="env-sensors">
+        <div class="env-sensor">💧 Nem <span>${sv.humidity != null ? sv.humidity.toFixed(0)+'%' : '--'}</span></div>
+        <div class="env-sensor">🌡 Sıcaklık <span>${sv.temperature != null ? sv.temperature.toFixed(1)+'°C' : '--'}</span></div>
+        <div class="env-sensor">🌍 Toprak <span>${sv.soil_moisture != null ? sv.soil_moisture.toFixed(0)+'%' : '--'}</span></div>
+        <div class="env-sensor">☀️ Işık <span>${sv.light != null ? Math.round(sv.light)+' lux' : '--'}</span></div>
+      </div>` : `<div class="env-sensor" style="margin-bottom:.5rem;font-size:.6rem;color:rgba(237,232,216,.3)">Sensör verisi bekleniyor</div>`;
+
+    box.innerHTML = `
+      <div class="env-header">
+        <span class="env-badge ${a.status}">${
+          {healthy:'✓ Sağlıklı', warning:'⚠ Dikkat', critical:'✕ Kritik', unknown:'· Bilinmiyor'}[a.status] || a.status
+        }</span>
+        ${a.score != null ? `<div class="env-score-wrap">
+          <div class="env-score-bar"><div class="env-score-fill" style="width:${scoreW}%;background:${scoreColor}"></div></div>
+          <span class="env-score-num">${a.score}</span>
+        </div>` : ''}
+      </div>
+      ${sensorsHtml}
+      <div class="env-summary">${a.summary}</div>
+      ${a.weather ? `<div class="env-seasonal">🌤 <b>${a.weather.city} ${a.weather.temp.toFixed(0)}°C</b> · ${a.weather.description} — ${a.seasonal_warning}</div>` : `<div class="env-seasonal">🍂 ${a.seasonal_warning}</div>`}`;
+  } catch(e) {
+    box.innerHTML = '<div class="env-loading" style="color:rgba(239,68,68,.4)">Analiz alınamadı</div>';
+  }
 }
 
 async function loadPlants() {
@@ -428,6 +488,7 @@ async function loadPlants() {
     document.getElementById('stat-total').textContent = allPlants.length;
     document.getElementById('stat-types').textContent = new Set(allPlants.map(p => p.name)).size;
     renderPlants(allPlants);
+    allPlants.forEach(p => loadEnvAnalysis(p.id));
   } catch(e) {
     document.getElementById('plants-grid').innerHTML = `
       <div class="empty-state">
@@ -602,10 +663,10 @@ async function pullSensorData(mac, btn) {
   document.querySelectorAll('.device-pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   try {
-    const r = await fetch(`/api/sensor?limit=100`);
-    const readings = await r.json();
-    const latest = readings.find(x => x.device_mac === mac);
+    const r = await fetch(`/api/latest-data?device_mac=${encodeURIComponent(mac)}`);
+    const latest = await r.json();
     if (!latest) { showToast('Bu cihazdan sensör verisi bulunamadı.', 'warning'); return; }
+
     const form = document.getElementById('add-plant-form');
     const m = latest.moisture_pct;
     const t = latest.temperature_c;
@@ -620,9 +681,67 @@ async function pullSensorData(mac, btn) {
     const msg = document.getElementById('sensor-fill-msg');
     msg.style.display = 'block';
     setTimeout(() => { msg.style.display = 'none'; }, 3000);
+
+    // Analiz
+    const plantName = form.name.value.trim() || 'Bilinmeyen Bitki';
+    const analysisResp = await fetch('/api/analyze-sensor-data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        plant: plantName,
+        sensor_data: {
+          humidity:     latest.humidity_pct,
+          temperature:  latest.temperature_c,
+          light:        latest.light_lux,
+          soil_moisture: latest.moisture_pct,
+        }
+      })
+    });
+    const analysis = await analysisResp.json();
+    renderSensorAnalysis(analysis);
   } catch(e) {
     showToast('Sensör verisi alınamadı.', 'error');
   }
+}
+
+function renderSensorAnalysis(a) {
+  const box = document.getElementById('sensor-analysis');
+  if (!a || !a.success) { box.style.display = 'none'; return; }
+
+  const statusColor = { ok: '#22c55e', warning: '#f59e0b', critical: '#ef4444' }[a.status] || '#c8a96a';
+  const statusLabel = { ok: 'İyi Durum', warning: 'Dikkat', critical: 'Kritik' }[a.status] || a.status;
+  const icons = { humidity: '💧', temperature: '🌡️', light: '☀️', soil_moisture: '🌍' };
+  const labels = { humidity: 'Hava Nemi', temperature: 'Sıcaklık', light: 'Işık', soil_moisture: 'Toprak Nemi' };
+
+  const commentCards = Object.entries(a.comments || {}).map(([k, v]) => {
+    const isOk = v.includes('uygun') && !v.includes('alınamadı');
+    const color = isOk ? '#22c55e' : (a.status === 'critical' ? '#ef4444' : '#f59e0b');
+    return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid rgba(200,169,106,.08)">
+      <span style="font-size:18px">${icons[k] || '•'}</span>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.5px">${labels[k] || k}</div>
+        <div style="font-size:12px;color:#ede8d8cc;margin-top:2px">${v}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const recList = (a.recommendations || []).length
+    ? `<div style="margin-top:10px">
+        <div style="font-size:11px;font-weight:700;color:#c8a96a;margin-bottom:6px">ÖNERİLER</div>
+        ${a.recommendations.map(r => `<div style="font-size:12px;color:#ede8d8cc;padding:4px 0;padding-left:12px;border-left:2px solid #c8a96a44">• ${r}</div>`).join('')}
+      </div>` : '';
+
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div style="background:#111a0e;border:1px solid rgba(200,169,106,.15);border-radius:12px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:13px;font-weight:700;color:#ede8d8">🔬 Sensör Analizi — ${a.plant}</span>
+        <span style="font-size:11px;font-weight:700;color:${statusColor};background:${statusColor}22;padding:3px 10px;border-radius:99px">${statusLabel}</span>
+      </div>
+      <div style="font-size:12px;color:#ede8d8aa;margin-bottom:10px">${a.summary}</div>
+      ${commentCards}
+      ${recList}
+    </div>`;
 }
 
 document.querySelectorAll('.modal-overlay').forEach(el => {
