@@ -1,231 +1,322 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet,
-  TouchableOpacity, RefreshControl,
+  TouchableOpacity, RefreshControl, Animated,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Svg, { Path } from 'react-native-svg';
+import { useFonts, DancingScript_700Bold } from '@expo-google-fonts/dancing-script';
+import ChartBarIcon from 'react-native-heroicons/outline/ChartBarIcon';
+import CameraIcon from 'react-native-heroicons/outline/CameraIcon';
+import BellAlertIcon from 'react-native-heroicons/outline/BellAlertIcon';
+import ChevronRightIcon from 'react-native-heroicons/outline/ChevronRightIcon';
+import BeakerIcon from 'react-native-heroicons/outline/BeakerIcon';
+import FireIcon from 'react-native-heroicons/outline/FireIcon';
+import CloudIcon from 'react-native-heroicons/outline/CloudIcon';
+import SunIcon from 'react-native-heroicons/outline/SunIcon';
+import ExclamationTriangleIcon from 'react-native-heroicons/outline/ExclamationTriangleIcon';
+import CpuChipIcon from 'react-native-heroicons/outline/CpuChipIcon';
+import MapPinIcon from 'react-native-heroicons/outline/MapPinIcon';
 import FallingLeaves from '../components/FallingLeaves';
 import { getAlerts } from '../services/api';
-import { Colors, Typography, Radius } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
+import { Typography, Radius } from '../constants/theme';
 
-export default function DashboardScreen({ navigation }) {
-  const [alertCount, setAlertCount] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
+function LeafIcon({ size = 24, color = '#000', strokeWidth = 1.8 }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 2C8 5 5 9 5 13C5 17.5 8.1 21 12 21C15.9 21 19 17.5 19 13C19 9 16 5 12 2Z"
+        stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"
+      />
+      <Path d="M12 21L12 3" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" />
+    </Svg>
+  );
+}
 
-  const fetchAlerts = useCallback(async () => {
-    try {
-      const a = await getAlerts();
-      setAlertCount(Array.isArray(a) ? a.length : 0);
-    } catch (e) {}
-    setRefreshing(false);
-  }, []);
+function HandwrittenLogo() {
+  const { colors } = useTheme();
+  const [fontsLoaded] = useFonts({ DancingScript_700Bold });
+  const letters  = 'AgroSense'.split('');
+  const anims    = useRef(letters.map(() => new Animated.Value(0))).current;
+  const lineAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => { fetchAlerts(); }, []);
+  useEffect(() => {
+    if (!fontsLoaded) return;
+    Animated.sequence([
+      Animated.delay(200),
+      Animated.stagger(95, anims.map(a =>
+        Animated.spring(a, { toValue: 1, friction: 6, tension: 80, useNativeDriver: true })
+      )),
+    ]).start(() => {
+      Animated.timing(lineAnim, { toValue: 1, duration: 500, useNativeDriver: false }).start();
+    });
+  }, [fontsLoaded]);
 
-  const onRefresh = () => { setRefreshing(true); fetchAlerts(); };
+  if (!fontsLoaded) return <View style={{ height: 90 }} />;
 
   return (
-    <View style={styles.container}>
-    <FallingLeaves />
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.gold} />
-      }
-    >
-      {/* ── Banner ── */}
-      <LinearGradient
-        colors={['#0d1f0a', '#162012', '#0a1208']}
-        style={styles.banner}
-        start={[0, 0]} end={[1, 1]}
-      >
-        <Text style={styles.bannerBrand} adjustsFontSizeToFit numberOfLines={1}>
-          AgroSense
-        </Text>
-        <View style={styles.bannerDivider} />
-        <Text style={styles.bannerTagline}>Ak&#x131;ll&#x131; Bitki &#x130;zleme Sistemi</Text>
-      </LinearGradient>
-
-      {/* ── Bitkilerim ── */}
-      <TouchableOpacity
-        activeOpacity={0.82}
-        onPress={() => navigation.navigate('Bitkiler')}
-      >
-        <LinearGradient
-          colors={['#0d2d0a', '#142410', '#0a1a08']}
-          style={styles.navCard}
-          start={[0, 0]} end={[1, 1]}
-        >
-          <View style={styles.navLeft}>
-            <View style={[styles.iconWrap, { backgroundColor: Colors.greenDim }]}>
-              <Text style={styles.navIcon}>🌿</Text>
-            </View>
-            <View>
-              <Text style={styles.navTitle}>Bitkilerim</Text>
-              <Text style={styles.navSub}>Tüm bitkilerini yönet ve takip et</Text>
-            </View>
-          </View>
-          <Text style={styles.arrow}>›</Text>
-        </LinearGradient>
-      </TouchableOpacity>
-
-      {/* ── Analiz + AI Analiz ── */}
-      <View style={styles.row}>
-        <TouchableOpacity
-          style={styles.half}
-          activeOpacity={0.82}
-          onPress={() => navigation.navigate('Analitik')}
-        >
-          <LinearGradient
-            colors={['#0a1830', '#0d2040']}
-            style={styles.halfCard}
-            start={[0, 0]} end={[1, 1]}
+    <View style={{ alignItems: 'center', paddingTop: 18, paddingBottom: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+        {letters.map((char, i) => (
+          <Animated.Text
+            key={i}
+            style={{
+              fontFamily: 'DancingScript_700Bold',
+              fontSize: 54, color: colors.green, lineHeight: 66,
+              textShadowColor: `${colors.green}59`,
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: 14,
+              opacity: anims[i],
+              transform: [
+                { translateY: anims[i].interpolate({ inputRange: [0, 1], outputRange: [18, 0] }) },
+                { scale:      anims[i].interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }) },
+              ],
+            }}
           >
-            <Text style={styles.halfIcon}>📊</Text>
-            <Text style={styles.halfTitle}>Analiz</Text>
-            <Text style={styles.halfSub}>Sensör{'\n'}verileri</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.half}
-          activeOpacity={0.82}
-          onPress={() => navigation.navigate('Hastalik')}
-        >
-          <LinearGradient
-            colors={['#1a0830', '#280d40']}
-            style={styles.halfCard}
-            start={[0, 0]} end={[1, 1]}
-          >
-            <Ionicons name="camera-outline" size={44} color={Colors.cream} />
-            <Text style={styles.halfTitle}>AI Analiz</Text>
-            <Text style={styles.halfSub}>Hastalık{'\n'}tespiti</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            {char}
+          </Animated.Text>
+        ))}
       </View>
-
-      {/* ── Uyarılar ── */}
-      <TouchableOpacity
-        activeOpacity={0.82}
-        onPress={() => navigation.navigate('Uyarilar')}
-      >
-        <LinearGradient
-          colors={alertCount > 0 ? ['#301808', '#401c08'] : ['#0f150a', '#141c0e']}
-          style={styles.navCard}
-          start={[0, 0]} end={[1, 1]}
-        >
-          <View style={styles.navLeft}>
-            <View style={[styles.iconWrap, {
-              backgroundColor: alertCount > 0 ? Colors.orangeDim : Colors.goldDim,
-            }]}>
-              <Text style={styles.navIcon}>🔔</Text>
-            </View>
-            <View>
-              <Text style={styles.navTitle}>Uyarılar</Text>
-              <Text style={styles.navSub}>
-                {alertCount > 0
-                  ? `${alertCount} aktif uyarı var`
-                  : 'Tüm sistemler normal'}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.navRight}>
-            {alertCount > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{alertCount}</Text>
-              </View>
-            )}
-            <Text style={styles.arrow}>›</Text>
-          </View>
-        </LinearGradient>
-      </TouchableOpacity>
-    </ScrollView>
+      <Animated.View style={{
+        height: 1.5, backgroundColor: colors.green, opacity: 0.45,
+        borderRadius: 1, marginTop: 4, alignSelf: 'center',
+        width: lineAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '72%'] }),
+      }} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg },
-  scroll:    { flex: 1 },
-  content:   { padding: 16, paddingBottom: 40 },
+const SUBTITLES = [
+  'Akıllı Bitki İzleme Sistemi',
+  'AI Bitki Analizi',
+  'Bitki Hastalık Tespiti',
+];
 
-  // Banner
-  banner: {
-    borderRadius: Radius.xl,
-    paddingHorizontal: 22,
-    paddingTop: 18,
-    paddingBottom: 16,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    overflow: 'hidden',
-  },
-  bannerBrand: {
-    fontStyle: 'italic',
-    fontSize: 48,
-    fontWeight: '700',
-    color: Colors.cream,
-    letterSpacing: 0.5,
-    textAlign: 'center',
-  },
-  bannerDivider: { height: 1, backgroundColor: Colors.border, marginVertical: 10 },
-  bannerTagline: {
-    fontSize: 11,
-    color: Colors.sub2,
-    letterSpacing: 2,
-    fontWeight: '400',
-    fontStyle: 'italic',
-    paddingBottom: 2,
-    textAlign: 'center',
-  },
+function TypewriterSubtitle() {
+  const { colors } = useTheme();
+  const [displayed, setDisplayed] = useState('');
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // Full-width nav card
-  navCard: {
-    borderRadius: Radius.lg,
-    padding: 18,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  navLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1 },
-  navRight:{ flexDirection: 'row', alignItems: 'center', gap: 8 },
-  iconWrap: {
-    width: 52, height: 52,
-    borderRadius: Radius.md,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: Colors.border,
-  },
-  navIcon:  { fontSize: 28 },
-  navTitle: { fontSize: Typography.md, fontWeight: '700', color: Colors.cream },
-  navSub:   { fontSize: Typography.sm, color: Colors.sub2, marginTop: 2 },
-  arrow:    { fontSize: 26, color: Colors.sub, fontWeight: '200' },
+  useEffect(() => {
+    let cancelled = false;
+    const phrase = SUBTITLES[phraseIdx];
+    const run = async () => {
+      await new Promise(r =>
+        Animated.timing(fadeAnim, { toValue: 1, duration: 350, useNativeDriver: true }).start(r)
+      );
+      for (let i = 0; i <= phrase.length; i++) {
+        if (cancelled) return;
+        setDisplayed(phrase.slice(0, i));
+        await new Promise(r => setTimeout(r, 58));
+      }
+      await new Promise(r => setTimeout(r, 2100));
+      if (cancelled) return;
+      await new Promise(r =>
+        Animated.timing(fadeAnim, { toValue: 0, duration: 550, useNativeDriver: true }).start(r)
+      );
+      if (cancelled) return;
+      await new Promise(r => setTimeout(r, 160));
+      setPhraseIdx(idx => (idx + 1) % SUBTITLES.length);
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [phraseIdx]);
 
-  badge: {
-    backgroundColor: Colors.orange,
-    borderRadius: Radius.full,
-    minWidth: 22, height: 22,
-    alignItems: 'center', justifyContent: 'center',
-    paddingHorizontal: 6,
-  },
-  badgeText: { fontSize: 11, fontWeight: '800', color: '#fff' },
+  return (
+    <Animated.View style={{ height: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 16, marginTop: -4, opacity: fadeAnim }}>
+      <Text style={{ fontSize: 13, color: colors.sub2, fontWeight: '500', letterSpacing: 0.5 }}>{displayed}</Text>
+    </Animated.View>
+  );
+}
 
-  // Half-width cards
-  row:     { flexDirection: 'row', gap: 12, marginBottom: 12 },
-  half:    { flex: 1 },
-  halfCard: {
-    borderRadius: Radius.lg,
-    padding: 20,
-    alignItems: 'center', justifyContent: 'center',
-    minHeight: 148,
-    borderWidth: 1, borderColor: Colors.border,
-    gap: 6,
-  },
-  halfIcon:  { fontSize: 44 },
-  halfTitle: { fontSize: Typography.md, fontWeight: '700', color: Colors.cream },
-  halfSub:   { fontSize: Typography.xs, color: Colors.sub2, textAlign: 'center', lineHeight: 16 },
-});
+const MOCK_WEATHER = {
+  city: 'İstanbul', country: 'Türkiye', condition: 'Parçalı Bulutlu',
+  tempC: 22, feelsLikeC: 20, humidity: 68, uvIndex: 4,
+};
+
+function WeatherCard() {
+  const { colors } = useTheme();
+  const w = MOCK_WEATHER;
+  return (
+    <View style={{ backgroundColor: colors.card, borderRadius: Radius.lg, borderWidth: 1, borderColor: colors.border, marginBottom: 14, overflow: 'hidden' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.borderDim }}>
+        <MapPinIcon size={11} color={colors.green} strokeWidth={2.5} />
+        <Text style={{ flex: 1, fontSize: Typography.xs, color: colors.sub2, fontWeight: '600', letterSpacing: 0.3 }}>{w.city}, {w.country}</Text>
+        <View style={{ backgroundColor: colors.greenDim, borderRadius: Radius.full, paddingHorizontal: 8, paddingVertical: 2 }}>
+          <Text style={{ fontSize: 9, color: colors.green, fontWeight: '800', letterSpacing: 0.8 }}>DEMO</Text>
+        </View>
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14 }}>
+        <View style={{ alignItems: 'flex-start', gap: 6 }}>
+          <CloudIcon size={48} color="rgba(160,180,200,0.65)" strokeWidth={1.2} />
+          <Text style={{ fontSize: Typography.base, color: colors.cream, fontWeight: '700' }}>{w.condition}</Text>
+          <Text style={{ fontSize: Typography.xs, color: colors.sub2 }}>Dışarıda</Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+          <Text style={{ fontSize: 60, fontWeight: '800', color: colors.cream, lineHeight: 66 }}>{w.tempC}°</Text>
+          <Text style={{ fontSize: Typography.base, color: colors.sub2, fontWeight: '600', marginTop: 10 }}>C</Text>
+        </View>
+      </View>
+      <View style={{ height: 1, backgroundColor: colors.borderDim, marginHorizontal: 14 }} />
+      <View style={{ flexDirection: 'row', paddingHorizontal: 14, paddingVertical: 12 }}>
+        {[
+          { Icon: BeakerIcon, val: `${w.humidity}%`,    lbl: 'Nem',        color: colors.blue   },
+          { Icon: FireIcon,   val: `${w.feelsLikeC}°C`, lbl: 'Hissedilen', color: colors.orange },
+          { Icon: SunIcon,    val: `UV ${w.uvIndex}`,   lbl: 'Orta',       color: colors.amber  },
+        ].map(({ Icon, val, lbl, color }, i, arr) => (
+          <React.Fragment key={lbl}>
+            <View style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+              <Icon size={14} color={color} strokeWidth={2} />
+              <Text style={{ fontSize: Typography.sm, fontWeight: '800', color }}>{val}</Text>
+              <Text style={{ fontSize: 9, color: colors.sub2, fontWeight: '600' }}>{lbl}</Text>
+            </View>
+            {i < arr.length - 1 && <View style={{ width: 1, backgroundColor: colors.borderDim, marginVertical: 4 }} />}
+          </React.Fragment>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function NavCard({ icon, accent, title, sub, badge, onPress }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+  return (
+    <TouchableOpacity activeOpacity={0.78} onPress={onPress} style={s.navCardWrap}>
+      <View style={[s.navCard, { borderLeftColor: accent }]}>
+        <View style={s.navLeft}>
+          <View style={[s.iconBox, { backgroundColor: `${accent}18` }]}>{icon}</View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.navTitle}>{title}</Text>
+            <Text style={s.navSub}>{sub}</Text>
+          </View>
+        </View>
+        <View style={s.navRight}>
+          {badge != null && (
+            <View style={[s.badge, { backgroundColor: accent }]}>
+              <Text style={s.badgeText}>{badge}</Text>
+            </View>
+          )}
+          <ChevronRightIcon size={16} color={colors.sub} strokeWidth={2} />
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function HalfCard({ icon, title, sub, accent, onPress }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+  return (
+    <TouchableOpacity activeOpacity={0.78} style={s.halfWrap} onPress={onPress}>
+      <View style={[s.halfCard, { borderTopColor: accent }]}>
+        {icon}
+        <Text style={s.halfTitle}>{title}</Text>
+        <Text style={s.halfSub}>{sub}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+export default function DashboardScreen({ navigation }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
+  const [alertCount, setAlertCount] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const alerts = await getAlerts();
+      setAlertCount(Array.isArray(alerts) ? alerts.length : 0);
+    } catch {}
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => { fetchData(); }, []);
+  const onRefresh = () => { setRefreshing(true); fetchData(); };
+
+  return (
+    <View style={s.container}>
+      <FallingLeaves />
+      <ScrollView
+        style={s.scroll}
+        contentContainerStyle={s.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.green} />}
+      >
+        <HandwrittenLogo />
+        <TypewriterSubtitle />
+        <WeatherCard />
+
+        <View style={s.row}>
+          <HalfCard
+            icon={<LeafIcon size={28} color={colors.green} strokeWidth={1.6} />}
+            title="Bitkilerim" sub={'Bitkileri\nyönet'} accent={colors.green}
+            onPress={() => navigation.navigate('Bitkiler')}
+          />
+          <HalfCard
+            icon={<ChartBarIcon size={28} color={colors.blue} strokeWidth={1.6} />}
+            title="Analiz" sub={'Sensör\nverileri'} accent={colors.blue}
+            onPress={() => navigation.navigate('Analitik')}
+          />
+        </View>
+        <View style={s.row}>
+          <HalfCard
+            icon={<CameraIcon size={28} color={colors.purple} strokeWidth={1.6} />}
+            title="AI Analiz" sub={'Hastalık\ntespiti'} accent={colors.purple}
+            onPress={() => navigation.navigate('Hastalik')}
+          />
+          <HalfCard
+            icon={<CpuChipIcon size={28} color={colors.amber} strokeWidth={1.6} />}
+            title="Cihazlarım" sub={'Sensör\ncihazları'} accent={colors.amber}
+            onPress={() => navigation.navigate('Cihazlar')}
+          />
+        </View>
+
+        <NavCard
+          icon={
+            alertCount > 0
+              ? <ExclamationTriangleIcon size={20} color={colors.amber} strokeWidth={1.8} />
+              : <BellAlertIcon size={20} color={colors.sub2} strokeWidth={1.8} />
+          }
+          accent={alertCount > 0 ? colors.amber : colors.border}
+          title="Uyarılar"
+          sub={alertCount > 0 ? `${alertCount} aktif uyarı var` : 'Tüm sistemler normal'}
+          badge={alertCount > 0 ? alertCount : null}
+          onPress={() => navigation.navigate('Uyarilar')}
+        />
+      </ScrollView>
+    </View>
+  );
+}
+
+function makeStyles(C) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: C.bg },
+    scroll:    { flex: 1 },
+    content:   { padding: 16, paddingBottom: 40 },
+
+    navCardWrap: { marginBottom: 10 },
+    navCard: {
+      backgroundColor: C.card, borderRadius: Radius.lg, borderWidth: 1, borderColor: C.border,
+      borderLeftWidth: 3, paddingVertical: 14, paddingHorizontal: 16,
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    },
+    navLeft:  { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+    navRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    iconBox:  { width: 40, height: 40, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center' },
+    navTitle: { fontSize: Typography.base, fontWeight: '700', color: C.cream },
+    navSub:   { fontSize: Typography.sm, color: C.sub2, marginTop: 2 },
+    badge:     { borderRadius: Radius.full, minWidth: 20, height: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5 },
+    badgeText: { fontSize: 10, fontWeight: '800', color: '#fff' },
+
+    row:      { flexDirection: 'row', gap: 10, marginBottom: 10 },
+    halfWrap: { flex: 1 },
+    halfCard: {
+      backgroundColor: C.card, borderRadius: Radius.lg, borderWidth: 1, borderColor: C.border,
+      borderTopWidth: 2, padding: 18, alignItems: 'flex-start', minHeight: 130, gap: 8,
+    },
+    halfTitle: { fontSize: Typography.base, fontWeight: '700', color: C.cream },
+    halfSub:   { fontSize: Typography.xs, color: C.sub2, lineHeight: 16 },
+  });
+}

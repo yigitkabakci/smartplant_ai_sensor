@@ -101,6 +101,13 @@ export const deletePlant = (id) =>
     return { success: true };
   });
 
+export const updatePlant = (id, data) =>
+  api.put(`/api/plants/${id}`, data).then(r => r.data).catch(() => {
+    const idx = localPlants.findIndex(p => p.id === id);
+    if (idx !== -1) localPlants[idx] = { ...localPlants[idx], ...data };
+    return localPlants[idx] || { id, ...data };
+  });
+
 export const createPlant = (data) =>
   api.post('/api/plants', data).then(r => r.data).catch(() => {
     const newPlant = { id: nextPlantId++, ...data };
