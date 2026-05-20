@@ -1,45 +1,74 @@
-﻿export const Colors = {
-  // Dark Luxury Backgrounds
-  bg:        '#070a06',
-  bg2:       '#0a0f08',
-  card:      '#111a0e',
-  card2:     '#162012',
-
-  // Gold accent (primary brand)
-  gold:      '#c8a96a',
-  goldDim:   'rgba(200,169,106,0.12)',
-  goldGlow:  'rgba(200,169,106,0.25)',
-
-  // Text (cream palette)
-  cream:     '#ede8d8',
-  sub:       'rgba(237,232,216,0.45)',
-  sub2:      'rgba(237,232,216,0.65)',
-
-  // Semantic accents
-  green:     '#22c55e',
-  greenDark: '#16a34a',
-  greenDim:  'rgba(34,197,94,0.12)',
-  blue:      '#3b82f6',
-  blueDim:   'rgba(59,130,246,0.12)',
-  orange:    '#f59e0b',
-  orangeDim: 'rgba(245,158,11,0.12)',
-  red:       '#ef4444',
-  redDim:    'rgba(239,68,68,0.12)',
-  purple:    '#a855f7',
-  purpleDim: 'rgba(168,85,247,0.12)',
-
-  // Borders (gold-tinted like web)
-  border:    'rgba(200,169,106,0.12)',
-  borderDim: 'rgba(200,169,106,0.06)',
-
-  // Backward-compat aliases used throughout screens
-  text:      '#ede8d8',
-  textSub:   'rgba(237,232,216,0.65)',
-  textMuted: 'rgba(237,232,216,0.45)',
-  bgCard:    '#111a0e',
-  bgCard2:   '#162012',
-  shadow:    'rgba(0,0,0,0.5)',
+export const DarkColors = {
+  bg:        '#070c05',
+  bg2:       '#0b1008',
+  card:      '#0f1510',
+  card2:     '#142015',
+  green:     '#4ade80',
+  greenDark: '#22c55e',
+  greenDim:  'rgba(74,222,128,0.12)',
+  greenGlow: 'rgba(74,222,128,0.22)',
+  amber:     '#f59e0b',
+  amberDim:  'rgba(245,158,11,0.12)',
+  cream:     '#f0fdf4',
+  sub:       'rgba(240,253,244,0.42)',
+  sub2:      'rgba(240,253,244,0.62)',
+  blue:      '#38bdf8',
+  blueDim:   'rgba(56,189,248,0.12)',
+  orange:    '#fb923c',
+  orangeDim: 'rgba(251,146,60,0.12)',
+  red:       '#f87171',
+  redDim:    'rgba(248,113,113,0.12)',
+  purple:    '#a78bfa',
+  purpleDim: 'rgba(167,139,250,0.12)',
+  border:    'rgba(74,222,128,0.13)',
+  borderDim: 'rgba(74,222,128,0.06)',
+  gold:      '#4ade80',
+  goldDim:   'rgba(74,222,128,0.12)',
+  goldGlow:  'rgba(74,222,128,0.22)',
+  text:      '#f0fdf4',
+  textSub:   'rgba(240,253,244,0.62)',
+  textMuted: 'rgba(240,253,244,0.42)',
+  bgCard:    '#0f1510',
+  bgCard2:   '#142015',
+  shadow:    'rgba(0,0,0,0.55)',
 };
+
+export const LightColors = {
+  bg:        '#f7fef9',
+  bg2:       '#edf7f0',
+  card:      '#ffffff',
+  card2:     '#f0faf2',
+  green:     '#16a34a',
+  greenDark: '#15803d',
+  greenDim:  'rgba(22,163,74,0.10)',
+  greenGlow: 'rgba(22,163,74,0.18)',
+  amber:     '#d97706',
+  amberDim:  'rgba(217,119,6,0.10)',
+  cream:     '#14532d',
+  sub:       'rgba(20,83,45,0.38)',
+  sub2:      'rgba(20,83,45,0.62)',
+  blue:      '#0284c7',
+  blueDim:   'rgba(2,132,199,0.10)',
+  orange:    '#ea580c',
+  orangeDim: 'rgba(234,88,12,0.10)',
+  red:       '#dc2626',
+  redDim:    'rgba(220,38,38,0.10)',
+  purple:    '#7c3aed',
+  purpleDim: 'rgba(124,58,237,0.10)',
+  border:    'rgba(22,163,74,0.20)',
+  borderDim: 'rgba(22,163,74,0.08)',
+  gold:      '#16a34a',
+  goldDim:   'rgba(22,163,74,0.10)',
+  goldGlow:  'rgba(22,163,74,0.18)',
+  text:      '#14532d',
+  textSub:   'rgba(20,83,45,0.62)',
+  textMuted: 'rgba(20,83,45,0.38)',
+  bgCard:    '#ffffff',
+  bgCard2:   '#f0faf2',
+  shadow:    'rgba(0,0,0,0.08)',
+};
+
+export const Colors = DarkColors;
 
 export const Typography = {
   xs:   11,
@@ -53,10 +82,10 @@ export const Typography = {
 };
 
 export const Radius = {
-  sm:   8,
-  md:   12,
-  lg:   16,
-  xl:   20,
+  sm:   6,
+  md:   10,
+  lg:   14,
+  xl:   18,
   full: 999,
 };
 

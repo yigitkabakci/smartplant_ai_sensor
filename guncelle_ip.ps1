@@ -22,13 +22,18 @@ $ino = $ino -replace 'const char\* SERVER_URL = "http://[^"]+";', ('const char* 
 Set-Content -Path $inoPath -Value $ino -Encoding UTF8
 Write-Host "esp32_firmware.ino guncellendi" -ForegroundColor Green
 
+# Backend'i durdur
 $pids2 = (netstat -ano | Select-String ":8000 .*LISTENING") -replace '.*\s+(\d+)$','$1' | Select-Object -Unique
 foreach ($p in $pids2) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue }
 Start-Sleep -Seconds 1
+
+# Uvicorn ile baslat
+$uvicorn = "C:\Users\yigit\AppData\Local\Programs\Python\Python310\Scripts\uvicorn.exe"
 $backendPath = "C:\Users\yigit\Desktop\smart_plant\SmartAgriculture-Smart-Plant-Monitoring-and-Disease-Detection-System-main"
-Start-Process -FilePath "C:\Users\yigit\AppData\Local\Programs\Python\Python310\python.exe" -ArgumentList "main.py" -WorkingDirectory $backendPath -WindowStyle Normal
-Write-Host "Backend baslatildi" -ForegroundColor Green
+Start-Process -FilePath $uvicorn -ArgumentList "main:app --host 0.0.0.0 --port 8000" -WorkingDirectory $backendPath -WindowStyle Normal
+Write-Host "Backend baslatildi (uvicorn)" -ForegroundColor Green
 
 Write-Host ""
 Write-Host ("Backend: http://" + $ip + ":8000") -ForegroundColor White
+Write-Host "ESP32 firmware'i Arduino IDE'den tekrar yukle!" -ForegroundColor Yellow
 Write-Host "Expo penceresinde r tusuna bas." -ForegroundColor Yellow

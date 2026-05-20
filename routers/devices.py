@@ -146,6 +146,18 @@ async def get_device_thresholds(
     return PlantThresholdsResponse(plant_name=plant_name or "Genel", source="botanical_db", **t)
 
 
+@router.put("/plants/{plant_id}", response_model=PlantLibraryResponse)
+async def update_plant(plant_id: int, payload: PlantLibraryCreate, db: Session = Depends(get_db)):
+    plant = db.query(PlantLibrary).filter(PlantLibrary.id == plant_id).first()
+    if not plant:
+        raise HTTPException(status_code=404, detail="Bitki bulunamadı.")
+    for field, val in payload.model_dump().items():
+        setattr(plant, field, val)
+    db.commit()
+    db.refresh(plant)
+    return plant
+
+
 @router.get("/plants/{plant_id}", response_model=PlantLibraryResponse)
 async def get_plant(plant_id: int, db: Session = Depends(get_db)):
     plant = db.query(PlantLibrary).filter(PlantLibrary.id == plant_id).first()
@@ -163,6 +175,15 @@ async def delete_plant(plant_id: int, db: Session = Depends(get_db)):
     db.query(Device).filter(Device.plant_type_id == plant_id).update({"plant_type_id": None})
     db.delete(plant)
     db.commit()
+
+
+@router.get("/weather")
+async def get_weather_data():
+    """Anlık hava durumu (Konya, 30dk cache)."""
+    data = get_weather()
+    if data is None:
+        raise HTTPException(status_code=503, detail="Hava durumu verisi alınamadı.")
+    return data
 
 
 @router.delete("/devices/{device_mac}", status_code=204)

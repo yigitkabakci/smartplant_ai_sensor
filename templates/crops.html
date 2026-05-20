@@ -79,7 +79,7 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
 .plant-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,169,106,.4),transparent);opacity:0;transition:opacity .4s;z-index:2}
 .plant-card:hover{border-color:rgba(200,169,106,.3);transform:translateY(-3px);box-shadow:0 20px 48px rgba(0,0,0,.4)}
 .plant-card:hover::before{opacity:1}
-.plant-card-head{height:100px;display:flex;align-items:center;justify-content:center;font-size:2.6rem;position:relative;flex-shrink:0}
+.plant-card-head{height:120px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;overflow:hidden}.plant-card-head::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,.35));pointer-events:none}
 .plant-badge{position:absolute;top:.7rem;right:.7rem;font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;padding:.22rem .6rem;border:1px solid rgba(34,197,94,.3);background:rgba(34,197,94,.1);color:#4ade80;border-radius:20px}
 .plant-card-body{padding:1.3rem 1.5rem}
 .plant-name{font-family:var(--fd);font-size:1.25rem;font-weight:300;color:var(--cream);margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -112,6 +112,37 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
 .plant-dev-badge.connected{border-color:rgba(34,197,94,.25);color:#4ade80;background:rgba(34,197,94,.07)}
 .delete-btn{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;padding:.26rem .7rem;border:1px solid rgba(239,68,68,.2);color:rgba(248,113,113,.6);background:transparent;cursor:pointer;transition:all .3s;border-radius:2px;font-family:var(--fb)}
 .delete-btn:hover{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.4);color:#f87171}
+.edit-btn{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;padding:.26rem .7rem;border:1px solid rgba(200,169,106,.25);color:rgba(200,169,106,.7);background:transparent;cursor:pointer;transition:all .3s;border-radius:2px;font-family:var(--fb);margin-right:.5rem}
+.edit-btn:hover{background:rgba(200,169,106,.1);border-color:rgba(200,169,106,.5);color:#c8a96a}
+.esp-highlight{display:flex;align-items:center;gap:.4rem;margin-top:.55rem;padding:.35rem .6rem;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:6px;font-size:.58rem;color:#4ade80}
+.esp-highlight .esp-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulse 1.5s infinite}
+/* Edit Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-sheet{background:#141a10;border:1px solid rgba(200,169,106,.15);border-radius:16px 16px 0 0;width:100%;max-width:500px;padding:1.5rem;max-height:85vh;overflow-y:auto}
+.modal-handle{width:36px;height:3px;background:rgba(200,169,106,.25);border-radius:99px;margin:0 auto 1.2rem}
+.modal-title{font-family:var(--fd);font-size:1.1rem;color:var(--cream);margin-bottom:1.2rem}
+.modal-row{display:flex;gap:.75rem;margin-bottom:.85rem}
+.modal-label{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,169,106,.5);margin-bottom:.4rem}
+.modal-input{width:100%;background:rgba(0,0,0,.25);border:1px solid rgba(200,169,106,.15);color:var(--cream);font-size:.82rem;padding:.55rem .8rem;border-radius:6px;font-family:var(--fb);outline:none;transition:border .2s;box-sizing:border-box}
+.modal-input:focus{border-color:rgba(200,169,106,.4)}
+.modal-actions{display:flex;gap:.75rem;margin-top:1.2rem}
+.modal-save{flex:1;background:rgba(200,169,106,.15);border:1px solid rgba(200,169,106,.35);color:#c8a96a;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;padding:.65rem;cursor:pointer;border-radius:6px;transition:all .2s}
+.modal-save:hover{background:rgba(200,169,106,.28)}
+.modal-cancel{flex:1;background:transparent;border:1px solid rgba(200,169,106,.12);color:rgba(200,169,106,.4);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;padding:.65rem;cursor:pointer;border-radius:6px;transition:all .2s}
+.modal-cancel:hover{border-color:rgba(200,169,106,.25);color:rgba(200,169,106,.6)}
+
+/* WEATHER WIDGET */
+.weather-bar{display:flex;align-items:center;gap:1.4rem;padding:1rem 1.6rem;background:var(--card-bg);border:1px solid var(--border);border-radius:4px;margin-bottom:1.8rem;flex-wrap:wrap}
+.weather-bar .w-loc{display:flex;align-items:center;gap:.4rem;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,169,106,.55)}
+.weather-bar .w-temp{font-family:var(--fd);font-size:2rem;font-weight:300;color:var(--cream);line-height:1}
+.weather-bar .w-desc{font-size:.72rem;color:rgba(237,232,216,.5);text-transform:capitalize}
+.weather-bar .w-sep{width:1px;height:32px;background:var(--border);flex-shrink:0}
+.weather-bar .w-stat{display:flex;flex-direction:column;align-items:center;gap:.2rem}
+.weather-bar .w-stat-val{font-size:.82rem;font-weight:600;color:var(--cream)}
+.weather-bar .w-stat-lbl{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,169,106,.45)}
+.weather-bar .w-badge{font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;padding:.18rem .5rem;border:1px solid rgba(74,222,128,.3);background:rgba(74,222,128,.08);color:#4ade80;border-radius:20px;margin-left:auto}
+.weather-bar .w-loading{font-size:.65rem;color:rgba(237,232,216,.3);letter-spacing:.08em}
 
 /* EMPTY STATE */
 .empty-state{grid-column:1/-1;text-align:center;padding:5rem 2rem}
@@ -190,6 +221,8 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
 
 @media(max-width:900px){.plant-grid{grid-template-columns:1fr 1fr}.stats-row{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.plant-grid,.stats-row{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
+.disease-btn{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;padding:.26rem .7rem;border:1px solid rgba(245,158,11,.25);color:rgba(245,158,11,.7);background:transparent;cursor:pointer;transition:all .3s;border-radius:2px;font-family:var(--fb);margin-right:.5rem}
+.disease-btn:hover{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.5);color:#fbbf24}
 </style>
 </head>
 <body>
@@ -248,6 +281,11 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
         <div class="stat-rule" style="background:rgba(96,165,250,.35)"></div>
         <div class="stat-lbl">Bitki Türü</div>
       </div>
+    </div>
+
+    <!-- WEATHER BAR -->
+    <div class="weather-bar" id="weather-bar">
+      <span class="w-loading">⏳ Hava durumu yükleniyor...</span>
     </div>
 
     <!-- ACTIONS ROW -->
@@ -346,6 +384,16 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
             <input class="form-input" type="number" name="ideal_temp_max" placeholder="30" min="-10" max="60" step="0.1">
           </div>
         </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Min. Işık (lux)</label>
+            <input class="form-input" type="number" name="min_light_lux" placeholder="1000" min="0" step="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max. Işık (lux)</label>
+            <input class="form-input" type="number" name="max_light_lux" placeholder="50000" min="0" step="100">
+          </div>
+        </div>
         <div class="form-actions">
           <button type="button" class="agro-btn" onclick="closeModal('modal-add-plant')">İptal</button>
           <button type="submit" class="agro-btn agro-btn-primary" id="btn-add-plant">+ Ekle</button>
@@ -363,15 +411,23 @@ let allPlants = [];
 let allDevices = [];
 
 const cardThemes = [
-  { bg: 'linear-gradient(135deg,#052e16,#14532d)', emoji: '🌿' },
-  { bg: 'linear-gradient(135deg,#1e1b4b,#3730a3)', emoji: '🌸' },
-  { bg: 'linear-gradient(135deg,#431407,#9a3412)', emoji: '🍅' },
-  { bg: 'linear-gradient(135deg,#14532d,#15803d)', emoji: '🥬' },
-  { bg: 'linear-gradient(135deg,#1a2e05,#365314)', emoji: '🌾' },
-  { bg: 'linear-gradient(135deg,#082f49,#0369a1)', emoji: '💧' },
-  { bg: 'linear-gradient(135deg,#1c1917,#44403c)', emoji: '🌱' },
-  { bg: 'linear-gradient(135deg,#2d1657,#7c3aed)', emoji: '🍇' },
+  { bg: 'linear-gradient(135deg,#052e16,#14532d)' },
+  { bg: 'linear-gradient(135deg,#1e1b4b,#3730a3)' },
+  { bg: 'linear-gradient(135deg,#431407,#9a3412)' },
+  { bg: 'linear-gradient(135deg,#14532d,#15803d)' },
+  { bg: 'linear-gradient(135deg,#1a2e05,#365314)' },
+  { bg: 'linear-gradient(135deg,#082f49,#0369a1)' },
+  { bg: 'linear-gradient(135deg,#1c1917,#44403c)' },
+  { bg: 'linear-gradient(135deg,#2d1657,#7c3aed)' },
 ];
+const PLANT_ICON_SVG = `<svg viewBox="0 0 100 110" fill="none" stroke="rgba(255,255,255,0.72)" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" width="56" height="62" style="filter:drop-shadow(0 2px 12px rgba(0,0,0,0.3))">
+  <path d="M50 54 C42 46 28 40 22 28 C16 16 28 8 38 16 C46 23 50 40 50 54Z"/>
+  <path d="M50 54 C44 42 36 28 32 16"/>
+  <path d="M50 54 C58 46 72 40 78 28 C84 16 72 8 62 16 C54 23 50 40 50 54Z"/>
+  <path d="M50 54 C56 42 64 28 68 16"/>
+  <path d="M50 54 Q50 66 50 76"/>
+  <path d="M30 84 Q50 76 70 84"/>
+</svg>`;
 
 function getTheme(name, id) {
   const idx = (id != null ? id : name.charCodeAt(0)) % cardThemes.length;
@@ -398,15 +454,29 @@ function renderPlants(plants) {
   grid.innerHTML = plants.map(p => {
     const theme = getTheme(p.name, p.id);
     const devCount = devMap[p.id] || 0;
+    const connectedDevs = allDevices.filter(d => d.plant_type_id === p.id);
     const minM = p.min_moisture != null ? p.min_moisture.toFixed(0) + '%' : '--';
     const maxM = p.max_moisture != null ? p.max_moisture.toFixed(0) + '%' : '--';
     const minT = p.ideal_temp_min != null ? p.ideal_temp_min.toFixed(0) + '°C' : '--';
     const maxT = p.ideal_temp_max != null ? p.ideal_temp_max.toFixed(0) + '°C' : '--';
+    const minL = p.min_light_lux != null ? Math.round(p.min_light_lux) + ' lux' : '--';
+    const maxL = p.max_light_lux != null ? Math.round(p.max_light_lux) + ' lux' : '--';
     const progressW = p.max_moisture ?? 70;
+    const espHtml = connectedDevs.length > 0
+      ? connectedDevs.map(d => {
+          const last4 = d.device_mac.replace(/:/g,'').slice(-4).toUpperCase();
+          const isRecent = d.last_sync && (Date.now() - parseUtcDate(d.last_sync).getTime()) < 300000;
+          return `<div class="esp-highlight">
+            <span class="esp-dot" style="background:${isRecent?'#4ade80':'#f87171'};animation:${isRecent?'pulse 1.5s infinite':'none'}"></span>
+            <span>ESP32 ···${last4}</span>
+            <span style="margin-left:auto;opacity:.6">${isRecent?'Aktif':'Pasif'}</span>
+          </div>`;
+        }).join('')
+      : '';
     return `
       <div class="plant-card" id="plant-${p.id}">
         <div class="plant-card-head" style="background:${theme.bg}">
-          <span>${theme.emoji}</span>
+          ${PLANT_ICON_SVG}
           ${devCount > 0 ? `<span class="plant-badge">📡 ${devCount}</span>` : ''}
         </div>
         <div class="plant-card-body">
@@ -420,10 +490,14 @@ function renderPlants(plants) {
             <span class="plant-stat-lbl">🌡 Sıcaklık</span>
             <span class="plant-stat-val" style="color:#fbbf24">${minT} – ${maxT}</span>
           </div>
+          <div class="plant-stat">
+            <span class="plant-stat-lbl">☀️ Işık</span>
+            <span class="plant-stat-val" style="color:#fbbf24">${minL} – ${maxL}</span>
+          </div>
           <div class="plant-progress">
             <div class="plant-progress-fill" style="width:${progressW}%"></div>
           </div>
-          <div style="font-size:.58rem;color:rgba(237,232,216,.25);letter-spacing:.08em">Nem optimum: ${minM} – ${maxM}</div>
+          ${espHtml}
           <div id="env-${p.id}" class="env-wrap">
             <div class="env-loading">⟳ Canlı durum yükleniyor...</div>
           </div>
@@ -432,7 +506,11 @@ function renderPlants(plants) {
           <span class="plant-dev-badge ${devCount > 0 ? 'connected' : ''}">
             ${devCount > 0 ? `✓ ${devCount} Cihaz` : 'Cihaz Yok'}
           </span>
-          <button class="delete-btn" onclick="deletePlant(${p.id}, '${p.name.replace(/'/g,"\\'")}')">Sil</button>
+          <div>
+            <button class="disease-btn" onclick="openPlantDiseaseModal(${p.id}, '${p.name.replace(/'/g,"\\'")}')">📷 Analiz</button>
+            <button class="edit-btn" onclick="openEditPlant(${p.id})">Düzenle</button>
+            <button class="delete-btn" onclick="deletePlant(${p.id}, '${p.name.replace(/'/g,"\\'")}')">Sil</button>
+          </div>
         </div>
       </div>`;
   }).join('');
@@ -545,6 +623,8 @@ async function submitPlant(e) {
     max_moisture:   parseFloat(form.max_moisture.value) || null,
     ideal_temp_min: parseFloat(form.ideal_temp_min.value) || null,
     ideal_temp_max: parseFloat(form.ideal_temp_max.value) || null,
+    min_light_lux:  parseFloat(form.min_light_lux.value) || null,
+    max_light_lux:  parseFloat(form.max_light_lux.value) || null,
   };
 
   try {
@@ -763,9 +843,42 @@ function showToast(msg, type = 'info') {
   }, 3500);
 }
 
+async function loadWeather() {
+  const bar = document.getElementById('weather-bar');
+  try {
+    const r = await fetch('/api/weather');
+    if (!r.ok) throw new Error();
+    const w = await r.json();
+    const temp     = Math.round(w.temp);
+    const feels    = Math.round(w.feels_like);
+    const wind     = Math.round((w.wind_speed || 0) * 3.6);
+    const humidity = w.humidity;
+    const desc     = w.description || '';
+    const city     = w.city || 'Konya';
+    const icon     = w.icon ? `<img src="https://openweathermap.org/img/wn/${w.icon}.png" width="36" height="36" style="opacity:.85;filter:drop-shadow(0 0 4px rgba(255,255,255,.15))">` : '🌤';
+    bar.innerHTML = `
+      <div style="display:flex;align-items:center;gap:.6rem">
+        ${icon}
+        <div>
+          <div class="w-loc">📍 ${city}, Türkiye</div>
+          <div class="w-desc">${desc}</div>
+        </div>
+      </div>
+      <div class="w-temp">${temp}°C</div>
+      <div class="w-sep"></div>
+      <div class="w-stat"><span class="w-stat-val" style="color:#60a5fa">${humidity}%</span><span class="w-stat-lbl">Nem</span></div>
+      <div class="w-stat"><span class="w-stat-val" style="color:#fbbf24">${feels}°C</span><span class="w-stat-lbl">Hissedilen</span></div>
+      <div class="w-stat"><span class="w-stat-val" style="color:#94a3b8">${wind} km/s</span><span class="w-stat-lbl">Rüzgar</span></div>
+      <span class="w-badge">CANLI</span>`;
+  } catch {
+    bar.innerHTML = `<span class="w-loading">Hava durumu alınamadı — OpenWeatherMap API anahtarı gerekli</span>`;
+  }
+}
+
 async function loadAll() {
   await loadPlants();
   await loadDevices();
+  loadWeather();
 }
 
 loadAll();
@@ -781,6 +894,173 @@ document.addEventListener('click', e => {
   document.getElementById('loader').classList.remove('hide');
   setTimeout(() => { window.location.href = href; }, 600);
 });
+
+// ── Bitki Düzenleme ──────────────────────────────────────────────
+let editPlantId = null;
+
+function openEditPlant(id) {
+  const p = allPlants.find(p => p.id === id);
+  if (!p) return;
+  editPlantId = id;
+  document.getElementById('edit-plant-name').value        = p.name || '';
+  document.getElementById('edit-min-moisture').value      = p.min_moisture ?? '';
+  document.getElementById('edit-max-moisture').value      = p.max_moisture ?? '';
+  document.getElementById('edit-min-temp').value          = p.ideal_temp_min ?? '';
+  document.getElementById('edit-max-temp').value          = p.ideal_temp_max ?? '';
+  document.getElementById('edit-min-light').value         = p.min_light_lux ?? '';
+  document.getElementById('edit-max-light').value         = p.max_light_lux ?? '';
+  document.getElementById('modal-edit-plant').classList.add('open');
+}
+
+function closeEditPlant() {
+  document.getElementById('modal-edit-plant').classList.remove('open');
+  editPlantId = null;
+}
+
+async function saveEditPlant() {
+  if (!editPlantId) return;
+  const btn = document.getElementById('btn-save-edit');
+  btn.disabled = true; btn.textContent = '...';
+  const data = {
+    name:           document.getElementById('edit-plant-name').value.trim(),
+    min_moisture:   parseFloat(document.getElementById('edit-min-moisture').value) || null,
+    max_moisture:   parseFloat(document.getElementById('edit-max-moisture').value) || null,
+    ideal_temp_min: parseFloat(document.getElementById('edit-min-temp').value) || null,
+    ideal_temp_max: parseFloat(document.getElementById('edit-max-temp').value) || null,
+    min_light_lux:  parseFloat(document.getElementById('edit-min-light').value) || null,
+    max_light_lux:  parseFloat(document.getElementById('edit-max-light').value) || null,
+  };
+  if (!data.name) { showToast('Bitki adı zorunlu', 'warning'); btn.disabled=false; btn.textContent='Kaydet'; return; }
+  try {
+    const r = await fetch(`/api/plants/${editPlantId}`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+    });
+    if (r.ok) {
+      showToast('Bitki güncellendi!', 'success');
+      closeEditPlant();
+      await loadPlants(); await loadDevices();
+    } else { showToast('Güncelleme başarısız.', 'error'); }
+  } catch { showToast('Bağlantı hatası.', 'error'); }
+  btn.disabled = false; btn.textContent = 'Kaydet';
+}
 </script>
+
+<!-- Edit Plant Modal -->
+<div class="modal-overlay" id="modal-edit-plant" onclick="if(event.target===this)closeEditPlant()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Bitki Düzenle</div>
+    <div class="modal-label">Bitki Adı</div>
+    <input class="modal-input" id="edit-plant-name" placeholder="örn. Domates" style="margin-bottom:.85rem">
+    <div class="modal-row">
+      <div style="flex:1">
+        <div class="modal-label">Min. Nem (%)</div>
+        <input class="modal-input" id="edit-min-moisture" type="number" placeholder="20">
+      </div>
+      <div style="flex:1">
+        <div class="modal-label">Max. Nem (%)</div>
+        <input class="modal-input" id="edit-max-moisture" type="number" placeholder="80">
+      </div>
+    </div>
+    <div class="modal-row">
+      <div style="flex:1">
+        <div class="modal-label">Min. Sıcaklık (°C)</div>
+        <input class="modal-input" id="edit-min-temp" type="number" placeholder="15">
+      </div>
+      <div style="flex:1">
+        <div class="modal-label">Max. Sıcaklık (°C)</div>
+        <input class="modal-input" id="edit-max-temp" type="number" placeholder="30">
+      </div>
+    </div>
+    <div class="modal-row">
+      <div style="flex:1">
+        <div class="modal-label">Min. Işık (lux)</div>
+        <input class="modal-input" id="edit-min-light" type="number" placeholder="1000">
+      </div>
+      <div style="flex:1">
+        <div class="modal-label">Max. Işık (lux)</div>
+        <input class="modal-input" id="edit-max-light" type="number" placeholder="50000">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeEditPlant()">İptal</button>
+      <button class="modal-save" id="btn-save-edit" onclick="saveEditPlant()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Disease Analysis Modal -->
+<div class="modal-overlay" id="modal-plant-disease" onclick="if(event.target===this)closePlantDiseaseModal()">
+  <div class="modal-sheet" style="max-width:520px">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div class="modal-title" id="plant-disease-title">Hastalık Analizi</div>
+      <button onclick="closePlantDiseaseModal()" style="background:none;border:none;color:rgba(200,169,106,.5);font-size:1.2rem;cursor:pointer">✕</button>
+    </div>
+    <div id="plant-disease-preview" style="display:none;margin-bottom:1rem">
+      <img id="plant-disease-img" style="width:100%;border-radius:8px;max-height:200px;object-fit:cover" src="">
+    </div>
+    <div id="plant-disease-result" style="display:none;margin-bottom:1rem"></div>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+      <label style="flex:1;min-width:120px">
+        <input type="file" id="plant-disease-file" accept="image/*" capture="environment" style="display:none" onchange="runPlantDiseaseAnalysis()">
+        <span id="plant-disease-btn" style="display:block;text-align:center;padding:.7rem;border:1px solid rgba(200,169,106,.3);border-radius:6px;color:#c8a96a;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;background:rgba(200,169,106,.08)" onclick="document.getElementById('plant-disease-file').click()">📷 Fotoğraf Çek / Seç</span>
+      </label>
+    </div>
+    <div id="plant-disease-loading" style="display:none;text-align:center;padding:1.5rem;color:rgba(200,169,106,.5);font-size:.75rem">
+      ⟳ Analiz ediliyor...
+    </div>
+  </div>
+</div>
+
+<script>
+let plantDiseaseCurrentId = null;
+function openPlantDiseaseModal(id, name) {
+  plantDiseaseCurrentId = id;
+  document.getElementById('plant-disease-title').textContent = name + ' — Hastalık Analizi';
+  document.getElementById('plant-disease-preview').style.display = 'none';
+  document.getElementById('plant-disease-result').style.display = 'none';
+  document.getElementById('plant-disease-loading').style.display = 'none';
+  document.getElementById('plant-disease-file').value = '';
+  document.getElementById('modal-plant-disease').classList.add('open');
+}
+function closePlantDiseaseModal() {
+  document.getElementById('modal-plant-disease').classList.remove('open');
+  plantDiseaseCurrentId = null;
+}
+async function runPlantDiseaseAnalysis() {
+  const file = document.getElementById('plant-disease-file').files[0];
+  if (!file) return;
+  const img = document.getElementById('plant-disease-img');
+  img.src = URL.createObjectURL(file);
+  document.getElementById('plant-disease-preview').style.display = 'block';
+  document.getElementById('plant-disease-result').style.display = 'none';
+  document.getElementById('plant-disease-loading').style.display = 'block';
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const r = await fetch('/api/leaf_disease/analyze', { method: 'POST', body: fd });
+    const d = await r.json();
+    document.getElementById('plant-disease-loading').style.display = 'none';
+    const conf = d.plant_confidence != null ? (d.plant_confidence * 100).toFixed(1) + '%' : '--';
+    const disease = d.disease_name || (d.diagnosis_stage === 'healthy' ? '✅ Sağlıklı' : 'Tespit edilemedi');
+    const statusColor = d.diagnosis_stage === 'healthy' ? '#4ade80' : d.disease_name ? '#f87171' : '#fbbf24';
+    const resultDiv = document.getElementById('plant-disease-result');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+      <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:1rem;border:1px solid rgba(200,169,106,.1)">
+        <div style="font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,169,106,.5);margin-bottom:.5rem">Analiz Sonucu</div>
+        <div style="font-size:1rem;font-weight:600;color:${statusColor};margin-bottom:.4rem">${disease}</div>
+        <div style="font-size:.7rem;color:rgba(237,232,216,.5)">Bitki: ${d.plant_display_name || '--'} · Güven: ${conf}</div>
+        ${d.problems && d.problems.length ? `<div style="margin-top:.75rem;font-size:.65rem;color:rgba(237,232,216,.4)">⚠ ${d.problems.length} sorun tespit edildi</div>` : ''}
+      </div>`;
+    showToast('Analiz tamamlandı', 'success');
+  } catch(e) {
+    document.getElementById('plant-disease-loading').style.display = 'none';
+    showToast('Analiz başarısız', 'error');
+  }
+}
+</script>
+
 </body>
 </html>

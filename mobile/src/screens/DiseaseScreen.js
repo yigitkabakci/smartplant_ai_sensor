@@ -11,6 +11,36 @@ import SectionHeader from '../components/SectionHeader';
 import { Colors, Typography, Radius, Shadow } from '../constants/theme';
 import FallingLeaves from '../components/FallingLeaves';
 
+const DISEASE_TR = {
+  'Bacterial Spot':                      { tr: 'Bakteriyel Leke',              info: 'Pseudomonas/Xanthomonas bakterisinin neden olduğu kahverengi lekeler. Nem ve ıslaklıkta hızla yayılır.' },
+  'Early Blight':                        { tr: 'Erken Yanıklık',               info: 'Alternaria solani mantarı. Koyu kahverengi halkalar içeren lekeler oluşturur, alt yapraklardan başlar.' },
+  'Late Blight':                         { tr: 'Geç Yanıklık',                 info: 'Phytophthora infestans. Yapraklarda su emmiş görünümlü lekeler, beyaz küf tabakası oluşur.' },
+  'Leaf Mold':                           { tr: 'Yaprak Küfü',                  info: 'Fulvia fulva mantarı. Yaprak altında sarımsı-kahverengi küf. Yüksek nemde sera bitkilerinde görülür.' },
+  'Septoria Leaf Spot':                  { tr: 'Septoria Yaprak Lekesi',       info: 'Septoria lycopersici mantarı. Küçük dairevi lekeler, ortası açık kenarı koyu. Islaklıkla yayılır.' },
+  'Spider Mites Two-spotted Spider Mite':{ tr: 'Kırmızı Örümcek',             info: 'Tetranychus urticae. Yaprak altında ince ağlar, sarımsı benekler. Sıcak ve kuru havada çoğalır.' },
+  'Target Spot':                         { tr: 'Hedef Nokta Hastalığı',        info: 'Corynespora cassiicola mantarı. Halka halka büyüyen koyu lekeler. Yüksek nem ve ısıda görülür.' },
+  'Tomato Yellow Leaf Curl Virus':       { tr: 'Sarı Yaprak Kıvırcık Virüsü', info: 'Beyazsinek vektörüyle yayılan virüs. Yapraklar sararır ve kıvrılır, meyve verimi düşer.' },
+  'Tomato Mosaic Virus':                 { tr: 'Mozaik Virüsü',                info: 'Temas ve kontamine aletlerle yayılır. Yapraklarda mozaik renk deseni, biçim bozukluğu.' },
+  'Powdery Mildew':                      { tr: 'Külleme',                      info: 'Uncinula/Erysiphe mantarı. Yapraklarda beyaz pudra görünümlü kaplama. Kuru ve sıcak havada görülür.' },
+  'Downy Mildew':                        { tr: 'Mildiyö',                      info: 'Plasmopara mantarı. Yaprak üstünde sarı lekeler, altında grimsi-morumsu küf. Serin ve nemli havada görülür.' },
+  'Black Rot':                           { tr: 'Siyah Çürüklük',               info: 'Guignardia bidwellii mantarı. Yapraklarda V şekilli sarı-kahverengi lekeler, meyvelerde siyah çürüme.' },
+  'Cedar Apple Rust':                    { tr: 'Elma Pası',                    info: 'Gymnosporangium juniperi-virginianae mantarı. Yapraklarda turuncu lekeler ve tüp şekilli yapılar.' },
+  'Common Rust':                         { tr: 'Yaygın Pas',                   info: 'Puccinia sorghi mantarı. Yapraklarda küçük kırmızı-kahverengi pustüller. Mısırda yaygındır.' },
+  'Northern Leaf Blight':                { tr: 'Kuzey Yaprak Yanıklığı',       info: 'Exserohilum turcicum mantarı. Uzun gri-yeşil eliptik lekeler. Mısırda verim kaybına neden olur.' },
+  'Cercospora Leaf Spot Gray Leaf Spot': { tr: 'Cercospora Yaprak Lekesi',     info: 'Cercospora zeae-maydis mantarı. Yapraklarda dar dikdörtgen gri lekeler. Yüksek nemde hızlı yayılır.' },
+  'Haunglongbing Citrus Greening':       { tr: 'Turunçgil Yeşillik Hastalığı', info: 'Candidatus Liberibacter bakterisi. Yapraklarda asimetrik sararma, meyveler küçük ve yeşil kalır.' },
+  'Bacterial Blight':                    { tr: 'Bakteriyel Yanıklık',          info: 'Pseudomonas syringae. Yapraklarda yağlı görünümlü lekeler, kahverengileşme, erken dökülme.' },
+  'Leaf Blast':                          { tr: 'Yaprak Patlaması',             info: 'Magnaporthe oryzae mantarı. Eliptik gri lekeler. Pirinçte en yıkıcı hastalıklardan biridir.' },
+  'Brown Spot':                          { tr: 'Kahverengi Leke',              info: 'Bipolaris oryzae mantarı. Kahverengi oval lekeler. Pirinçte tanelerin dökülmesine neden olur.' },
+  'Healthy':                             { tr: 'Sağlıklı',                     info: 'Yaprak sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.' },
+};
+
+function getDiseaseInfo(diseaseName) {
+  if (!diseaseName) return null;
+  const key = Object.keys(DISEASE_TR).find(k => diseaseName.toLowerCase().includes(k.toLowerCase()));
+  return key ? DISEASE_TR[key] : null;
+}
+
 const { width } = Dimensions.get('window');
 
 function CareCard({ icon, label, min, max, unit }) {
@@ -25,7 +55,7 @@ function CareCard({ icon, label, min, max, unit }) {
   );
 }
 
-export default function DiseaseScreen() {
+export default function DiseaseScreen({ navigation }) {
   const [image, setImage]       = useState(null);
   const [result, setResult]     = useState(null);
   const [loading, setLoading]   = useState(false);
@@ -80,8 +110,10 @@ export default function DiseaseScreen() {
   const reset = () => { setImage(null); setResult(null); };
 
   const confPct = result ? Math.round((result.confidence || 0) * 100) : 0;
+  const diseaseConfPct = result?.disease_confidence != null ? Math.round(result.disease_confidence * 100) : null;
   const isHealthy = !result?.disease;
   const isFallback = result?.fallback === true;
+  const diseaseInfo = result ? getDiseaseInfo(result.disease || (isHealthy ? 'Healthy' : null)) : null;
 
   return (
     <View style={styles.container}>
@@ -172,9 +204,17 @@ export default function DiseaseScreen() {
                     style={{ marginBottom: 8 }}
                   />
                   <Text style={styles.diseaseName}>{result.disease}</Text>
+                  {diseaseInfo && (
+                    <>
+                      <Text style={styles.diseaseTr}>{diseaseInfo.tr}</Text>
+                      <View style={styles.infoBox}>
+                        <Text style={styles.infoBoxText}>{diseaseInfo.info}</Text>
+                      </View>
+                    </>
+                  )}
                   <Text style={styles.messageText}>{result.message}</Text>
                   <View style={styles.confRow}>
-                    <Text style={styles.confLabel}>Güven Skoru</Text>
+                    <Text style={styles.confLabel}>Bitki Tanıma</Text>
                     <Text style={[styles.confPct, { color: confPct > 70 ? Colors.red : Colors.orange }]}>{confPct}%</Text>
                   </View>
                   <View style={styles.confBar}>
@@ -183,6 +223,20 @@ export default function DiseaseScreen() {
                       backgroundColor: confPct > 70 ? Colors.red : Colors.orange,
                     }]} />
                   </View>
+                  {diseaseConfPct != null && (
+                    <>
+                      <View style={[styles.confRow, { marginTop: 8 }]}>
+                        <Text style={styles.confLabel}>Hastalık Tespiti</Text>
+                        <Text style={[styles.confPct, { color: diseaseConfPct > 70 ? Colors.red : Colors.orange }]}>{diseaseConfPct}%</Text>
+                      </View>
+                      <View style={styles.confBar}>
+                        <View style={[styles.confFill, {
+                          width: `${Math.min(diseaseConfPct, 100)}%`,
+                          backgroundColor: diseaseConfPct > 70 ? Colors.red : Colors.orange,
+                        }]} />
+                      </View>
+                    </>
+                  )}
                 </>
               )}
             </View>
@@ -229,6 +283,16 @@ export default function DiseaseScreen() {
                   <Text style={styles.notesText}>📝 {result.care.notes}</Text>
                 </View>
               ) : null}
+            </Card>
+          )}
+          {result && !loading && result.plant && (
+            <Card style={{ marginTop: 12 }}>
+              <TouchableOpacity
+                style={styles.addPlantBtn}
+                onPress={() => navigation.navigate('Bitkiler', { prefilledName: result.plant })}
+              >
+                <Text style={styles.addPlantBtnText}>🌱 "{result.plant}" Bitkisi Ekle</Text>
+              </TouchableOpacity>
             </Card>
           )}
         </>
@@ -324,4 +388,9 @@ const styles = StyleSheet.create({
   histTime:     { fontSize:Typography.xs, color:Colors.textSub, marginTop:2 },
   histConf:     { fontSize:Typography.sm, fontWeight:'700' },
   noData:       { textAlign:'center', color:Colors.textSub, paddingVertical:16 },
+  diseaseTr:    { fontSize: Typography.sm, color: Colors.gold, fontWeight: '600', marginBottom: 8, fontStyle: 'italic' },
+  infoBox:      { backgroundColor: Colors.bgCard2, borderRadius: Radius.md, padding: 10, marginBottom: 10, borderLeftWidth: 2, borderLeftColor: Colors.gold },
+  infoBoxText:  { fontSize: Typography.xs, color: Colors.textSub, lineHeight: 17 },
+  addPlantBtn:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 13, gap: 8 },
+  addPlantBtnText: { fontSize: Typography.base, fontWeight: '700', color: Colors.green },
 });

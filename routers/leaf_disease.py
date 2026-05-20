@@ -287,10 +287,12 @@ async def predict_disease_mobile(
 
     stage        = pipeline["stage"]
     disease_name = pipeline.get("disease")
-    confidence   = pipeline.get("confidence", 0.0)
+    diag_conf    = pipeline.get("confidence", 0.0)
     is_healthy   = pipeline.get("is_healthy")
 
-    fallback = stage == "fallback" or (confidence < 0.60 and stage != "disease")
+    # Web ile aynı mantık: PlantNet güveni ana metrik, sadece stage==fallback'te fallback
+    pn_confidence = plantnet_result.get("confidence", 0.0)
+    fallback      = stage == "fallback"
 
     # --- Bitki bilgi tabanı ---
     plant_display = plantnet_result.get("common_names", [None])[0] \
@@ -312,22 +314,23 @@ async def predict_disease_mobile(
         message = "Hastalık analizi tamamlandı."
         disease_out = disease_name
 
-    # --- DB kayıt ---
+    # --- DB kayıt (web ile aynı: pn_confidence kaydedilir) ---
     label_str = f"{plant_display} — {disease_name}" if disease_name else plant_display
     db.add(LeafAnalysis(
         image_path=f"/static/uploads/{filename}",
         label=label_str,
-        confidence=confidence,
+        confidence=pn_confidence,
         timestamp=datetime.utcnow(),
     ))
     db.commit()
 
     return {
-        "success":    True,
-        "plant":      plant_display,
-        "disease":    disease_out,
-        "confidence": round(confidence, 4),
-        "fallback":   fallback,
-        "message":    message,
-        "care":       care,
+        "success":         True,
+        "plant":           plant_display,
+        "disease":         disease_out,
+        "confidence":      round(pn_confidence, 4),
+        "disease_confidence": round(diag_conf, 4) if not fallback else None,
+        "fallback":        fallback,
+        "message":         message,
+        "care":            care,
     }

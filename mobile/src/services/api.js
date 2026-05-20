@@ -102,6 +102,12 @@ export const deletePlant = (id) =>
     return { success: true };
   });
 
+export const updatePlant = (id, data) =>
+  api.put(`/api/plants/${id}`, data).then(r => r.data).catch(() => {
+    localPlants = localPlants.map(p => p.id === id ? { ...p, ...data } : p);
+    return { id, ...data };
+  });
+
 export const createPlant = (data) =>
   api.post('/api/plants', data).then(r => r.data).catch(() => {
     const newPlant = { id: nextPlantId++, ...data };
@@ -149,6 +155,10 @@ export const getLeafHistory = (limit = 15) =>
 // ── Sensör Analizi ──
 export const analyzeSensorData = (plant, sensorData) =>
   api.post('/api/analyze-sensor-data', { plant, sensor_data: sensorData }).then(r => r.data);
+
+// ── Hava Durumu ──
+export const getWeather = () =>
+  api.get('/api/weather').then(r => r.data).catch(() => null);
 
 // ── Son Sensör Verisi ──
 export const getLatestSensorData = (device_mac = null) => {
