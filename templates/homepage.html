@@ -300,8 +300,7 @@ footer{border-top:1px solid rgba(200,169,106,.12);padding:2.8rem 8%;display:flex
     <p class="bdy">Toprak nemi, sıcaklık, ışık — her sensör verisi anlık analiz edilir. Yaprak fotoğrafından hastalık saniyeler içinde tespit edilir.</p>
     <div class="hbtns">
       {% if current_user %}
-        <a href="/dashboard" class="bto bto-gold">Dashboard'a Git <svg viewBox="0 0 20 10"><path d="M0 5h18M13 1l6 4-6 4"/></svg></a>
-        <a href="/leaf_disease" class="bto">Hastalık Tespiti <svg viewBox="0 0 20 10"><path d="M0 5h18M13 1l6 4-6 4"/></svg></a>
+        <a href="/leaf_disease" class="bto bto-gold">Hastalık Tespiti <svg viewBox="0 0 20 10"><path d="M0 5h18M13 1l6 4-6 4"/></svg></a>
         <a href="/crops" class="bto">Bitkilerimi Yönet <svg viewBox="0 0 20 10"><path d="M0 5h18M13 1l6 4-6 4"/></svg></a>
       {% else %}
         <a href="/register" class="bto bto-gold">Ücretsiz Başla <svg viewBox="0 0 20 10"><path d="M0 5h18M13 1l6 4-6 4"/></svg></a>
@@ -370,10 +369,9 @@ footer{border-top:1px solid rgba(200,169,106,.12);padding:2.8rem 8%;display:flex
     <div class="about-block about-block-full" style="padding:2.5rem 2.8rem 2rem">
       <div class="about-icon">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(200,169,106,0.75)" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
-          <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
-          <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
-          <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+          <circle cx="6" cy="19" r="2.5"/>
+          <path d="M8.5 19h8a3 3 0 0 0 0-6h-11a3 3 0 0 1 0-6H14.5"/>
+          <circle cx="18" cy="5" r="2.5"/>
         </svg>
       </div>
       <h3 class="about-heading" style="margin-bottom:2rem">Nasıl <em>Kullanılır?</em></h3>
@@ -575,7 +573,7 @@ footer{border-top:1px solid rgba(200,169,106,.12);padding:2.8rem 8%;display:flex
     <a href="{{ '/devices_page' if current_user else '/login' }}">Cihazlar</a>
     <a href="/sensor_docs">ESP32</a>
   </nav>
-  <div class="fr">AgroSense &copy; 2025</div>
+  <div class="fr">AgroSense &copy; 2026</div>
 </footer>
 
 <script>

@@ -5,41 +5,12 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { predictLeafDisease, getLeafHistory, BASE_URL } from '../services/api';
+import { getDiseaseInfo } from '../utils/diseaseUtils';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import SectionHeader from '../components/SectionHeader';
 import { Colors, Typography, Radius, Shadow } from '../constants/theme';
 import FallingLeaves from '../components/FallingLeaves';
-
-const DISEASE_TR = {
-  'Bacterial Spot':                      { tr: 'Bakteriyel Leke',              info: 'Pseudomonas/Xanthomonas bakterisinin neden olduğu kahverengi lekeler. Nem ve ıslaklıkta hızla yayılır.' },
-  'Early Blight':                        { tr: 'Erken Yanıklık',               info: 'Alternaria solani mantarı. Koyu kahverengi halkalar içeren lekeler oluşturur, alt yapraklardan başlar.' },
-  'Late Blight':                         { tr: 'Geç Yanıklık',                 info: 'Phytophthora infestans. Yapraklarda su emmiş görünümlü lekeler, beyaz küf tabakası oluşur.' },
-  'Leaf Mold':                           { tr: 'Yaprak Küfü',                  info: 'Fulvia fulva mantarı. Yaprak altında sarımsı-kahverengi küf. Yüksek nemde sera bitkilerinde görülür.' },
-  'Septoria Leaf Spot':                  { tr: 'Septoria Yaprak Lekesi',       info: 'Septoria lycopersici mantarı. Küçük dairevi lekeler, ortası açık kenarı koyu. Islaklıkla yayılır.' },
-  'Spider Mites Two-spotted Spider Mite':{ tr: 'Kırmızı Örümcek',             info: 'Tetranychus urticae. Yaprak altında ince ağlar, sarımsı benekler. Sıcak ve kuru havada çoğalır.' },
-  'Target Spot':                         { tr: 'Hedef Nokta Hastalığı',        info: 'Corynespora cassiicola mantarı. Halka halka büyüyen koyu lekeler. Yüksek nem ve ısıda görülür.' },
-  'Tomato Yellow Leaf Curl Virus':       { tr: 'Sarı Yaprak Kıvırcık Virüsü', info: 'Beyazsinek vektörüyle yayılan virüs. Yapraklar sararır ve kıvrılır, meyve verimi düşer.' },
-  'Tomato Mosaic Virus':                 { tr: 'Mozaik Virüsü',                info: 'Temas ve kontamine aletlerle yayılır. Yapraklarda mozaik renk deseni, biçim bozukluğu.' },
-  'Powdery Mildew':                      { tr: 'Külleme',                      info: 'Uncinula/Erysiphe mantarı. Yapraklarda beyaz pudra görünümlü kaplama. Kuru ve sıcak havada görülür.' },
-  'Downy Mildew':                        { tr: 'Mildiyö',                      info: 'Plasmopara mantarı. Yaprak üstünde sarı lekeler, altında grimsi-morumsu küf. Serin ve nemli havada görülür.' },
-  'Black Rot':                           { tr: 'Siyah Çürüklük',               info: 'Guignardia bidwellii mantarı. Yapraklarda V şekilli sarı-kahverengi lekeler, meyvelerde siyah çürüme.' },
-  'Cedar Apple Rust':                    { tr: 'Elma Pası',                    info: 'Gymnosporangium juniperi-virginianae mantarı. Yapraklarda turuncu lekeler ve tüp şekilli yapılar.' },
-  'Common Rust':                         { tr: 'Yaygın Pas',                   info: 'Puccinia sorghi mantarı. Yapraklarda küçük kırmızı-kahverengi pustüller. Mısırda yaygındır.' },
-  'Northern Leaf Blight':                { tr: 'Kuzey Yaprak Yanıklığı',       info: 'Exserohilum turcicum mantarı. Uzun gri-yeşil eliptik lekeler. Mısırda verim kaybına neden olur.' },
-  'Cercospora Leaf Spot Gray Leaf Spot': { tr: 'Cercospora Yaprak Lekesi',     info: 'Cercospora zeae-maydis mantarı. Yapraklarda dar dikdörtgen gri lekeler. Yüksek nemde hızlı yayılır.' },
-  'Haunglongbing Citrus Greening':       { tr: 'Turunçgil Yeşillik Hastalığı', info: 'Candidatus Liberibacter bakterisi. Yapraklarda asimetrik sararma, meyveler küçük ve yeşil kalır.' },
-  'Bacterial Blight':                    { tr: 'Bakteriyel Yanıklık',          info: 'Pseudomonas syringae. Yapraklarda yağlı görünümlü lekeler, kahverengileşme, erken dökülme.' },
-  'Leaf Blast':                          { tr: 'Yaprak Patlaması',             info: 'Magnaporthe oryzae mantarı. Eliptik gri lekeler. Pirinçte en yıkıcı hastalıklardan biridir.' },
-  'Brown Spot':                          { tr: 'Kahverengi Leke',              info: 'Bipolaris oryzae mantarı. Kahverengi oval lekeler. Pirinçte tanelerin dökülmesine neden olur.' },
-  'Healthy':                             { tr: 'Sağlıklı',                     info: 'Yaprak sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.' },
-};
-
-function getDiseaseInfo(diseaseName) {
-  if (!diseaseName) return null;
-  const key = Object.keys(DISEASE_TR).find(k => diseaseName.toLowerCase().includes(k.toLowerCase()));
-  return key ? DISEASE_TR[key] : null;
-}
 
 const { width } = Dimensions.get('window');
 
@@ -310,6 +281,7 @@ export default function DiseaseScreen({ navigation }) {
             const d = new Date(item.timestamp);
             const conf = item.confidence != null ? (item.confidence * 100).toFixed(1) : '--';
             const healthy = (item.label || '').toLowerCase().includes('healthy');
+            const histDiseaseInfo = getDiseaseInfo(item.label);
             return (
               <View key={i} style={[styles.histRow, i===history.length-1 && { borderBottomWidth:0 }]}>
                 {item.image_path ? (
@@ -320,6 +292,9 @@ export default function DiseaseScreen({ navigation }) {
                 )}
                 <View style={{ flex:1 }}>
                   <Text style={styles.histDisease} numberOfLines={1}>{item.label || '--'}</Text>
+                  {histDiseaseInfo && !healthy && (
+                    <Text style={styles.histDiseaseTr} numberOfLines={1}>{histDiseaseInfo.tr}</Text>
+                  )}
                   <Text style={styles.histTime}>{d.toLocaleDateString('tr-TR')} {d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</Text>
                 </View>
                 <Text style={[styles.histConf, { color: healthy ? Colors.green : parseFloat(conf)>70 ? Colors.red : Colors.orange }]}>
@@ -384,8 +359,9 @@ const styles = StyleSheet.create({
   histRow:      { flexDirection:'row', alignItems:'center', gap:10, paddingVertical:10, borderBottomWidth:1, borderBottomColor:Colors.borderDim },
   histThumb:    { width:46, height:46, borderRadius:8 },
   histThumbEmpty:{ width:46, height:46, borderRadius:8, backgroundColor:Colors.bgCard2, alignItems:'center', justifyContent:'center' },
-  histDisease:  { fontSize:Typography.sm, fontWeight:'600', color:Colors.text },
-  histTime:     { fontSize:Typography.xs, color:Colors.textSub, marginTop:2 },
+  histDisease:    { fontSize:Typography.sm, fontWeight:'600', color:Colors.text },
+  histDiseaseTr:  { fontSize:Typography.xs, color:Colors.gold, fontStyle:'italic', marginTop:1 },
+  histTime:       { fontSize:Typography.xs, color:Colors.textSub, marginTop:2 },
   histConf:     { fontSize:Typography.sm, fontWeight:'700' },
   noData:       { textAlign:'center', color:Colors.textSub, paddingVertical:16 },
   diseaseTr:    { fontSize: Typography.sm, color: Colors.gold, fontWeight: '600', marginBottom: 8, fontStyle: 'italic' },

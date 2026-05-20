@@ -80,6 +80,8 @@ async def leaf_index(request: Request, db: Session = Depends(get_db)):
 async def leaf_predict(
     file: UploadFile = File(...),
     device_mac: Optional[str] = Form(None),
+    plant_id: Optional[int] = Form(None),
+    plant_name_form: Optional[str] = Form(None, alias="plant_name"),
     db: Session = Depends(get_db),
 ):
     # --- Dosya doğrulama ---
@@ -179,6 +181,8 @@ async def leaf_predict(
         label=label_str,
         confidence=pn_confidence,
         timestamp=datetime.utcnow(),
+        plant_id=plant_id,
+        plant_name=plant_name_form,
     )
     db.add(record)
     db.commit()
@@ -206,6 +210,7 @@ async def leaf_predict(
         overall_health=overall,
         diagnosis_message=diag_message,
         disclaimer=DISCLAIMER,
+        care=_build_care(plant_data),
     )
 
 
@@ -250,6 +255,8 @@ def _build_care(plant_data: Optional[dict]) -> dict:
 @router.post("/predict-disease")
 async def predict_disease_mobile(
     file: UploadFile = File(...),
+    plant_id: Optional[int] = Form(None),
+    plant_name: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
     """
@@ -321,6 +328,8 @@ async def predict_disease_mobile(
         label=label_str,
         confidence=pn_confidence,
         timestamp=datetime.utcnow(),
+        plant_id=plant_id,
+        plant_name=plant_name,
     ))
     db.commit()
 

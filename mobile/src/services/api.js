@@ -1,134 +1,53 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 import { API_BASE_URL } from '../config/api.config';
 
 export const BASE_URL = API_BASE_URL;
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 2000,
+  timeout: 5000,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// â”€â”€ Mock veri Ã¼retici â”€â”€
-const now = () => new Date().toISOString();
-const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
-
-const MOCK_READINGS = Array.from({ length: 20 }, (_, i) => ({
-  id: i + 1,
-  timestamp: ago((20 - i) * 8),
-  moisture_pct:    55 + Math.sin(i * 0.5) * 18,
-  temperature_c:   22 + Math.sin(i * 0.3) * 4,
-  humidity_pct:    60 + Math.cos(i * 0.4) * 12,
-  light_lux:       15000 + Math.sin(i * 0.6) * 8000,
-  device_mac:      'AA:BB:CC:DD:EE:01',
-}));
-
-const MOCK_ALERTS = [
-  { id: 1, level: 'warning',  message: 'Toprak nemi dÃ¼ÅŸÃ¼k seviyede (%32)', timestamp: ago(15), resolved: false },
-  { id: 2, level: 'info',     message: 'Sulama zamanÄ± yaklaÅŸÄ±yor',         timestamp: ago(42), resolved: false },
-  { id: 3, level: 'critical', message: 'SÄ±caklÄ±k kritik seviyede (38Â°C)',  timestamp: ago(90), resolved: false },
-];
-
-const MOCK_PLANTS = [
-  { id: 1, name: 'Domates',  min_moisture: 40, max_moisture: 70, ideal_temp_min: 18, ideal_temp_max: 28, device_mac: 'AA:BB:CC:DD:EE:01' },
-  { id: 2, name: 'Biber',    min_moisture: 35, max_moisture: 65, ideal_temp_min: 20, ideal_temp_max: 30, device_mac: null },
-  { id: 3, name: 'SalatalÄ±k',min_moisture: 50, max_moisture: 80, ideal_temp_min: 18, ideal_temp_max: 26, device_mac: null },
-];
-
-const MOCK_DEVICES = [
-  { mac: 'AA:BB:CC:DD:EE:01', name: 'Toprak SensÃ¶rÃ¼ 1', location: 'Sera A', last_seen: ago(2),  firmware: 'v1.2.0' },
-  { mac: 'AA:BB:CC:DD:EE:02', name: 'Hava SensÃ¶rÃ¼ 1',   location: 'Tarla B', last_seen: ago(65), firmware: 'v1.1.3' },
-];
-
-const MOCK_WATERING = {
-  status: 'watering_needed',
-  hours_until_watering: 3.5,
-  predicted_watering_time: new Date(Date.now() + 3.5 * 3600000).toISOString(),
-  regression: { r_squared: 0.87 },
-};
-
-const MOCK_LEAF_HISTORY = [
-  { id: 1, timestamp: ago(120), disease: 'Healthy',            confidence: 0.94, image_url: null },
-  { id: 2, timestamp: ago(300), disease: 'Bacterial Spot',     confidence: 0.81, image_url: null },
-  { id: 3, timestamp: ago(500), disease: 'Early Blight',       confidence: 0.76, image_url: null },
-];
-
-// â”€â”€ GerÃ§ek API'ye baÄŸlan, hata varsa mock dÃ¶ndÃ¼r â”€â”€
-const withFallback = (apiFn, mockData) =>
-  apiFn().catch(() => mockData);
-
-// â”€â”€ SensÃ¶r â”€â”€
+// ── Sensör ──
 export const getSensorReadings = (limit = 20) =>
-  withFallback(
-    () => api.get(`/api/sensor?limit=${limit}`).then(r => r.data),
-    MOCK_READINGS.slice(0, limit)
-  );
+  api.get(`/api/sensor?limit=${limit}`).then(r => r.data).catch(() => []);
 
-// â”€â”€ UyarÄ±lar â”€â”€
+// ── Uyarılar ──
 export const getAlerts = () =>
-  withFallback(
-    () => api.get('/api/alerts').then(r => r.data),
-    MOCK_ALERTS
-  );
+  api.get('/api/alerts').then(r => r.data).catch(() => []);
 
 export const getAlertHistory = (params = {}) => {
   const q = new URLSearchParams({ limit: 50, ...params }).toString();
-  return withFallback(
-    () => api.get(`/api/alerts/history?${q}`).then(r => r.data),
-    MOCK_ALERTS
-  );
+  return api.get(`/api/alerts/history?${q}`).then(r => r.data).catch(() => []);
 };
 
-// â”€â”€ Sulama Tahmini â”€â”€
+// ── Sulama Tahmini ──
 export const predictWatering = (device_mac = null) =>
-  withFallback(
-    () => api.post('/api/predict-watering', { device_mac, history_hours: 24 }).then(r => r.data),
-    MOCK_WATERING
-  );
+  api.post('/api/predict-watering', { device_mac, history_hours: 24 }).then(r => r.data).catch(() => null);
 
-// â”€â”€ Bitkiler â”€â”€
-let localPlants = [...MOCK_PLANTS];
-let nextPlantId = MOCK_PLANTS.length + 1;
-
+// ── Bitkiler ──
 export const getPlants = () =>
-  withFallback(
-    () => api.get('/api/plants').then(r => r.data),
-    [...localPlants]
-  );
+  api.get('/api/plants').then(r => r.data).catch(() => []);
 
 export const deletePlant = (id) =>
-  api.delete(`/api/plants/${id}`).then(r => r.data).catch(() => {
-    localPlants = localPlants.filter(p => p.id !== id);
-    return { success: true };
-  });
+  api.delete(`/api/plants/${id}`).then(r => r.data);
 
 export const updatePlant = (id, data) =>
-  api.put(`/api/plants/${id}`, data).then(r => r.data).catch(() => {
-    localPlants = localPlants.map(p => p.id === id ? { ...p, ...data } : p);
-    return { id, ...data };
-  });
+  api.put(`/api/plants/${id}`, data).then(r => r.data);
 
 export const createPlant = (data) =>
-  api.post('/api/plants', data).then(r => r.data).catch(() => {
-    const newPlant = { id: nextPlantId++, ...data };
-    localPlants.push(newPlant);
-    return newPlant;
-  });
+  api.post('/api/plants', data).then(r => r.data);
 
-// â”€â”€ Cihazlar â”€â”€
+// ── Cihazlar ──
 export const getDevices = () =>
-  withFallback(
-    () => api.get('/api/devices').then(r => r.data),
-    MOCK_DEVICES
-  );
+  api.get('/api/devices').then(r => r.data).catch(() => []);
 
 export const createDevice = (data) =>
-  api.post('/api/devices', data).then(r => r.data).catch(() => {
-    return { mac: data.mac || 'NEW:DEVICE', ...data };
-  });
+  api.post('/api/devices', data).then(r => r.data);
 
-// â”€â”€ Yaprak HastalÄ±k â”€â”€
-export const predictLeafDisease = async (imageUri) => {
+// ── Yaprak Hastalık ──
+export const predictLeafDisease = async (imageUri, plantId = null, plantName = null) => {
   const formData = new FormData();
   const filename = imageUri.split('/').pop();
   const ext = filename.split('.').pop().toLowerCase();
@@ -137,7 +56,8 @@ export const predictLeafDisease = async (imageUri) => {
     name: filename,
     type: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
   });
-  // /predict-disease → yeni mobil endpoint, fallback+care objesi döner
+  if (plantId   != null) formData.append('plant_id',   String(plantId));
+  if (plantName != null) formData.append('plant_name', plantName);
   const r = await axios.post(`${BASE_URL}/predict-disease`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     timeout: 60000,
@@ -145,12 +65,11 @@ export const predictLeafDisease = async (imageUri) => {
   return r.data;
 };
 
-// â”€â”€ Yaprak GeÃ§miÅŸi â”€â”€
-export const getLeafHistory = (limit = 15) =>
-  withFallback(
-    () => api.get(`/api/leaf-history?limit=${limit}`).then(r => r.data),
-    MOCK_LEAF_HISTORY.slice(0, limit)
-  );
+// ── Yaprak Geçmişi ──
+export const getLeafHistory = (limit = 15, plantId = null) => {
+  const q = plantId != null ? `&plant_id=${plantId}` : '';
+  return api.get(`/api/leaf-history?limit=${limit}${q}`).then(r => r.data).catch(() => []);
+};
 
 // ── Sensör Analizi ──
 export const analyzeSensorData = (plant, sensorData) =>
@@ -160,15 +79,14 @@ export const analyzeSensorData = (plant, sensorData) =>
 export const getWeather = () =>
   api.get('/api/weather').then(r => r.data).catch(() => null);
 
+// ── Bitki Detayı ──
+export const getPlantDetail = (plantId) =>
+  api.get(`/api/plants/${plantId}/detail`).then(r => r.data);
+
 // ── Son Sensör Verisi ──
 export const getLatestSensorData = (device_mac = null) => {
   const q = device_mac ? `?device_mac=${encodeURIComponent(device_mac)}` : '';
-  return withFallback(
-    () => api.get(`/api/latest-data${q}`).then(r => r.data),
-    null
-  );
+  return api.get(`/api/latest-data${q}`).then(r => r.data).catch(() => null);
 };
 
 export default api;
-
-

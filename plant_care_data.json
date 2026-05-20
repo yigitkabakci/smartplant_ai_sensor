@@ -1,0 +1,495 @@
+{
+  "Monstera": {
+    "aliases": ["monstera deliciosa", "monstera adansonii", "swiss cheese plant", "delikli yaprak", "monstéra"],
+    "display_name": "Monstera",
+    "image_url": "https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Monstera, tropikal yağmur ormanlarından gelen görkemli bir ev bitkisidir. Parlak dolaylı ışık ve yüksek nem sever. Hızlı büyür ve gösterişli delikli yaprakları ile mekânlara canlılık katar.",
+      "watering": "Toprağın üst 3–4 cm'si kuruyunca iyice sulayın. Saksı altından su çıkana kadar sulayın, ardından fazla suyu boşaltın. Kışın sulamayı azaltın.",
+      "light": "Parlak ama dolaylı ışık idealdir. Direkt güneş ışığı yaprak yanığına yol açar. Kuzey veya doğu cepheli pencerelere uygundur.",
+      "humidity_min": 50,
+      "humidity_max": 80,
+      "temperature_min": 18,
+      "temperature_max": 27,
+      "soil_moisture_min": 40,
+      "soil_moisture_max": 60
+    },
+    "special_notes": [
+      "Direkt güneş ışığında yaprak yanığı yaşayabilir; perde arkası veya dolaylı ışık tercih edin.",
+      "Yaprak uçlarının kahverengileşmesi genellikle düşük neme işaret eder; düzenli sisleme yapın.",
+      "Kökler saksıdan çıkmaya başladıysa bir üst beden saksıya alın.",
+      "Yaprakları ıslak bezle silin; hem temizlik hem de nem sağlar.",
+      "Soğuk hava akımlarından ve klimadan uzak tutun."
+    ],
+    "seasonal_tips": {
+      "spring": "İlkbaharda hızlı büyüme dönemine girer. 2 haftada bir sıvı gübre verin ve sulamayı artırın.",
+      "summer": "Yaz sıcaklarında yaprakları günde bir kez sislendirin. Toprak çabuk kurur, sulamayı yakından takip edin.",
+      "autumn": "Gübrelemeyi yavaşlatın. Bitkiyi kış dinlenme dönemine hazırlayın, sulamayı azaltın.",
+      "winter": "Minimum 15°C üzerinde tutun. Kalorifer yanına koymayın; kuru hava zarar verir. Sulamayı önemli ölçüde azaltın."
+    }
+  },
+  "Orkide": {
+    "aliases": ["orchid", "phalaenopsis", "orchidea", "orkide", "moth orchid"],
+    "display_name": "Orkide",
+    "image_url": "https://images.unsplash.com/photo-1533038590840-1cde6e668a91?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Orkide, zarif çiçekleriyle ev dekorasyonunun vazgeçilmezidir. Sıcak, nemli ve dolaylı ışıklı ortamları sever. Düzgün bakımla yılda 2 kez çiçek açabilir.",
+      "watering": "Haftada bir kez ılık su ile sulayın. Kökler yeşil ise yeterince nemlendirmek yeterlidir; beyaz ve kuru olunca sulama zamanıdır. Fazla suyu mutlaka boşaltın.",
+      "light": "Parlak dolaylı ışık idealdir. Doğu ya da batı cepheli pencere mükemmeldir. Doğrudan güneş ışığından kaçının.",
+      "humidity_min": 50,
+      "humidity_max": 70,
+      "temperature_min": 20,
+      "temperature_max": 28,
+      "soil_moisture_min": 35,
+      "soil_moisture_max": 55
+    },
+    "special_notes": [
+      "Soğuk hava akımlarından kesinlikle uzak tutun; kapı ve pencere kıyısına koymayın.",
+      "Direkt kalorifer üstünde bulundurulmamalıdır; kuru sıcak hava çiçek dökülmesine neden olur.",
+      "Kışın sulama azaltılmalı ama ortam nemi korunmalıdır; yanına su dolu kap koyun.",
+      "Şeffaf saksıda yetiştirilirse köklerin rengi sulama zamanını gösterir.",
+      "Çiçek sapını kesmeden önce, gözün solup solmadığına bakın; yeni çiçek açabilir."
+    ],
+    "seasonal_tips": {
+      "spring": "Çiçeklenme sonrası yeni sürgünler çıkabilir. Gübreyi az dozda verin.",
+      "summer": "Yüksek sıcaklıklarda aşırı sulamaktan kaçının. Akşamları serinletici hava sirkülasyonu yararlıdır.",
+      "autumn": "Sıcaklık farkları (gece-gündüz ~5°C) çiçeklenmeyi tetikler; bunu destekleyin.",
+      "winter": "Cam kenarına koymayın; soğuk cam yüzeyi köklere zarar verir. Sulama sıklığını azaltın."
+    }
+  },
+  "Yılan Bitkisi": {
+    "aliases": ["snake plant", "sansevieria", "sanseveria", "mother-in-law's tongue", "yılan bitkisi", "dracaena trifasciata", "sansevieria trifasciata"],
+    "display_name": "Yılan Bitkisi",
+    "image_url": "https://images.unsplash.com/photo-1599598425947-5202edd56cdc?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Yılan Bitkisi, bakımı en kolay ev bitkilerinden biridir. Düşük ışık ve nadiren sulamaya tahammüllüdür. Hava temizleme özelliğiyle bilinir ve yatak odaları için idealdir.",
+      "watering": "Çok az sulama yeterlidir. Toprak tamamen kuruduktan 2–3 gün sonra sulayın. Kışın ayda 1 kez sulama yeterlidir. Fazla su en büyük düşmanıdır.",
+      "light": "Düşük ışıktan parlak dolaylı ışığa kadar her ortama uyum sağlar. Doğrudan güneş ışığından uzak tutun.",
+      "humidity_min": 30,
+      "humidity_max": 50,
+      "temperature_min": 15,
+      "temperature_max": 29,
+      "soil_moisture_min": 20,
+      "soil_moisture_max": 40
+    },
+    "special_notes": [
+      "Fazla sulamaya karşı son derece hassastır; kök çürümesi en yaygın ölüm sebebidir.",
+      "Kışın sulamayı büyük ölçüde azaltın; aylık 1 sulama çoğunlukla yeterlidir.",
+      "Düşük ışıkta hayatta kalır ama parlak dolaylı ışıkta daha hızlı büyür.",
+      "Saksıyı değiştirmek için acele etmeyin; biraz sıkışık olmayı sever.",
+      "Yaprakların sararmaya başlaması fazla sulama veya kötü drenaj işaretidir."
+    ],
+    "seasonal_tips": {
+      "spring": "Büyüme mevsimi başlar. Gübre verebilirsiniz, ancak sulama sıklığını çok artırmayın.",
+      "summer": "Yaz sıcağında biraz daha sık sulama gerekebilir; toprağı kontrol edin.",
+      "autumn": "Sulamayı yavaş yavaş azaltmaya başlayın.",
+      "winter": "Minimum 10°C üzerinde tutun. Sulama neredeyse tamamen durdurulabilir."
+    }
+  },
+  "Calathea": {
+    "aliases": ["calathea", "prayer plant", "calathea ornata", "calathea medallion", "calathea makoyana", "calathea lancifolia"],
+    "display_name": "Calathea",
+    "image_url": "https://images.unsplash.com/photo-1603760993028-cd7f1b60f31c?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Calathea, göz alıcı desenli yapraklarıyla tanınan bir tropikal bitkidir. Yüksek nem ve dolaylı ışık ister; hassas bir bitkidir ama doğru bakımla büyüleyici görünüm sunar.",
+      "watering": "Toprağın üst 1–2 cm'si kuruyunca sulayın. Klorlu çeşme suyu yerine oda sıcaklığında dinlendirilmiş veya filtreli su kullanın. Yaprakları ıslatmaktan kaçının.",
+      "light": "Dolaylı ışık gereklidir. Doğrudan güneş ışığı yaprak renklerini soldurur. Kuzey veya doğu cephesi idealdir.",
+      "humidity_min": 60,
+      "humidity_max": 80,
+      "temperature_min": 18,
+      "temperature_max": 26,
+      "soil_moisture_min": 50,
+      "soil_moisture_max": 70
+    },
+    "special_notes": [
+      "Düşük nemde yapraklar kıvırır; düzenli sisleme yapın veya nem tablası kullanın.",
+      "Klorlu musluk suyuna duyarlıdır; dinlendirilmiş ya da filtreli su kullanın.",
+      "Soğuk ve kuru havalarda yaprak uçları kahverengileşebilir.",
+      "Akşamları yaprakları dikine kalkar (dua duruşu); bu normaldir, sağlık işaretidir.",
+      "Ani sıcaklık değişimlerinden ve klimadan uzak tutun."
+    ],
+    "seasonal_tips": {
+      "spring": "İlkbaharda yaprak bölmesi ile çoğaltılabilir. Sulamayı ve gübrelemeyi artırın.",
+      "summer": "Sıcaklarda günde 1–2 kez sisleme yapın. Toprağın çok kuru kalmamasına dikkat edin.",
+      "autumn": "Gübreyi durdurun, sulamayı yavaşça azaltın.",
+      "winter": "Kalorifer yanından uzak tutun; kuru hava en büyük düşmanıdır. Nem tablası kullanın."
+    }
+  },
+  "Aloe Vera": {
+    "aliases": ["aloe vera", "aloe", "aloe barbadensis", "sarısabır", "aloe barbadensis miller"],
+    "display_name": "Aloe Vera",
+    "image_url": "https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Aloe Vera, şifalı özüyle tanınan dayanıklı bir sukulent bitkidir. Çok az bakım ister, suya ihtiyacı azdır. Parlak ışık ve iyi drene olan toprak en önemli ihtiyaçlarıdır.",
+      "watering": "Toprak tamamen kuruyunca iyice sulayın. Kışın ayda 1 kez yeterlidir. Saksıda su birikmesine izin vermeyin; kök çürümesi en sık karşılaşılan sorundur.",
+      "light": "Günde 6+ saat parlak ışık idealdir. Güney veya batı cepheli pencere en iyisidir. Yoğun doğrudan öğle güneşi yaprak yanığı yapabilir.",
+      "humidity_min": 20,
+      "humidity_max": 40,
+      "temperature_min": 18,
+      "temperature_max": 30,
+      "soil_moisture_min": 15,
+      "soil_moisture_max": 35
+    },
+    "special_notes": [
+      "Kışın daha az sulanmalıdır; aşırı sulama kök çürümesine yol açar.",
+      "Yapraklar düzleşmeye veya sararmaya başladıysa aşırı su veya yetersiz ışık işareti olabilir.",
+      "Yapraklarını koparmak yarayı iyileştirir; içindeki jel kullanılabilir.",
+      "Plastik saksı yerine toprak saksı tercih edin; daha iyi drenaj sağlar.",
+      "Ani soğuklara karşı hassastır; 10°C altına düşürmeyin."
+    ],
+    "seasonal_tips": {
+      "spring": "Hızlı büyüme dönemi; yavaş salınımlı gübre verin. Sulamayı biraz artırın.",
+      "summer": "Açık havaya çıkarabilirsiniz ama öğle güneşinden koruyun.",
+      "autumn": "Gübreyi kesin, sulamayı önemli ölçüde azaltın.",
+      "winter": "Sulamayı minimuma indirin. Dondan kesinlikle koruyun; 10°C altı tehlikelidir."
+    }
+  },
+  "Barış Çiçeği": {
+    "aliases": ["peace lily", "spathiphyllum", "barış çiçeği", "spathiphyllum wallisii", "white sails"],
+    "display_name": "Barış Çiçeği",
+    "image_url": "https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Barış Çiçeği, zarif beyaz çiçekleri ve hava temizleme özelliğiyle popüler bir ev bitkisidir. Düşük ışığa toleranslıdır ve bakımı görece kolaydır. Tropikal ortam sever.",
+      "watering": "Toprak hafif nemli kalmalıdır ama asla suya batık değil. Yapraklar hafifçe sarkınca sulama zamanıdır. Klorlu su yerine dinlendirilmiş su kullanın.",
+      "light": "Düşük ila orta dolaylı ışık yeterlidir. Doğrudan güneş ışığı yaprak yanığı yapar. Işıksız köşelere bile tolere edebilir.",
+      "humidity_min": 50,
+      "humidity_max": 80,
+      "temperature_min": 18,
+      "temperature_max": 27,
+      "soil_moisture_min": 50,
+      "soil_moisture_max": 70
+    },
+    "special_notes": [
+      "Yapraklar sararmaya başlarsa toprak çok ıslak veya çok kuru olabilir.",
+      "Klorlu suya duyarlıdır; oda sıcaklığında bekletilmiş su tercih edin.",
+      "Soğuk cam yüzeylerine değdirmekten kaçının.",
+      "Çiçekler solduğunda sapı dipten kesin; yeni çiçeklenmeyi teşvik eder.",
+      "Hafif toksik bir bitkidir; evcil hayvanlar ve çocuklardan uzak tutun."
+    ],
+    "seasonal_tips": {
+      "spring": "Çiçeklenme dönemi başlar; aylık gübre verin. Sulamayı düzenli tutun.",
+      "summer": "Sıcakta yaprakları sislendirin. Direkt klima altına koymayın.",
+      "autumn": "Gübrelemeyi yavaşlatın. Sulamayı biraz azaltın.",
+      "winter": "Minimum 15°C altına düşürmeyin. Kalorifer yanından uzak tutun."
+    }
+  },
+  "Pothos": {
+    "aliases": ["pothos", "epipremnum", "devil's ivy", "scindapsus", "epipremnum aureum", "altın pothos", "golden pothos"],
+    "display_name": "Pothos",
+    "image_url": "https://images.unsplash.com/photo-1614731971048-5e52fc4e45b3?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Pothos, sarkan uzun sürgünleri ve parlak yapraklarıyla çok sevilen bir sarmaşık bitkisidir. Bakımı son derece kolaydır; az ışık ve ihmal tolere eder. Başlangıç bitkisi olarak mükemmeldir.",
+      "watering": "Toprağın üst 3–4 cm'si kuruyunca sulayın. Fazla sulamaya karşı hassastır. Sarı yapraklar genellikle aşırı sulamanın işaretidir.",
+      "light": "Düşük ışıkta hayatta kalır ama parlak dolaylı ışıkta en iyi büyür. Çok az ışıkta yaprak desenleri solabilir. Doğrudan güneş ışığından kaçının.",
+      "humidity_min": 40,
+      "humidity_max": 70,
+      "temperature_min": 15,
+      "temperature_max": 27,
+      "soil_moisture_min": 35,
+      "soil_moisture_max": 65
+    },
+    "special_notes": [
+      "Sarı yapraklar aşırı sulamanın, kahverengi yaprak uçları düşük nemin işaretidir.",
+      "Sürgünler çok uzadığında budayın; kesilen parçalar suda köklendirilebilir.",
+      "Düşük ışıkta variegated (alacalı) desenler azalabilir.",
+      "Boğumlardan çok kolayca çoğaltılır; suda veya toprakta kök tutar.",
+      "Evcil hayvanlar için toksiktir; ulaşamayacakları yerlere asın."
+    ],
+    "seasonal_tips": {
+      "spring": "Hızlı büyüme başlar; budama ve çoğaltma için ideal dönemdir.",
+      "summer": "Aylık sulama sıklığını artırabilirsiniz. Gübre verin.",
+      "autumn": "Büyüme yavaşlar; sulamayı ve gübrelemeyi azaltın.",
+      "winter": "Soğuk pencere kenarlarından uzak tutun. Sulama minimum seviyede kalmalı."
+    }
+  },
+  "Ficus": {
+    "aliases": ["ficus", "rubber plant", "ficus elastica", "rubber tree", "lastik ağacı", "ficus lyrata", "fiddle leaf fig", "fiddle-leaf"],
+    "display_name": "Ficus",
+    "image_url": "https://images.unsplash.com/photo-1606587019895-1c56d8da6bc3?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Ficus, parlak geniş yapraklarıyla iç mekânlara tropikal bir hava katar. Doğru konuma alışınca çok az bakım ister; ancak yer değiştirmekten hoşlanmaz ve yaprak dökülebilir.",
+      "watering": "Toprağın üst 2–3 cm'si kuruyunca sulayın. Kışın sulamayı önemli ölçüde azaltın. Düzenli ve ölçülü sulama idealdir.",
+      "light": "Parlak dolaylı ışık en iyisidir. Düzenli ışık alabildiği sabit bir yer seçin; sık yer değiştirmek yaprak dökülmesine neden olur.",
+      "humidity_min": 40,
+      "humidity_max": 70,
+      "temperature_min": 17,
+      "temperature_max": 27,
+      "soil_moisture_min": 40,
+      "soil_moisture_max": 60
+    },
+    "special_notes": [
+      "Yer değiştirmekten hoşlanmaz; yeni konumda yaprak dökebilir, bu normaldir.",
+      "Hava akımlarından ve ani sıcaklık değişimlerinden koruyun.",
+      "Yaprakları ıslak bezle silin; fotosentezi kolaylaştırır.",
+      "Kışın ısıtıcı yanına ya da soğuk cam kenarına koymayın.",
+      "Büyük yapraklı türler (fiddle leaf) daha yüksek nem ve ışık ister."
+    ],
+    "seasonal_tips": {
+      "spring": "Yeni yapraklar çıkar; gübre verin ve sulamayı artırın.",
+      "summer": "Parlak ışık sağlayın. Çok sıcak günlerde sisleme yapın.",
+      "autumn": "Gübrelemeyi durdurun, sulamayı azaltın.",
+      "winter": "Soğuk hava akımlarından koruyun. Kalorifer altına koymayın."
+    }
+  },
+  "Örümcek Bitkisi": {
+    "aliases": ["spider plant", "chlorophytum", "ribbon plant", "örümcek bitkisi", "chlorophytum comosum", "airplane plant"],
+    "display_name": "Örümcek Bitkisi",
+    "image_url": "https://images.unsplash.com/photo-1572688484438-313a6e50c333?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Örümcek Bitkisi, bakımı en kolay bitkilerden biridir. Sarkık sürgünleriyle dekorasyona ayrı bir şıklık katar. Hava temizleme kapasitesi yüksektir ve çoğaltması çok kolaydır.",
+      "watering": "Toprağın üst kısmı kuruyunca sulayın. Florür içeren musluk suyuna duyarlıdır; dinlendirilmiş su kullanın. Fazla sulama kök çürümesine neden olur.",
+      "light": "Düşük ila parlak dolaylı ışıkta yaşayabilir. Doğrudan güneşten kaçının; yaprak uçlarını yakar. Yarı gölge de tolere eder.",
+      "humidity_min": 40,
+      "humidity_max": 65,
+      "temperature_min": 15,
+      "temperature_max": 27,
+      "soil_moisture_min": 35,
+      "soil_moisture_max": 60
+    },
+    "special_notes": [
+      "Florür ve klorlu suya duyarlıdır; yaprak uçlarının kahverengileşmesi bunun işaretidir.",
+      "Sarkan yavru bitkicikler kesilip suda veya toprağa köklendirilebilir.",
+      "Hafif stres (az sulama) çiçeklenmeyi ve yavru üretimini tetikler.",
+      "Saksı değişimi sık gerekmez; sıkışık ortamı sever.",
+      "Evcil hayvanlar için toksik değildir; pet-friendly bir bitkidir."
+    ],
+    "seasonal_tips": {
+      "spring": "Yavru bitkiler büyük oluşur; çoğaltma için idealdir. Gübre başlatın.",
+      "summer": "Doğrudan güneşten koruyun. Sıcakta biraz daha sık sulayın.",
+      "autumn": "Gübrelemeyi azaltın, sulamayı seyrekleştirin.",
+      "winter": "Sulamayı önemli ölçüde azaltın. Gübre vermeyi durdurun."
+    }
+  },
+  "Lavanta": {
+    "aliases": ["lavender", "lavanta", "lavandula", "lavandula angustifolia", "english lavender", "french lavender"],
+    "display_name": "Lavanta",
+    "image_url": "https://images.unsplash.com/photo-1499002238440-d264ebb596ab?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Lavanta, mor çiçekleri ve eşsiz kokusuyla sevilen bir akdeniz bitkisidir. Güneş ve iyi drene olmuş toprak sever; nem ve aşırı sulamaya karşı hassastır.",
+      "watering": "Toprak tamamen kuruyunca sulayın; aşırı nem kök çürümesine neden olur. Kışın sulama minimuma indirilmelidir. İyi drenajlı toprak şarttır.",
+      "light": "Günde en az 6 saat doğrudan güneş ışığı gerektirir. Güney cepheli pencere idealdir. Yetersiz ışık çiçeklenmeyi engeller.",
+      "humidity_min": 30,
+      "humidity_max": 50,
+      "temperature_min": 15,
+      "temperature_max": 25,
+      "soil_moisture_min": 20,
+      "soil_moisture_max": 40
+    },
+    "special_notes": [
+      "Akdeniz bitkisidir; kuru koşulları sever, yüksek nem zarar verir.",
+      "Çiçeklenme döneminden sonra hafifçe budayın; yaşlı odun kesimine karşı dikkatli olun.",
+      "Kireçli, iyi drene olan toprak tercih edilmelidir.",
+      "İç mekânda yetiştiriliyorsa iyi hava sirkülasyonu sağlayın.",
+      "Potted lavanta yazın balkona çıkarılırsa daha sağlıklı çiçeklenir."
+    ],
+    "seasonal_tips": {
+      "spring": "Yeni büyüme başlar; hafif gübre verebilirsiniz. Budama için uygun dönem.",
+      "summer": "En yoğun çiçeklenme dönemidir. Sulamayı toprak tamamen kuruyunca yapın.",
+      "autumn": "Çiçekler solar; düzenli budama yapın. Sulamayı azaltın.",
+      "winter": "Soğuğa dayanıklıdır ama saksıda ise don oluşmasını engelleyin. Sulamayı minimuma indirin."
+    }
+  },
+  "Domates": {
+    "aliases": ["tomato", "domates", "lycopersicon esculentum", "solanum lycopersicum", "cherry tomato", "kiraz domates"],
+    "display_name": "Domates",
+    "image_url": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Domates, dünyada en yaygın yetiştirilen sebzelerden biridir. Bol güneş, düzenli sulama ve besin açısından zengin toprak ister. İç mekânda da saksıda yetiştirilebilir.",
+      "watering": "Toprak nemli tutulmalıdır ama aşırı sulama köklere zarar verir. Toprağın üst 2 cm'si kuruyunca iyice sulayın. Yapraklara değil köke sulayın.",
+      "light": "Günde en az 8 saat doğrudan güneş ışığı gerektirir. İç mekânda güçlü bir büyüme lambası gerekebilir.",
+      "humidity_min": 50,
+      "humidity_max": 70,
+      "temperature_min": 18,
+      "temperature_max": 29,
+      "soil_moisture_min": 55,
+      "soil_moisture_max": 75
+    },
+    "special_notes": [
+      "Düzensiz sulama çiçek sonu çürüklüğüne (BER) yol açabilir; sulama tutarlı olmalı.",
+      "Kalsiyum eksikliği meyvelerde çürümeye neden olabilir; mineral gübre kullanın.",
+      "Dallar çok uzadığında destekleme çubuğu kullanın.",
+      "Yaprak hastalıklarına karşı düzenli kontrol yapın; erken tespit kritik.",
+      "Kış aylarında iç mekânda yetiştiriliyorsa tozlaşma için çiçekleri hafifçe titretin."
+    ],
+    "seasonal_tips": {
+      "spring": "Fide dikimi için ideal dönem. Kök oluşumunu desteklemek için fosfor gübresi kullanın.",
+      "summer": "En yüksek verim dönemi. Günde 1–2 kez sulama gerekebilir. Zararlıları takip edin.",
+      "autumn": "Son hasatlar yapılır. Soğuklar gelmeden önce bitkiyi koruma altına alın.",
+      "winter": "Dış mekânda yetiştiriliyorsa don tehlikesine karşı önlem alın veya iç mekâna taşıyın."
+    }
+  },
+  "Kaktüs": {
+    "aliases": ["cactus", "kaktüs", "kakti", "cacti", "cactaceae", "desert cactus", "opuntia", "cereus"],
+    "display_name": "Kaktüs",
+    "image_url": "https://images.unsplash.com/photo-1534710961537-b07f7a85ec64?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Kaktüs, çölden gelen son derece dayanıklı bir bitkidir. Minimum bakım ister; çok az sulama ve maksimum güneş ışığı yeterlidir. Doğru drenaj sağlanırsa yıllarca sorunsuz yaşar.",
+      "watering": "Yaz aylarında toprak tamamen kuruyunca sulayın (2–4 haftada bir). Kışın aylık 1 ya da 0 sulama yeterlidir. Fazla su kaktüsün en büyük düşmanıdır.",
+      "light": "Maksimum güneş ışığı gereklidir; günde 6+ saat doğrudan güneş idealdir. Güney cepheli pencere en iyisidir.",
+      "humidity_min": 10,
+      "humidity_max": 30,
+      "temperature_min": 18,
+      "temperature_max": 35,
+      "soil_moisture_min": 5,
+      "soil_moisture_max": 25
+    },
+    "special_notes": [
+      "En yaygın hata aşırı sulamadır; toprak tamamen kurumadan kesinlikle sulama yapmayın.",
+      "Kaktüs toprağı veya iri kum karışımı kullanın; standart bahçe toprağı uygun değildir.",
+      "Yazları dışarıya çıkarmak çiçeklenmeyi tetikleyebilir.",
+      "Kış aylarında serin (+5°C) ve kuru ortamda dinlendirmek çiçeklenme şansını artırır.",
+      "Kaktüsü taşırken kalın eldiven kullanın; dikenler derin batabilir."
+    ],
+    "seasonal_tips": {
+      "spring": "Aktif büyüme başlar; sulama sıklığını artırabilirsiniz. Gübre verebilirsiniz.",
+      "summer": "En aktif dönem; hafif sulama ve maksimum ışık sağlayın.",
+      "autumn": "Sulamayı yavaş yavaş azaltın, kış dinlenmesine hazırlayın.",
+      "winter": "Çok az veya hiç sulama yapmayın. Serin ve kuru ortam çiçeklenmeyi tetikler."
+    }
+  },
+  "Gül": {
+    "aliases": ["rose", "gül", "rosa", "rosa gallica", "garden rose", "climbing rose", "hybrid tea"],
+    "display_name": "Gül",
+    "image_url": "https://images.unsplash.com/photo-1490750967868-9ff6a4ca7b43?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Gül, çiçeklerin kraliçesi olarak bilinir. Hem dış mekânda hem saksıda yetiştirilebilir. Bol güneş, düzenli sulama ve beslenme ister; hastalıklara karşı dikkatli olmak gerekir.",
+      "watering": "Toprağı nemli tutun ama suyun birikmesine izin vermeyin. Sabahları köke sulayın; yaprakları ıslatmak mantar hastalıklarına davet çıkarır.",
+      "light": "Günde 6+ saat doğrudan güneş ışığı gerektirir. Yetersiz ışık çiçeklenmeyi ve güç azaltır.",
+      "humidity_min": 50,
+      "humidity_max": 70,
+      "temperature_min": 15,
+      "temperature_max": 25,
+      "soil_moisture_min": 45,
+      "soil_moisture_max": 65
+    },
+    "special_notes": [
+      "Yapraklara su temas etmemesi gerekir; kökten sulama tercih edin.",
+      "Kara leke ve külleme gibi mantar hastalıklarına karşı düzenli bakır bazlı sprey uygulayın.",
+      "Solmuş çiçekleri budamak (deadheading) yeni çiçeklenmeyi teşvik eder.",
+      "Sonbaharda kışa hazırlık budaması yapılmalıdır.",
+      "Afitlere (yaprak biti) karşı düzenli gözlem; erken müdahale kritiktir."
+    ],
+    "seasonal_tips": {
+      "spring": "Yeni sürgünler çıkar; ilkbahar budaması yapın. NPK gübresi başlatın.",
+      "summer": "En yoğun çiçeklenme dönemi. Sulama ve gübrelemeyi aksatmayın.",
+      "autumn": "Yavaş yavaş sulama azaltın. Sonbahar budamasını yapın.",
+      "winter": "Soğuğa dayanıklıdır ama şiddetli don sırasında kökleri koruyun. Saksı gülü donmadan koruyun."
+    }
+  },
+  "Fesleğen": {
+    "aliases": ["basil", "fesleğen", "ocimum basilicum", "sweet basil", "feslegen", "büyük fesleğen", "purple basil"],
+    "display_name": "Fesleğen",
+    "image_url": "https://images.unsplash.com/photo-1515600051222-a3c338ff16f6?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Fesleğen, mutfak bahçesinin vazgeçilmezi olan aromatik bir bitkidir. Sıcak, güneşli ortam ve düzenli sulama sever. Düzgün hasat edildiğinde sürekli üretim yapar.",
+      "watering": "Toprak nemli tutulmalıdır; kuruluk fesleğeni hızla soldurur. Sabahları sulayın, yapraklara değil toprağa. Aşırı su ise kök çürümesi yapar.",
+      "light": "Günde 6–8 saat doğrudan güneş ışığı en iyisidir. Az ışıkta yapraklar solgun ve aromasız olur.",
+      "humidity_min": 50,
+      "humidity_max": 65,
+      "temperature_min": 18,
+      "temperature_max": 29,
+      "soil_moisture_min": 50,
+      "soil_moisture_max": 70
+    },
+    "special_notes": [
+      "Çiçeklenmeye başlarsa tepesi kesilmeli; çiçeklenme tat kalitesini düşürür.",
+      "Soğuk havaya son derece hassastır; 10°C altında hızla solar.",
+      "Yaprakları sabahları hasatlandırın; en yüksek aroma o saatte olur.",
+      "Kışın iç mekânda saksıda yetiştirilmeli; soğuğa toleransı yoktur.",
+      "Birkaç dal suda taze tutulabilir; köklenirse toprağa da dikilebilir."
+    ],
+    "seasonal_tips": {
+      "spring": "Tohumdan veya çelikten yetiştirilmeye başlanabilir. Son dona dikkat edin.",
+      "summer": "En verimli dönem. Düzenli hasat büyümeyi teşvik eder.",
+      "autumn": "Soğuklar gelmeden önce tohumlarını toplayın veya iç mekâna alın.",
+      "winter": "Dışarıda yaşayamaz; pencere önünde saksıda yetiştirin. Büyüme yavaşlar."
+    }
+  },
+  "Sukulent": {
+    "aliases": ["succulent", "sukulent", "echeveria", "sedum", "crassula", "haworthia", "fat plant", "et yapraklı bitki"],
+    "display_name": "Sukulent",
+    "image_url": "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Sukulentler, et yapraklarında su depolayan son derece dayanıklı bitkilerdir. Minimum bakım ister; aşırı sulamadan kaçınmak en kritik noktadır. Bol ışık ve iyi drene olan toprak yeterlidir.",
+      "watering": "Toprak tamamen kuruyunca sulayın; genellikle 2–3 haftada bir yeterlidir. Kışın aylık 1 sulama yeterli olabilir. Yaprakların üzerine su bırakmayın.",
+      "light": "Günde 6+ saat parlak ışık idealdir. Yeterli ışık olmadan etiolasyon (uzama, renk solukluğu) yaşanır.",
+      "humidity_min": 10,
+      "humidity_max": 40,
+      "temperature_min": 16,
+      "temperature_max": 30,
+      "soil_moisture_min": 10,
+      "soil_moisture_max": 30
+    },
+    "special_notes": [
+      "Aşırı sulama sukulentlerin 1 numaralı düşmanıdır; kök ve gövde çürümesine neden olur.",
+      "Etiolasyon (yaprakların uzayıp solması) yetersiz ışık işaretidir; daha aydınlık yere alın.",
+      "Yaprak bölmesi ile çok kolay çoğaltılır; düşen yapraklar toprağa bırakılabilir.",
+      "Succulent toprağı veya %50 perlit karışımı kullanın; normal toprak uygun değildir.",
+      "Kışın serin (+10°C) ve kuru ortamda dinlendirmek rengi canlılaştırır."
+    ],
+    "seasonal_tips": {
+      "spring": "Büyüme başlar; sulamayı biraz artırın ve seyrek gübre verin.",
+      "summer": "Aktif dönem; yeterli ışık sağlayın. Yaz sıcağında hafif gölgeleme gerekebilir.",
+      "autumn": "Sulamayı azaltın, gübreyi kesin.",
+      "winter": "Çok az ya da hiç sulama. Serin ve kuru ortam idealdir."
+    }
+  },
+  "ZZ Plant": {
+    "aliases": ["zz plant", "zamioculcas", "zamioculas", "zamia", "emerald palm", "zanzibar gem", "eternity plant"],
+    "display_name": "ZZ Plant",
+    "image_url": "https://images.unsplash.com/photo-1545241047-6083a3684587?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "ZZ Plant, parlak koyu yeşil yaprakları ve son derece düşük bakım ihtiyacıyla ofis ve ev için idealdir. Kuraklığa, düşük ışığa ve ihmale karşı çok dayanıklıdır. Yavaş büyür ama uzun yaşar.",
+      "watering": "Toprak tamamen kuruyunca sulayın; fazla su kök çürümesine neden olur. 3–4 haftada bir sulama genellikle yeterlidir. Kışın sulamayı daha da azaltın.",
+      "light": "Düşük ila orta ışıkta yaşayabilir; direkt güneşten kaçının. Parlak dolaylı ışıkta daha hızlı büyür.",
+      "humidity_min": 30,
+      "humidity_max": 60,
+      "temperature_min": 16,
+      "temperature_max": 26,
+      "soil_moisture_min": 20,
+      "soil_moisture_max": 40
+    },
+    "special_notes": [
+      "Kuraklığa karşı çok dayanıklıdır; sulamanız gecikmesi büyük sorun değildir.",
+      "Sarı yapraklar aşırı sulama işaretidir; sulamayı derhal kesin.",
+      "Yavaş büyür; saksı değişimi 2–3 yılda bir yeterlidir.",
+      "Bitkinin tüm kısımları hafif toksiktir; evcil hayvanlar ve çocuklardan uzak tutun.",
+      "Stolon (kök tüberleri) büyük miktarda su depolar; bu yüzden susamaya dayanıklıdır."
+    ],
+    "seasonal_tips": {
+      "spring": "Hafif büyüme başlar; isteğe bağlı gübre verebilirsiniz.",
+      "summer": "Biraz daha sık sulama yapabilirsiniz; yine de ölçülü olun.",
+      "autumn": "Sulamayı azaltın.",
+      "winter": "Sulamayı minimize edin. Soğuk ve kuru ortamdan uzak tutun."
+    }
+  },
+  "Biber": {
+    "aliases": ["pepper", "biber", "capsicum", "paprika", "chili", "hot pepper", "sweet pepper", "bell pepper", "dolmalık biber"],
+    "display_name": "Biber",
+    "image_url": "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=800&q=80&auto=format&fit=crop",
+    "care": {
+      "summary": "Biber, sıcak sever tropikal bir sebzedir. Bol güneş, düzenli sulama ve besin açısından zengin toprak gerektirir. İç mekânda saksıda yetiştirilebilir; özellikle yaz aylarında verimlidir.",
+      "watering": "Toprağı düzenli nemli tutun; kuruluk verimi düşürür ve çiçek dökülmesine neden olur. Aşırı su ise kök hastalığı yapar. Sabahları sulama tercih edilmeli.",
+      "light": "Günde 8+ saat güneş ışığı gerektirir. İç mekânda büyüme lambası kullanmak verimliliği artırır.",
+      "humidity_min": 50,
+      "humidity_max": 70,
+      "temperature_min": 20,
+      "temperature_max": 30,
+      "soil_moisture_min": 55,
+      "soil_moisture_max": 75
+    },
+    "special_notes": [
+      "10°C altında soluma durur, 5°C altında ölüm riski vardır; soğuktan koruyun.",
+      "Çiçek tozlaşmasına yardımcı olmak için hafifçe çiçeklere dokunun veya küçük fırçayla tozlayın.",
+      "Potasyum açısından zengin gübre meyve kalitesini ve rengini artırır.",
+      "Kırmızı ya da sarı renge geçiş beklenirse hasat erteleyin; capsaicin içeriği artar.",
+      "Zararlılar (afit, örümcek akarı) için düzenli yaprak altı kontrolü yapın."
+    ],
+    "seasonal_tips": {
+      "spring": "Fide dikimi için en uygun dönem. Köklerin ısınmasını bekleyin.",
+      "summer": "En yüksek verim dönemi. Sulama ve gübrelemeyi aksatmayın.",
+      "autumn": "Mevsim sonu hasatları tamamlayın. Soğuklar gelmeden bitkiyi koruyun.",
+      "winter": "Tropikal bitki; dondan kesinlikle koruyun. İç mekânda kışlatılabilir."
+    }
+  }
+}

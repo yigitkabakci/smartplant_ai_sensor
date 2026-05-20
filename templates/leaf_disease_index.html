@@ -160,9 +160,15 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
 .agro-table tr:hover td{background:rgba(200,169,106,.025)}
 
 .error-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);padding:1rem 1.2rem;font-size:.75rem;color:#f87171;line-height:1.6;margin-top:1rem;display:none}
+body{cursor:none}
+#cursor{position:fixed;width:28px;height:28px;pointer-events:none;transform:translate(-50%,-50%) rotate(-25deg);transition:transform .15s ease-out;z-index:9999;top:0;left:0}
+#cursor.hover{transform:translate(-50%,-50%) rotate(-25deg) scale(1.6)}
+.iz{position:fixed;width:14px;height:14px;pointer-events:none;opacity:.7;animation:leaf-trail 1.8s ease-in forwards;z-index:9998}
+@keyframes leaf-trail{0%{opacity:.7;transform:translate(-50%,-50%) rotate(0)}100%{opacity:0;transform:translate(-50%,calc(-50% + 60px)) rotate(180deg)}}
 </style>
 </head>
 <body>
+<svg id="cursor" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 2 C8 6, 4 14, 6 24 C6 26, 8 28, 10 28 C20 28, 28 20, 30 8 C30 6, 28 4, 26 4 C22 4, 18 4, 16 2 Z" fill="#639922" stroke="#3B6D11" stroke-width="0.8"/><path d="M14 26 C16 20, 20 14, 28 8" stroke="#3B6D11" stroke-width="0.8" fill="none"/></svg>
 
 <div id="loader">
   <svg id="loader-leaf" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
@@ -319,6 +325,47 @@ async function loadDevices() {
   } catch(e) {}
 }
 
+const DISEASE_TR = {
+  'Bacterial Spot':                       { tr: 'Bakteriyel Leke',               info: 'Pseudomonas/Xanthomonas bakterisinin neden olduğu kahverengi lekeler. Nem ve ıslaklıkta hızla yayılır.' },
+  'Early Blight':                         { tr: 'Erken Yanıklık',                info: 'Alternaria solani mantarı. Koyu kahverengi halkalar içeren lekeler oluşturur, alt yapraklardan başlar.' },
+  'Late Blight':                          { tr: 'Geç Yanıklık',                  info: 'Phytophthora infestans. Yapraklarda su emmiş görünümlü lekeler, beyaz küf tabakası oluşur.' },
+  'Leaf Mold':                            { tr: 'Yaprak Küfü',                   info: 'Fulvia fulva mantarı. Yaprak altında sarımsı-kahverengi küf. Yüksek nemde sera bitkilerinde görülür.' },
+  'Septoria Leaf Spot':                   { tr: 'Septoria Yaprak Lekesi',        info: 'Septoria lycopersici mantarı. Küçük dairevi lekeler, ortası açık kenarı koyu. Islaklıkla yayılır.' },
+  'Spider Mites Two-spotted Spider Mite': { tr: 'Kırmızı Örümcek',              info: 'Tetranychus urticae. Yaprak altında ince ağlar, sarımsı benekler. Sıcak ve kuru havada çoğalır.' },
+  'Target Spot':                          { tr: 'Hedef Nokta Hastalığı',         info: 'Corynespora cassiicola mantarı. Halka halka büyüyen koyu lekeler. Yüksek nem ve ısıda görülür.' },
+  'Tomato Yellow Leaf Curl Virus':        { tr: 'Sarı Yaprak Kıvırcık Virüsü',  info: 'Beyazsinek vektörüyle yayılan virüs. Yapraklar sararır ve kıvrılır, meyve verimi düşer.' },
+  'Tomato Mosaic Virus':                  { tr: 'Mozaik Virüsü',                 info: 'Temas ve kontamine aletlerle yayılır. Yapraklarda mozaik renk deseni, biçim bozukluğu.' },
+  'Powdery Mildew':                       { tr: 'Külleme',                       info: 'Uncinula/Erysiphe mantarı. Yapraklarda beyaz pudra görünümlü kaplama. Kuru ve sıcak havada görülür.' },
+  'Downy Mildew':                         { tr: 'Mildiyö',                       info: 'Plasmopara mantarı. Yaprak üstünde sarı lekeler, altında grimsi-morumsu küf. Serin ve nemli havada görülür.' },
+  'Black Rot':                            { tr: 'Siyah Çürüklük',                info: 'Guignardia bidwellii mantarı. Yapraklarda V şekilli sarı-kahverengi lekeler, meyvelerde siyah çürüme.' },
+  'Cedar Apple Rust':                     { tr: 'Elma Pası',                     info: 'Gymnosporangium mantarı. Yapraklarda turuncu lekeler ve tüp şekilli yapılar.' },
+  'Common Rust':                          { tr: 'Yaygın Pas',                    info: 'Puccinia sorghi mantarı. Yapraklarda küçük kırmızı-kahverengi pustüller. Mısırda yaygındır.' },
+  'Northern Leaf Blight':                 { tr: 'Kuzey Yaprak Yanıklığı',        info: 'Exserohilum turcicum mantarı. Uzun gri-yeşil eliptik lekeler. Mısırda verim kaybına neden olur.' },
+  'Cercospora Leaf Spot Gray Leaf Spot':  { tr: 'Cercospora Yaprak Lekesi',      info: 'Cercospora zeae-maydis mantarı. Yapraklarda dar dikdörtgen gri lekeler. Yüksek nemde hızlı yayılır.' },
+  'Haunglongbing Citrus Greening':        { tr: 'Turunçgil Yeşillik Hastalığı',  info: 'Candidatus Liberibacter bakterisi. Yapraklarda asimetrik sararma, meyveler küçük ve yeşil kalır.' },
+  'Bacterial Blight':                     { tr: 'Bakteriyel Yanıklık',           info: 'Pseudomonas syringae. Yapraklarda yağlı görünümlü lekeler, kahverengileşme, erken dökülme.' },
+  'Leaf Blast':                           { tr: 'Yaprak Patlaması',              info: 'Magnaporthe oryzae mantarı. Eliptik gri lekeler. Pirinçte en yıkıcı hastalıklardan biridir.' },
+  'Brown Spot':                           { tr: 'Kahverengi Leke',               info: 'Bipolaris oryzae mantarı. Kahverengi oval lekeler. Pirinçte tanelerin dökülmesine neden olur.' },
+  'Healthy':                              { tr: 'Sağlıklı',                      info: 'Yaprak sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.' },
+};
+
+function getDiseaseInfo(name) {
+  if (!name) return null;
+  const key = Object.keys(DISEASE_TR).find(k => name.toLowerCase().includes(k.toLowerCase()));
+  return key ? DISEASE_TR[key] : null;
+}
+
+function translateLabel(label) {
+  if (!label) return label;
+  const parts = label.split(' — ');
+  if (parts.length === 2) {
+    const info = getDiseaseInfo(parts[1]);
+    return info ? `${parts[0]} — ${info.tr}` : label;
+  }
+  const info = getDiseaseInfo(label);
+  return info ? info.tr : label;
+}
+
 async function loadHistory() {
   try {
     const r = await fetch('/api/leaf_analyses?limit=10');
@@ -331,9 +378,11 @@ async function loadHistory() {
     tbody.innerHTML = data.map(a => {
       const d = new Date(a.timestamp);
       const pct = a.confidence ? (a.confidence * 100).toFixed(1) + '%' : '—';
+      const info = getDiseaseInfo(a.label);
+      const trName = info ? `<div style="font-size:.6rem;color:rgba(200,169,106,.65);margin-top:.2rem;font-style:italic">${info.tr}</div>` : '';
       return `<tr>
         <td style="font-size:.66rem;color:rgba(237,232,216,.35)">${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</td>
-        <td style="color:rgba(237,232,216,.7)">${a.label || '—'}</td>
+        <td style="color:rgba(237,232,216,.7)">${a.label || '—'}${trName}</td>
         <td style="color:var(--gold)">${pct}</td>
       </tr>`;
     }).join('');
@@ -408,13 +457,46 @@ function showResult(d) {
   let middleHtml = '';
   if (d.disease_name && (d.diagnosis_stage === 'disease' || d.diagnosis_stage === 'possible')) {
     const dConf = d.disease_confidence != null ? (d.disease_confidence * 100).toFixed(0) + '%' : '—';
+    const dInfo = getDiseaseInfo(d.disease_name);
+    const trLine = dInfo ? `<div style="font-size:.78rem;color:rgba(200,169,106,.8);font-style:italic;margin-top:.25rem">${dInfo.tr}</div>` : '';
+    const infoLine = dInfo ? `<div style="margin-top:.7rem;padding:.65rem .8rem;background:rgba(200,169,106,.06);border-left:2px solid rgba(200,169,106,.35);border-radius:0 4px 4px 0;font-size:.7rem;color:rgba(237,232,216,.55);line-height:1.55">${dInfo.info}</div>` : '';
     middleHtml = `<div class="disease-row">
       <span class="disease-name">⚠ ${d.disease_name}</span>
-      <span class="disease-conf">Model güveni: ${dConf}</span>
-    </div>`;
+      ${trLine}
+      <span class="disease-conf" style="margin-top:.3rem">Model güveni: ${dConf}</span>
+    </div>${infoLine}`;
   }
   if (d.diagnosis_message) {
     middleHtml += `<div class="info-box">${d.diagnosis_message}</div>`;
+  }
+
+  // --- Fallback: bakım bilgisi kartları ---
+  if (d.diagnosis_stage === 'fallback' && d.care) {
+    const c = d.care;
+    const inKb = d.plant_in_knowledge_base;
+    const careTitle = inKb ? `${d.plant_display_name || 'Bitki'} Bakım Rehberi` : 'Genel Bakım Rehberi';
+    middleHtml += `<div class="section-divider">${careTitle}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.8rem">
+      <div style="padding:.75rem .9rem;background:rgba(200,169,106,.05);border:1px solid rgba(200,169,106,.1)">
+        <div style="font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(200,169,106,.5);margin-bottom:.4rem">Toprak Nemi</div>
+        <div style="font-size:.88rem;color:var(--cream)">%${c.soil_moisture_min} – %${c.soil_moisture_max}</div>
+      </div>
+      <div style="padding:.75rem .9rem;background:rgba(200,169,106,.05);border:1px solid rgba(200,169,106,.1)">
+        <div style="font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(200,169,106,.5);margin-bottom:.4rem">Hava Nemi</div>
+        <div style="font-size:.88rem;color:var(--cream)">%${c.humidity_min} – %${c.humidity_max}</div>
+      </div>
+      <div style="padding:.75rem .9rem;background:rgba(200,169,106,.05);border:1px solid rgba(200,169,106,.1)">
+        <div style="font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(200,169,106,.5);margin-bottom:.4rem">Işık</div>
+        <div style="font-size:.88rem;color:var(--cream)">${c.light_min.toLocaleString()} – ${c.light_max.toLocaleString()} lux</div>
+      </div>
+      <div style="padding:.75rem .9rem;background:rgba(200,169,106,.05);border:1px solid rgba(200,169,106,.1)">
+        <div style="font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(200,169,106,.5);margin-bottom:.4rem">Sıcaklık Notu</div>
+        <div style="font-size:.72rem;color:rgba(237,232,216,.6);line-height:1.4">${c.notes}</div>
+      </div>
+    </div>
+    <div style="padding:.8rem 1rem;background:rgba(200,169,106,.06);border-left:2px solid var(--gold);font-size:.72rem;color:rgba(237,232,216,.65);line-height:1.6">
+      <span style="color:var(--gold);font-weight:500">💧 Sulama: </span>${c.watering}
+    </div>`;
   }
 
   // --- Sensör durumu ---
@@ -505,5 +587,6 @@ document.addEventListener('click', e => {
   setTimeout(() => { window.location.href = href; }, 600);
 });
 </script>
+<script>(function(){var c=document.getElementById('cursor');if(!c)return;document.addEventListener('mousemove',function(e){c.style.left=e.clientX+'px';c.style.top=e.clientY+'px';if(Math.random()<.12){var iz=c.cloneNode(true);iz.classList.add('iz');iz.removeAttribute('id');iz.style.left=e.clientX+'px';iz.style.top=e.clientY+'px';document.body.appendChild(iz);setTimeout(function(){iz.remove()},1800);}},{passive:true});document.querySelectorAll('a,button').forEach(function(el){el.addEventListener('mouseenter',function(){c.classList.add('hover')});el.addEventListener('mouseleave',function(){c.classList.remove('hover')});});})();</script>
 </body>
 </html>

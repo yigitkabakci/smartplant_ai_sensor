@@ -13,7 +13,8 @@ import TrashIcon from 'react-native-heroicons/outline/TrashIcon';
 import BellIcon from 'react-native-heroicons/outline/BellIcon';
 import ClipboardDocumentListIcon from 'react-native-heroicons/outline/ClipboardDocumentListIcon';
 import BeakerIcon from 'react-native-heroicons/outline/BeakerIcon';
-import { updatePlant, getLatestSensorData, analyzeSensorData, predictLeafDisease, getLeafHistory } from '../services/api';
+import { updatePlant, getLatestSensorData, analyzeSensorData, predictLeafDisease, getLeafHistory, getPlantDetail } from '../services/api';
+import { translateDiseaseLabel } from '../utils/diseaseUtils';
 import { Colors, Typography, Radius } from '../constants/theme';
 
 const REMINDER_TYPES = [
@@ -58,7 +59,10 @@ export default function PlantDetailModal({ plant, onClose, onUpdated }) {
   const [plantDisease, setPlantDisease] = useState(null);
   const [plantDiseaseLoading, setPlantDiseaseLoading] = useState(false);
   const [plantDiseaseHistory, setPlantDiseaseHistory] = useState([]);
+  const [dhOpenIdx, setDhOpenIdx] = useState(null);
   const [saving, setSaving]     = useState(false);
+  const [careDetail, setCareDetail]     = useState(null);
+  const [careLoading, setCareLoading]   = useState(false);
   const [reminders, setReminders] = useState([]);
   const [addingRemind, setAddingRemind] = useState(false);
   const [rForm, setRForm] = useState({
@@ -78,6 +82,9 @@ export default function PlantDetailModal({ plant, onClose, onUpdated }) {
       max_light_lux:  plant.max_light_lux?.toString() || '',
     });
     loadReminders(plant.id).then(setReminders);
+    setCareDetail(null);
+    setCareLoading(true);
+    getPlantDetail(plant.id).then(d => { setCareDetail(d); setCareLoading(false); }).catch(() => setCareLoading(false));
   }, [plant]);
 
   if (!plant) return null;
@@ -182,9 +189,9 @@ export default function PlantDetailModal({ plant, onClose, onUpdated }) {
     setPlantDiseaseLoading(true);
     setPlantDisease(null);
     try {
-      const data = await predictLeafDisease(result.assets[0].uri);
+      const data = await predictLeafDisease(result.assets[0].uri, plant.id, plant.name);
       setPlantDisease({ ...data, imageUri: result.assets[0].uri });
-      const h = await getLeafHistory(5);
+      const h = await getLeafHistory(8, plant.id);
       setPlantDiseaseHistory(h);
     } catch(e) { Alert.alert('Hata', 'Analiz başarısız.'); }
     setPlantDiseaseLoading(false);
@@ -214,8 +221,8 @@ export default function PlantDetailModal({ plant, onClose, onUpdated }) {
           {/* Tabs */}
           <View style={s.tabs}>
             {[
-              { key: 'info',    label: 'Bilgiler',     Icon: ClipboardDocumentListIcon },
-              { key: 'sensor',  label: 'Sensör',       Icon: BeakerIcon },
+              { key: 'care',    label: 'Bakım',        Icon: ClipboardDocumentListIcon },
+              { key: 'info',    label: 'Bilgiler',     Icon: BeakerIcon },
               { key: 'remind',  label: 'Hatırlatıcı',  Icon: BellIcon },
               { key: 'gorsel',  label: 'Görsel',       Icon: CameraIcon },
             ].map(t => {
@@ -225,7 +232,14 @@ export default function PlantDetailModal({ plant, onClose, onUpdated }) {
                 <TouchableOpacity
                   key={t.key}
                   style={[s.tab, active && s.tabActive]}
-                  onPress={() => { setTab(t.key); setEditMode(false); setAddingRemind(false); }}
+                  onPress={() => {
+                    setTab(t.key);
+                    setEditMode(false);
+                    setAddingRemind(false);
+                    if (t.key === 'gorsel' && plantDiseaseHistory.length === 0) {
+                      getLeafHistory(8, plant.id).then(h => { if (h) setPlantDiseaseHistory(h); });
+                    }
+                  }}
                 >
                   <Icon size={14} color={active ? Colors.green : Colors.sub} strokeWidth={active ? 2.2 : 1.8} />
                   <Text style={[s.tabText, active && s.tabTextActive]}>{t.label}</Text>
@@ -235,6 +249,115 @@ export default function PlantDetailModal({ plant, onClose, onUpdated }) {
           </View>
 
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+
+            {/* ── BAKIM ── */}
+            {tab === 'care' && (
+              <View>
+                {careLoading && (
+                  <View style={s.emptyBox}>
+                    <Text style={{ color: Colors.gold, fontSize: Typography.sm }}>⟳ Yükleniyor...</Text>
+                  </View>
+                )}
+                {!careLoading && (!careDetail || !careDetail.success) && (
+                  <View style={s.emptyBox}>
+                    <Text style={{ fontSize: 32, marginBottom: 8 }}>🌿</Text>
+                    <Text style={s.emptyText}>Bu bitki için özel bakım bilgisi bulunamadı.</Text>
+                  </View>
+                )}
+                {!careLoading && careDetail?.success && (() => {
+                  const care     = careDetail.care || {};
+                  const analysis = careDetail.analysis;
+                  const sensor   = careDetail.sensor;
+                  const seasonal = careDetail.seasonal_tip;
+                  const notes    = careDetail.special_notes || [];
+                  return (
+                    <View>
+                      {/* Hero image */}
+                      {careDetail.plant?.image_url ? (
+                        <View style={{ borderRadius: Radius.md, overflow: 'hidden', height: 130, marginBottom: 14 }}>
+                          <Image source={{ uri: careDetail.plant.image_url }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                        </View>
+                      ) : null}
+
+                      {/* Summary */}
+                      {care.summary ? (
+                        <Text style={{ color: Colors.sub2, fontSize: Typography.sm, lineHeight: 20, marginBottom: 14 }}>{care.summary}</Text>
+                      ) : null}
+
+                      {/* Watering + Light */}
+                      {care.watering ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
+                          <Text style={{ fontSize: 20 }}>💧</Text>
+                          <View style={{ flex: 1 }}>
+                            <Text style={s.sectionTitle}>Sulama</Text>
+                            <Text style={{ color: Colors.sub2, fontSize: Typography.sm, lineHeight: 19 }}>{care.watering}</Text>
+                          </View>
+                        </View>
+                      ) : null}
+                      {care.light ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
+                          <Text style={{ fontSize: 20 }}>☀️</Text>
+                          <View style={{ flex: 1 }}>
+                            <Text style={s.sectionTitle}>Işık</Text>
+                            <Text style={{ color: Colors.sub2, fontSize: Typography.sm, lineHeight: 19 }}>{care.light}</Text>
+                          </View>
+                        </View>
+                      ) : null}
+
+                      {/* Ranges */}
+                      {(care.temperature_min != null || care.humidity_min != null || care.soil_moisture_min != null) ? (
+                        <View style={{ backgroundColor: Colors.card, borderRadius: Radius.md, padding: 12, borderWidth: 1, borderColor: Colors.border, marginBottom: 14 }}>
+                          <Text style={[s.sectionTitle, { marginBottom: 10 }]}>İdeal Aralıklar</Text>
+                          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+                            {care.temperature_min != null && <View><Text style={{ fontSize: Typography.xs, color: Colors.sub2, letterSpacing: 1, textTransform: 'uppercase' }}>SICAKLIK</Text><Text style={{ color: Colors.cream, fontWeight: '700', fontSize: Typography.base }}>{care.temperature_min}–{care.temperature_max}°C</Text></View>}
+                            {care.humidity_min != null && <View><Text style={{ fontSize: Typography.xs, color: Colors.sub2, letterSpacing: 1, textTransform: 'uppercase' }}>HAVA NEMİ</Text><Text style={{ color: Colors.cream, fontWeight: '700', fontSize: Typography.base }}>{care.humidity_min}–{care.humidity_max}%</Text></View>}
+                            {care.soil_moisture_min != null && <View><Text style={{ fontSize: Typography.xs, color: Colors.sub2, letterSpacing: 1, textTransform: 'uppercase' }}>TOPRAK</Text><Text style={{ color: Colors.cream, fontWeight: '700', fontSize: Typography.base }}>{care.soil_moisture_min}–{care.soil_moisture_max}%</Text></View>}
+                          </View>
+                        </View>
+                      ) : null}
+
+                      {/* Analysis score */}
+                      {analysis ? (
+                        <View style={{ backgroundColor: Colors.card, borderRadius: Radius.md, padding: 12, borderWidth: 1, borderColor: Colors.border, marginBottom: 14 }}>
+                          <Text style={[s.sectionTitle, { marginBottom: 8 }]}>Çevre Skoru</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                            <Text style={{ fontSize: 28, fontWeight: '800', color: analysis.score >= 80 ? Colors.green : analysis.score >= 50 ? Colors.amber : Colors.red }}>{analysis.score}</Text>
+                            <View style={{ backgroundColor: (analysis.score >= 80 ? Colors.green : analysis.score >= 50 ? Colors.amber : Colors.red) + '22', borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 4 }}>
+                              <Text style={{ color: analysis.score >= 80 ? Colors.green : analysis.score >= 50 ? Colors.amber : Colors.red, fontWeight: '700', fontSize: Typography.xs }}>
+                                {analysis.status === 'healthy' ? 'Sağlıklı' : analysis.status === 'warning' ? 'Dikkat' : 'Kritik'}
+                              </Text>
+                            </View>
+                          </View>
+                          {(analysis.comments || []).map((c, i) => (
+                            <Text key={i} style={{ fontSize: Typography.xs, color: c.status === 'ok' ? Colors.green : Colors.amber, marginBottom: 4, lineHeight: 17 }}>
+                              {c.status === 'ok' ? '✓' : '⚠'} {c.message}
+                            </Text>
+                          ))}
+                        </View>
+                      ) : null}
+
+                      {/* Seasonal tip */}
+                      {seasonal ? (
+                        <View style={{ borderLeftWidth: 2, borderLeftColor: Colors.gold, backgroundColor: Colors.goldDim, borderRadius: Radius.sm, padding: 12, marginBottom: 14 }}>
+                          <Text style={[s.sectionTitle, { marginBottom: 4 }]}>Mevsimsel İpucu</Text>
+                          <Text style={{ color: Colors.sub2, fontSize: Typography.sm, lineHeight: 19 }}>{seasonal}</Text>
+                        </View>
+                      ) : null}
+
+                      {/* Special notes */}
+                      {notes.length > 0 ? (
+                        <View>
+                          <Text style={[s.sectionTitle, { marginBottom: 8 }]}>Özel Notlar</Text>
+                          {notes.map((n, i) => (
+                            <Text key={i} style={{ color: Colors.sub2, fontSize: Typography.sm, marginBottom: 6, lineHeight: 19 }}>• {n}</Text>
+                          ))}
+                        </View>
+                      ) : null}
+                    </View>
+                  );
+                })()}
+              </View>
+            )}
 
             {/* ── BİLGİLER ── */}
             {tab === 'info' && !editMode && (
@@ -588,19 +711,40 @@ export default function PlantDetailModal({ plant, onClose, onUpdated }) {
                 )}
 
                 {plantDiseaseHistory.length > 0 && (
-                  <View style={{ marginTop: 12 }}>
-                    <Text style={[s.sectionTitle, { marginBottom: 8 }]}>Son Analizler</Text>
-                    {plantDiseaseHistory.slice(0, 3).map((item, i) => {
-                      const d = new Date(item.timestamp);
-                      const conf = item.confidence != null ? (item.confidence * 100).toFixed(0) + '%' : '--';
-                      const healthy = (item.label || '').toLowerCase().includes('healthy');
+                  <View style={{ marginTop: 14 }}>
+                    <Text style={[s.sectionTitle, { marginBottom: 8 }]}>Geçmiş Analizler</Text>
+                    {plantDiseaseHistory.map((item, i) => {
+                      const dateStr = new Date(item.timestamp).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+                      const conf    = item.confidence != null ? (item.confidence * 100).toFixed(0) + '%' : '--';
+                      const label   = translateDiseaseLabel(item.label) || 'Bilinmiyor';
+                      const healthy = label.toLowerCase().includes('healthy') || label.includes('Sağlıklı');
+                      const hasDisease = !healthy && !label.toLowerCase().includes('bilinmiyor');
+                      const badgeColor = healthy ? Colors.green : hasDisease ? Colors.red : Colors.amber;
+                      const isOpen  = dhOpenIdx === i;
                       return (
-                        <View key={i} style={[s.infoRow, { alignItems: 'center' }]}>
-                          <View style={{ flex: 1 }}>
-                            <Text style={{ fontSize: Typography.sm, fontWeight: '600', color: Colors.cream }} numberOfLines={1}>{item.label || '--'}</Text>
-                            <Text style={{ fontSize: Typography.xs, color: Colors.sub2, marginTop: 2 }}>{d.toLocaleDateString('tr-TR')}</Text>
-                          </View>
-                          <Text style={{ fontSize: Typography.sm, fontWeight: '700', color: healthy ? Colors.green : Colors.red }}>{conf}</Text>
+                        <View key={i} style={{ marginBottom: 6 }}>
+                          <TouchableOpacity
+                            activeOpacity={0.75}
+                            onPress={() => setDhOpenIdx(isOpen ? null : i)}
+                            style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderRadius: 8, borderWidth: 1, borderColor: isOpen ? 'rgba(200,169,106,0.3)' : 'rgba(200,169,106,0.1)', backgroundColor: isOpen ? 'rgba(200,169,106,0.07)' : 'rgba(0,0,0,0.15)' }}
+                          >
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ fontSize: Typography.sm, fontWeight: '600', color: Colors.cream }} numberOfLines={1}>{label}</Text>
+                              <Text style={{ fontSize: Typography.xs, color: Colors.sub2, marginTop: 2 }}>{dateStr}</Text>
+                            </View>
+                            <Text style={{ fontSize: Typography.xs, fontWeight: '700', color: badgeColor, marginRight: 4 }}>{conf}</Text>
+                            <Text style={{ fontSize: 10, color: Colors.sub2 }}>{isOpen ? '▲' : '▼'}</Text>
+                          </TouchableOpacity>
+                          {isOpen && (
+                            <View style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 8, padding: 12, marginTop: 4, borderWidth: 1, borderColor: 'rgba(200,169,106,0.1)' }}>
+                              {item.image_path ? (
+                                <Image source={{ uri: item.image_path.startsWith('http') ? item.image_path : undefined }} style={{ width: '100%', height: 120, borderRadius: 6, marginBottom: 10 }} resizeMode="cover" />
+                              ) : null}
+                              <Text style={{ fontSize: Typography.xs, color: Colors.sub2, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Özet</Text>
+                              <Text style={{ fontSize: Typography.sm, fontWeight: '700', color: badgeColor, marginBottom: 4 }}>{label}</Text>
+                              <Text style={{ fontSize: Typography.xs, color: Colors.sub2 }}>Güven: <Text style={{ color: Colors.gold, fontWeight: '700' }}>{conf}</Text>  ·  {dateStr}</Text>
+                            </View>
+                          )}
                         </View>
                       );
                     })}

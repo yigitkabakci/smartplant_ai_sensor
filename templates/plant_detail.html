@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroSense · Bitki Detayı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--gold:#c8a96a;--cream:#ede8d8;--dark:#070a06;--card-bg:rgba(8,11,7,.72);--border:rgba(200,169,106,.12);--fd:'Cormorant Garamond',serif;--fb:'Jost',sans-serif}
+html{scroll-behavior:smooth}
+body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight:300;overflow-x:hidden;min-height:100vh;cursor:none}
+
+/* CURSOR */
+#cursor{position:fixed;width:28px;height:28px;pointer-events:none;transform:translate(-50%,-50%) rotate(-25deg);transition:transform .15s ease-out;z-index:9999;top:0;left:0}
+#cursor.hover{transform:translate(-50%,-50%) rotate(-25deg) scale(1.6)}
+.iz{position:fixed;width:14px;height:14px;pointer-events:none;opacity:.7;animation:leaf-trail 1.8s ease-in forwards;z-index:9998}
+@keyframes leaf-trail{0%{opacity:.7;transform:translate(-50%,-50%) rotate(0)}100%{opacity:0;transform:translate(-50%,calc(-50% + 60px)) rotate(180deg)}}
+
+/* LOADER */
+#loader{position:fixed;inset:0;z-index:10000;background:#070a06;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s ease,visibility .8s ease;}
+#loader.hide{opacity:0;visibility:hidden;pointer-events:none}
+#loader-leaf{width:64px;height:64px;animation:lf-breathe 2s ease-in-out infinite;filter:drop-shadow(0 0 18px rgba(99,153,34,.35));}
+@keyframes lf-breathe{0%,100%{transform:scale(1) rotate(-8deg)}50%{transform:scale(1.1) rotate(-4deg)}}
+#loader-bar-wrap{width:140px;height:1px;background:rgba(200,169,106,.15);margin-top:2.8rem;overflow:hidden;position:relative;}
+#loader-bar{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,transparent,#c8a96a,transparent);width:40%;animation:lbar 1.6s ease-in-out infinite;}
+@keyframes lbar{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+#loader-logo{font-family:'Cormorant Garamond',serif;font-weight:300;font-style:italic;font-size:1.8rem;color:#ede8d8;margin-top:2rem;letter-spacing:.04em;opacity:0;animation:loaderFu .8s .3s ease forwards;}
+#loader-tag{font-family:'Jost',sans-serif;font-size:.55rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(200,169,106,.55);margin-top:.6rem;opacity:0;animation:loaderFu .8s .6s ease forwards;}
+@keyframes loaderFu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;padding:1.3rem 2.8rem;background:rgba(7,10,6,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(200,169,106,.07)}
+.nl{font-family:var(--fd);font-weight:300;font-size:1.55rem;color:var(--cream);text-decoration:none}
+.nl em{font-style:italic}
+.nli{width:52px;height:1px;background:rgba(200,169,106,.38);margin:0 1.4rem;flex-shrink:0}
+.nt{font-size:.57rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(200,169,106,.62)}
+.nls{display:flex;gap:2.4rem;margin:0 auto}
+.nls a{font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(237,232,216,.5);text-decoration:none;transition:color .3s}
+.nls a:hover,.nls a.active{color:var(--cream)}
+.nr{margin-left:auto}
+.nbtn{font-size:.57rem;letter-spacing:.16em;text-transform:uppercase;padding:.36rem .88rem;border-radius:30px;text-decoration:none;border:1px solid rgba(200,169,106,.38);color:rgba(200,169,106,.8);transition:all .4s;font-family:var(--fb)}
+.nbtn:hover{background:rgba(200,169,106,.12);color:var(--gold)}
+.back-btn{display:inline-flex;align-items:center;gap:.5rem;font-size:.57rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,169,106,.7);text-decoration:none;transition:color .3s;margin-right:1.4rem}
+.back-btn:hover{color:var(--gold)}
+.back-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:900px){.nls{display:none}}
+
+/* MAIN */
+.page-wrap{padding-top:5.5rem;padding-bottom:5rem;min-height:100vh}
+.container{max-width:1100px;margin:0 auto;padding:0 2.8rem}
+
+/* HERO */
+.detail-hero{position:relative;height:280px;overflow:hidden;border:1px solid var(--border);margin-bottom:2.5rem}
+.detail-hero-img{width:100%;height:100%;object-fit:cover;filter:brightness(.55) saturate(.8)}
+.detail-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(7,10,6,.9) 100%)}
+.detail-hero-content{position:absolute;bottom:2rem;left:2.5rem;right:2.5rem}
+.detail-eyebrow{font-size:.55rem;letter-spacing:.34em;text-transform:uppercase;color:rgba(200,169,106,.55);margin-bottom:.6rem}
+.detail-title{font-family:var(--fd);font-weight:300;font-size:clamp(2rem,5vw,3.2rem);color:var(--cream);line-height:1.05}
+.detail-title em{font-style:italic;color:var(--gold)}
+.detail-hero-no-img{background:linear-gradient(135deg,rgba(99,153,34,.08),rgba(200,169,106,.05));display:flex;align-items:flex-end;padding-bottom:2rem;padding-left:2.5rem}
+
+/* GRID LAYOUT */
+.detail-grid{display:grid;grid-template-columns:1fr 380px;gap:2rem;align-items:start}
+@media(max-width:900px){.detail-grid{grid-template-columns:1fr}}
+
+/* CARDS */
+.card{background:var(--card-bg);border:1px solid var(--border);padding:1.8rem;position:relative;overflow:hidden;margin-bottom:1.5rem}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,169,106,.3),transparent);opacity:0;transition:opacity .3s}
+.card:hover::before{opacity:1}
+.card-eyebrow{font-size:.52rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(200,169,106,.45);margin-bottom:.5rem}
+.card-title{font-family:var(--fd);font-size:1.2rem;font-weight:300;color:var(--cream);margin-bottom:1.2rem}
+.card-title em{font-style:italic}
+.card-divider{height:1px;background:var(--border);margin:1.2rem 0}
+
+/* CARE INFO */
+.care-summary{font-size:.8rem;color:rgba(237,232,216,.65);line-height:1.7;margin-bottom:1.3rem}
+.care-row{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.2rem}
+.care-item{display:flex;gap:.8rem;align-items:flex-start}
+.care-item-icon{width:28px;height:28px;border-radius:4px;background:rgba(200,169,106,.08);border:1px solid rgba(200,169,106,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;margin-top:.05rem}
+.care-item-body{}
+.care-item-label{font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,169,106,.45);margin-bottom:.2rem}
+.care-item-text{font-size:.78rem;color:rgba(237,232,216,.7);line-height:1.55}
+
+/* RANGE BARS */
+.range-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.range-item{}
+.range-label{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,169,106,.45);margin-bottom:.4rem}
+.range-bar-wrap{height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:visible;position:relative;margin-bottom:.3rem}
+.range-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#4ade80,#c8a96a)}
+.range-values{font-size:.62rem;color:rgba(237,232,216,.4);display:flex;justify-content:space-between}
+
+/* SENSOR CARDS */
+.sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.sensor-tile{background:rgba(0,0,0,.2);border:1px solid rgba(200,169,106,.08);padding:1rem;border-radius:4px;position:relative;overflow:hidden;transition:border-color .3s}
+.sensor-tile:hover{border-color:rgba(200,169,106,.2)}
+.sensor-tile-icon{font-size:1.2rem;margin-bottom:.4rem;opacity:.7}
+.sensor-tile-val{font-family:var(--fd);font-size:1.7rem;font-weight:300;color:var(--cream);line-height:1;margin-bottom:.15rem}
+.sensor-tile-unit{font-size:.65rem;color:rgba(200,169,106,.5);margin-left:.15rem}
+.sensor-tile-lbl{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,169,106,.4)}
+.sensor-tile-status{position:absolute;top:.6rem;right:.6rem;width:6px;height:6px;border-radius:50%;background:#4ade80}
+.sensor-tile-status.warn{background:#fbbf24}
+.sensor-tile-status.crit{background:#f87171}
+.sensor-tile-status.none{background:rgba(255,255,255,.15)}
+.sensor-ts{font-size:.58rem;color:rgba(237,232,216,.25);margin-top:.8rem;letter-spacing:.04em}
+.no-sensor{font-size:.75rem;color:rgba(237,232,216,.3);text-align:center;padding:1.5rem 0;letter-spacing:.06em}
+
+/* ANALYSIS */
+.analysis-score-wrap{display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem}
+.analysis-score-ring{width:64px;height:64px;position:relative;flex-shrink:0}
+.analysis-score-ring svg{transform:rotate(-90deg)}
+.analysis-score-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:1.25rem;font-weight:300;color:var(--cream)}
+.analysis-status-badge{font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;padding:.28rem .72rem;border-radius:99px;font-weight:700}
+.analysis-status-badge.healthy{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.25)}
+.analysis-status-badge.warning{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+.analysis-status-badge.critical{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+.analysis-status-badge.unknown{background:rgba(200,169,106,.08);color:rgba(200,169,106,.6);border:1px solid rgba(200,169,106,.15)}
+.analysis-comments{display:flex;flex-direction:column;gap:.5rem}
+.analysis-comment{font-size:.74rem;padding:.55rem .7rem;border-radius:4px;display:flex;align-items:flex-start;gap:.5rem;line-height:1.5}
+.analysis-comment.ok{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.12);color:rgba(74,222,128,.8)}
+.analysis-comment.low,.analysis-comment.high{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.12);color:rgba(251,191,36,.85)}
+.analysis-comment-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:.35rem}
+.ok .analysis-comment-dot{background:#4ade80}
+.low .analysis-comment-dot,.high .analysis-comment-dot{background:#fbbf24}
+.no-analysis{font-size:.75rem;color:rgba(237,232,216,.3);padding:1rem 0;letter-spacing:.06em}
+
+/* SEASONAL TIP */
+.seasonal-tip{padding:.9rem 1rem;background:rgba(200,169,106,.05);border-left:2px solid rgba(200,169,106,.35);border-radius:0 4px 4px 0;font-size:.75rem;color:rgba(237,232,216,.65);line-height:1.6}
+.seasonal-season{font-size:.5rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(200,169,106,.5);margin-bottom:.35rem}
+
+/* SPECIAL NOTES */
+.notes-list{display:flex;flex-direction:column;gap:.55rem}
+.note-item{display:flex;align-items:flex-start;gap:.6rem;font-size:.76rem;color:rgba(237,232,216,.6);line-height:1.55}
+.note-dot{width:4px;height:4px;border-radius:50%;background:rgba(200,169,106,.5);flex-shrink:0;margin-top:.48rem}
+
+/* WEATHER */
+.weather-card{background:rgba(0,0,0,.15);border:1px solid var(--border);padding:1.2rem 1.5rem;border-radius:4px;margin-bottom:1.2rem}
+.weather-main{display:flex;align-items:center;gap:1rem;margin-bottom:.8rem}
+.weather-temp{font-family:var(--fd);font-size:2.2rem;font-weight:300;color:var(--cream);line-height:1}
+.weather-right{display:flex;flex-direction:column;gap:.15rem}
+.weather-city{font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,169,106,.5)}
+.weather-desc{font-size:.74rem;color:rgba(237,232,216,.5);text-transform:capitalize}
+.weather-stats{display:flex;gap:1rem;flex-wrap:wrap}
+.w-stat{display:flex;flex-direction:column;align-items:center;gap:.1rem;min-width:48px}
+.w-stat-val{font-size:.8rem;font-weight:600;color:var(--cream)}
+.w-stat-lbl{font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(200,169,106,.4)}
+.weather-warning{font-size:.72rem;color:rgba(237,232,216,.55);line-height:1.55;padding-top:.8rem;border-top:1px solid rgba(200,169,106,.07);margin-top:.8rem}
+.no-weather{font-size:.72rem;color:rgba(237,232,216,.3);letter-spacing:.06em}
+
+/* ERROR / NO DATA */
+.error-state{text-align:center;padding:5rem 2rem}
+.error-icon{font-size:3.5rem;opacity:.2;display:block;margin-bottom:1.2rem}
+.error-title{font-family:var(--fd);font-size:1.5rem;font-weight:300;color:rgba(237,232,216,.5);margin-bottom:.6rem}
+.error-desc{font-size:.75rem;color:rgba(237,232,216,.28);letter-spacing:.06em}
+</style>
+</head>
+<body>
+
+<svg id="cursor" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 2 C8 6, 4 14, 6 24 C6 26, 8 28, 10 28 C20 28, 28 20, 30 8 C30 6, 28 4, 26 4 C22 4, 18 4, 16 2 Z" fill="#639922" stroke="#3B6D11" stroke-width="0.8"/><path d="M14 26 C16 20, 20 14, 28 8" stroke="#3B6D11" stroke-width="0.8" fill="none"/></svg>
+
+<div id="loader">
+  <svg id="loader-leaf" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 2 C8 6, 4 14, 6 24 C6 26, 8 28, 10 28 C20 28, 28 20, 30 8 C30 6, 28 4, 26 4 C22 4, 18 4, 16 2 Z" fill="#639922" stroke="#3B6D11" stroke-width="0.6"/><path d="M14 26 C16 20, 20 14, 28 8" stroke="#3B6D11" stroke-width="0.6" fill="none"/></svg>
+  <div id="loader-bar-wrap"><div id="loader-bar"></div></div>
+  <div id="loader-logo">AgroSense</div>
+  <div id="loader-tag">Bitki Detayı</div>
+</div>
+
+<nav id="nav">
+  <a href="/crops" class="back-btn">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Bitkilerim
+  </a>
+  <div class="nli"></div>
+  <span class="nt">Bitki Detayı</span>
+  <nav class="nls">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/crops" class="active">Bitkilerim</a>
+    <a href="/analytics">Analitik</a>
+    <a href="/devices_page">Cihazlar</a>
+    <a href="/alerts_page">Uyarılar</a>
+  </nav>
+  <div class="nr">
+    {% if current_user %}
+    <a href="/logout" class="nbtn">Çıkış</a>
+    {% else %}
+    <a href="/login" class="nbtn">Giriş</a>
+    {% endif %}
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="container">
+    <div id="detail-root">
+      <!-- Loaded by JS -->
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var c=document.getElementById('cursor');
+  if(!c)return;
+  document.addEventListener('mousemove',function(e){
+    c.style.left=e.clientX+'px';c.style.top=e.clientY+'px';
+    if(Math.random()<.12){var iz=c.cloneNode(true);iz.classList.add('iz');iz.removeAttribute('id');iz.style.left=e.clientX+'px';iz.style.top=e.clientY+'px';document.body.appendChild(iz);setTimeout(function(){iz.remove()},1800);}
+  },{passive:true});
+  document.querySelectorAll('a,button').forEach(function(el){
+    el.addEventListener('mouseenter',function(){c.classList.add('hover')});
+    el.addEventListener('mouseleave',function(){c.classList.remove('hover')});
+  });
+})();
+
+const PLANT_ID = {{ plant_id }};
+const SEASON_TR = {spring:'İlkbahar',summer:'Yaz',autumn:'Sonbahar',winter:'Kış'};
+
+function statusLabel(s){
+  if(s==='healthy') return 'Sağlıklı';
+  if(s==='warning') return 'Dikkat';
+  if(s==='critical') return 'Kritik';
+  return 'Bilinmiyor';
+}
+
+function sensorStatus(metric, val, care){
+  if(val===null||val===undefined) return 'none';
+  if(metric==='temperature_c'){
+    const lo=care.temperature_min, hi=care.temperature_max;
+    if((lo&&val<lo)||(hi&&val>hi)) return 'warn';
+  } else if(metric==='humidity_pct'){
+    const lo=care.humidity_min, hi=care.humidity_max;
+    if((lo&&val<lo)||(hi&&val>hi)) return 'warn';
+  } else if(metric==='moisture_pct'){
+    const lo=care.soil_moisture_min, hi=care.soil_moisture_max;
+    if((lo&&val<lo)||(hi&&val>hi)) return 'warn';
+  }
+  return 'ok';
+}
+
+function ringPath(score){
+  const r=26, cx=32, cy=32;
+  const circ=2*Math.PI*r;
+  const dash=circ*(score/100);
+  const color=score>=80?'#4ade80':score>=50?'#fbbf24':'#f87171';
+  return `<svg width="64" height="64" viewBox="0 0 64 64">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="5"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="5"
+      stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:50% 50%"/>
+  </svg>`;
+}
+
+function renderRangeBar(lo, hi, label){
+  if(lo==null||hi==null) return '';
+  return `<div class="range-item">
+    <div class="range-label">${label}</div>
+    <div class="range-bar-wrap"><div class="range-bar-fill" style="width:65%"></div></div>
+    <div class="range-values"><span>${lo}</span><span>${hi}</span></div>
+  </div>`;
+}
+
+function formatTs(ts){
+  if(!ts) return '';
+  const d=new Date(ts);
+  return d.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+}
+
+function renderWeather(w){
+  if(!w) return `<div class="no-weather">Hava durumu bilgisi alınamadı.</div>`;
+  const icon = w.icon ? `<img src="https://openweathermap.org/img/wn/${w.icon}@2x.png" width="44" height="44" style="opacity:.8" alt="">` : '';
+  return `<div class="weather-card">
+    <div class="weather-main">
+      ${icon}
+      <div class="weather-temp">${w.temp!=null?w.temp.toFixed(1):'—'}°C</div>
+      <div class="weather-right">
+        <div class="weather-city">${w.city||''}</div>
+        <div class="weather-desc">${w.description||''}</div>
+      </div>
+    </div>
+    <div class="weather-stats">
+      <div class="w-stat"><div class="w-stat-val">${w.humidity!=null?w.humidity+'%':'—'}</div><div class="w-stat-lbl">Nem</div></div>
+      <div class="w-stat"><div class="w-stat-val">${w.wind_speed!=null?w.wind_speed.toFixed(1):'—'}</div><div class="w-stat-lbl">Rüzgar</div></div>
+      ${w.rain_1h>0?`<div class="w-stat"><div class="w-stat-val">${w.rain_1h.toFixed(1)}mm</div><div class="w-stat-lbl">Yağış</div></div>`:''}
+    </div>
+  </div>`;
+}
+
+async function loadDetail(){
+  const root=document.getElementById('detail-root');
+  try{
+    const res=await fetch(`/api/plants/${PLANT_ID}/detail`);
+    const d=await res.json();
+
+    if(!d.success){
+      root.innerHTML=`<div class="error-state">
+        <span class="error-icon">🌿</span>
+        <div class="error-title">${d.plant?.name||'Bitki'}</div>
+        <div class="error-desc">${d.message||'Bakım bilgisi bulunamadı.'}</div>
+      </div>`;
+      document.title='AgroSense · '+( d.plant?.name||'Bitki');
+      return;
+    }
+
+    document.title='AgroSense · '+(d.plant.display_name||d.plant.name);
+
+    const care=d.care||{};
+    const sensor=d.sensor;
+    const analysis=d.analysis;
+    const weather=d.weather;
+    const notes=d.special_notes||[];
+    const seasonal=d.seasonal_tip||'';
+
+    // HERO
+    const heroImg = d.plant.image_url
+      ? `<img class="detail-hero-img" src="${d.plant.image_url}" alt="${d.plant.display_name}" loading="lazy">`
+      : '';
+    const heroExtra = d.plant.image_url ? '' : ' detail-hero-no-img';
+
+    // Sensor tiles
+    const tiles=[
+      {icon:'🌡️',metric:'temperature_c',val:sensor?.temperature_c,unit:'°C',lbl:'Sıcaklık'},
+      {icon:'💧',metric:'humidity_pct',val:sensor?.humidity_pct,unit:'%',lbl:'Hava Nemi'},
+      {icon:'🌱',metric:'moisture_pct',val:sensor?.moisture_pct,unit:'%',lbl:'Toprak Nemi'},
+      {icon:'☀️',metric:'light_lux',val:sensor?.light_lux,unit:' lx',lbl:'Işık'},
+    ];
+    const sensorHTML = sensor
+      ? `<div class="sensor-grid">${tiles.map(t=>{
+          const st=sensorStatus(t.metric,t.val,care);
+          const valStr=t.val!=null?t.val.toFixed(1):'—';
+          return `<div class="sensor-tile">
+            <div class="sensor-tile-icon">${t.icon}</div>
+            <div><span class="sensor-tile-val">${valStr}</span><span class="sensor-tile-unit">${t.unit}</span></div>
+            <div class="sensor-tile-lbl">${t.lbl}</div>
+            <div class="sensor-tile-status ${st}"></div>
+          </div>`;
+        }).join('')}</div>
+        <div class="sensor-ts">Son güncelleme: ${formatTs(sensor.timestamp)}${sensor.device_mac?' · '+sensor.device_mac:''}</div>`
+      : `<div class="no-sensor">Henüz sensör verisi yok.</div>`;
+
+    // Analysis
+    let analysisHTML='';
+    if(analysis){
+      const ring=ringPath(analysis.score);
+      const comments=(analysis.comments||[]).map(c=>`
+        <div class="analysis-comment ${c.status}">
+          <div class="analysis-comment-dot"></div>
+          <span>${c.message}</span>
+        </div>`).join('');
+      analysisHTML=`<div class="analysis-score-wrap">
+        <div class="analysis-score-ring">${ring}<div class="analysis-score-text">${analysis.score}</div></div>
+        <div>
+          <div style="font-size:.7rem;color:rgba(237,232,216,.4);margin-bottom:.4rem">Çevre Skoru</div>
+          <span class="analysis-status-badge ${analysis.status}">${statusLabel(analysis.status)}</span>
+        </div>
+      </div>
+      <div class="analysis-comments">${comments||'<div class="no-analysis">Yeterli veri yok.</div>'}</div>`;
+    } else {
+      analysisHTML=`<div class="no-analysis">Analiz için sensör verisi gerekli.</div>`;
+    }
+
+    // Range bars
+    const ranges=`<div class="range-grid">
+      ${renderRangeBar(care.temperature_min,care.temperature_max,'Sıcaklık (°C)')}
+      ${renderRangeBar(care.humidity_min,care.humidity_max,'Hava Nemi (%)')}
+      ${renderRangeBar(care.soil_moisture_min,care.soil_moisture_max,'Toprak Nemi (%)')}
+    </div>`;
+
+    // Special notes
+    const notesHTML=notes.length
+      ? `<div class="notes-list">${notes.map(n=>`<div class="note-item"><div class="note-dot"></div><span>${n}</span></div>`).join('')}</div>`
+      : `<div class="no-analysis">Özel not yok.</div>`;
+
+    root.innerHTML=`
+      <div class="detail-hero${heroExtra}">
+        ${heroImg}
+        <div class="detail-hero-overlay"></div>
+        <div class="detail-hero-content">
+          <div class="detail-eyebrow">Bitki Detayı</div>
+          <div class="detail-title"><em>${d.plant.display_name||d.plant.name}</em></div>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-left">
+
+          <div class="card">
+            <div class="card-eyebrow">Bakım Rehberi</div>
+            <div class="card-title"><em>Bakım</em> Bilgileri</div>
+            <p class="care-summary">${care.summary||''}</p>
+            <div class="care-row">
+              <div class="care-item">
+                <div class="care-item-icon">💧</div>
+                <div class="care-item-body">
+                  <div class="care-item-label">Sulama</div>
+                  <div class="care-item-text">${care.watering||'—'}</div>
+                </div>
+              </div>
+              <div class="care-item">
+                <div class="care-item-icon">☀️</div>
+                <div class="care-item-body">
+                  <div class="care-item-label">Işık</div>
+                  <div class="care-item-text">${care.light||'—'}</div>
+                </div>
+              </div>
+            </div>
+            ${ranges}
+          </div>
+
+          <div class="card">
+            <div class="card-eyebrow">Sensör Verileri</div>
+            <div class="card-title"><em>Anlık</em> Ölçümler</div>
+            ${sensorHTML}
+          </div>
+
+          <div class="card">
+            <div class="card-eyebrow">Çevre Analizi</div>
+            <div class="card-title"><em>Durum</em> Değerlendirmesi</div>
+            ${analysisHTML}
+          </div>
+
+        </div>
+
+        <div class="detail-right">
+
+          <div class="card">
+            <div class="card-eyebrow">Hava Durumu</div>
+            <div class="card-title"><em>Konya</em> İklim</div>
+            ${renderWeather(weather)}
+            ${weather?`<div class="weather-warning">${d.seasonal_tip||''}</div>`:''}
+          </div>
+
+          <div class="card">
+            <div class="card-eyebrow">Mevsimsel İpucu</div>
+            <div class="card-title"><em>Bu Mevsim</em></div>
+            <div class="seasonal-tip">
+              ${seasonal||'Mevsimsel öneri yüklenemedi.'}
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-eyebrow">Dikkat Edilecekler</div>
+            <div class="card-title"><em>Özel</em> Notlar</div>
+            ${notesHTML}
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    // Re-attach cursor hover for dynamically added links/buttons
+    const cur=document.getElementById('cursor');
+    if(cur){
+      document.querySelectorAll('a,button').forEach(function(el){
+        el.addEventListener('mouseenter',function(){cur.classList.add('hover')});
+        el.addEventListener('mouseleave',function(){cur.classList.remove('hover')});
+      });
+    }
+
+  }catch(err){
+    root.innerHTML=`<div class="error-state">
+      <span class="error-icon">⚠️</span>
+      <div class="error-title">Veri Yüklenemedi</div>
+      <div class="error-desc">Sunucuya bağlanılamadı. Lütfen tekrar deneyin.</div>
+    </div>`;
+  }
+
+  document.getElementById('loader').classList.add('hide');
+}
+
+document.addEventListener('DOMContentLoaded', loadDetail);
+</script>
+</body>
+</html>

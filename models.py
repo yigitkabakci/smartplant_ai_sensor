@@ -78,6 +78,8 @@ class LeafAnalysis(Base):
     label = Column(String, nullable=True)
     confidence = Column(Float, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
+    plant_id = Column(Integer, nullable=True)
+    plant_name = Column(String, nullable=True)
 
 
 class Alert(Base):

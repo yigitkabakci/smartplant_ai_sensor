@@ -142,11 +142,17 @@ def run_disease_pipeline(image_path: str, plantnet_result: dict) -> dict:
     top = disease_results[0] if disease_results else None
 
     # --- Karar mekanizması ---
+    #
+    # Tutarlılık: `identified` (PlantNet'in değişken bool'u) artık karar vermez.
+    # Bitki kontrolü: pv_plant (scientific name eşlemesi, stabil) kullanılır.
+    #
+    # pv_plant varsa   → bitki hastalık modelinin kapsamında, skora göre karar ver
+    # pv_plant yoksa   → Aloe vera, kaktüs, orkide gibi desteklenmeyen bitki;
+    #                    modelin tahminine güvenme, fallback'e düş
 
-    # Durum 1: PlantNet tanıdı + PlantVillage'da var + hastalık modeli güvenli
-    if identified and pv_plant and top and top["score"] >= RELIABLE_THRESHOLD:
-        # Hastalık modeli o bitkiyle uyuşuyor mu kontrol et
-        if pv_plant.lower().replace(",_bell", "").replace("_", " ") in top["plant"].lower() or True:
+    if pv_plant:
+        # Bitki hastalık modelinin eğitim setinde — skora göre karar ver
+        if top and top["score"] >= RELIABLE_THRESHOLD:
             return {
                 "stage":            "disease",
                 "plant_name":       _display_plant(plantnet_result),
@@ -158,20 +164,31 @@ def run_disease_pipeline(image_path: str, plantnet_result: dict) -> dict:
                 "disease_results":  disease_results,
             }
 
-    # Durum 2: Hastalık modeli orta güvende
-    if top and CONFIDENCE_THRESHOLD <= top["score"] < RELIABLE_THRESHOLD:
+        if top and top["score"] >= CONFIDENCE_THRESHOLD:
+            return {
+                "stage":            "possible",
+                "plant_name":       _display_plant(plantnet_result),
+                "disease":          top["disease"] if not top["is_healthy"] else None,
+                "confidence":       top["score"],
+                "confidence_level": top["confidence_level"],
+                "is_healthy":       top["is_healthy"],
+                "message":          f"Olası teşhis — model %{top['score']*100:.0f} güvenle tahmin ediyor. Uzman görüşü önerilir.",
+                "disease_results":  disease_results,
+            }
+
+        # pv_plant var ama model düşük güvenli
         return {
-            "stage":            "possible",
+            "stage":            "fallback",
             "plant_name":       _display_plant(plantnet_result),
-            "disease":          top["disease"] if not top["is_healthy"] else None,
-            "confidence":       top["score"],
-            "confidence_level": top["confidence_level"],
-            "is_healthy":       top["is_healthy"],
-            "message":          f"Olası teşhis — model %{top['score']*100:.0f} güvenle tahmin ediyor. Uzman görüşü önerilir.",
+            "disease":          None,
+            "confidence":       top["score"] if top else pn_conf,
+            "confidence_level": "low",
+            "is_healthy":       None,
+            "message":          "Model bu görüntüden yeterince emin değil. Aşağıda bakım bilgisi gösterilmektedir.",
             "disease_results":  disease_results,
         }
 
-    # Durum 3: Fallback — bakım bilgisi göster
+    # pv_plant yok → hastalık modelinin kapsamı dışında bir bitki (aloe vera, orkide vb.)
     return {
         "stage":            "fallback",
         "plant_name":       _display_plant(plantnet_result),
@@ -179,7 +196,7 @@ def run_disease_pipeline(image_path: str, plantnet_result: dict) -> dict:
         "confidence":       pn_conf,
         "confidence_level": "low",
         "is_healthy":       None,
-        "message":          "Hastalık tespiti için fotoğraf net değil veya bu bitki hastalık veritabanında yok. Aşağıda bakım bilgisi gösterilmektedir.",
+        "message":          "Bu bitki hastalık veritabanımızda bulunmuyor. Aşağıda genel bakım bilgisi gösterilmektedir.",
         "disease_results":  disease_results,
     }
 

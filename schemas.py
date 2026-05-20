@@ -79,6 +79,7 @@ class DiagnosisResponse(BaseModel):
     overall_health: str             # healthy / attention / critical / unknown
     diagnosis_message: Optional[str]
     disclaimer: str
+    care: Optional[dict] = None     # bakım bilgisi (watering, ranges vb.)
 
 
 # --- Alerts ---
@@ -112,6 +113,8 @@ class LeafAnalysisHistoryItem(BaseModel):
     label: Optional[str]
     confidence: Optional[float]
     timestamp: datetime
+    plant_id: Optional[int] = None
+    plant_name: Optional[str] = None
 
 
 # --- Device ---

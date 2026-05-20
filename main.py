@@ -10,6 +10,7 @@ from services import ml_service, database
 from routers import main as main_router, leaf_disease, sensor, devices
 from routers import auth as auth_router
 from routers import admin as admin_router
+from routers import plant_detail as plant_detail_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -55,6 +56,7 @@ app.include_router(main_router.router)
 app.include_router(leaf_disease.router)
 app.include_router(sensor.router)
 app.include_router(devices.router)
+app.include_router(plant_detail_router.router)
 
 
 if __name__ == "__main__":

@@ -143,9 +143,15 @@ body{background:var(--dark);color:var(--cream);font-family:var(--fb);font-weight
 
 @media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:500px){.stats-row{grid-template-columns:1fr 1fr}}
+body{cursor:none}
+#cursor{position:fixed;width:28px;height:28px;pointer-events:none;transform:translate(-50%,-50%) rotate(-25deg);transition:transform .15s ease-out;z-index:9999;top:0;left:0}
+#cursor.hover{transform:translate(-50%,-50%) rotate(-25deg) scale(1.6)}
+.iz{position:fixed;width:14px;height:14px;pointer-events:none;opacity:.7;animation:leaf-trail 1.8s ease-in forwards;z-index:9998}
+@keyframes leaf-trail{0%{opacity:.7;transform:translate(-50%,-50%) rotate(0)}100%{opacity:0;transform:translate(-50%,calc(-50% + 60px)) rotate(180deg)}}
 </style>
 </head>
 <body>
+<svg id="cursor" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16 2 C8 6, 4 14, 6 24 C6 26, 8 28, 10 28 C20 28, 28 20, 30 8 C30 6, 28 4, 26 4 C22 4, 18 4, 16 2 Z" fill="#639922" stroke="#3B6D11" stroke-width="0.8"/><path d="M14 26 C16 20, 20 14, 28 8" stroke="#3B6D11" stroke-width="0.8" fill="none"/></svg>
 
 <!-- LOADER -->
 <div id="loader">
@@ -412,5 +418,6 @@ document.addEventListener('click', e => {
   setTimeout(() => { window.location.href = href; }, 600);
 });
 </script>
+<script>(function(){var c=document.getElementById('cursor');if(!c)return;document.addEventListener('mousemove',function(e){c.style.left=e.clientX+'px';c.style.top=e.clientY+'px';if(Math.random()<.12){var iz=c.cloneNode(true);iz.classList.add('iz');iz.removeAttribute('id');iz.style.left=e.clientX+'px';iz.style.top=e.clientY+'px';document.body.appendChild(iz);setTimeout(function(){iz.remove()},1800);}},{passive:true});document.querySelectorAll('a,button').forEach(function(el){el.addEventListener('mouseenter',function(){c.classList.add('hover')});el.addEventListener('mouseleave',function(){c.classList.remove('hover')});});})();</script>
 </body>
 </html>

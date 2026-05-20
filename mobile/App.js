@@ -61,7 +61,6 @@ function ProfileModal({ visible, onClose }) {
         }}>
           <View style={{ width: 32, height: 3, backgroundColor: colors.sub, borderRadius: Radius.full, alignSelf: 'center', marginBottom: 20 }} />
 
-          {/* User Row */}
           <View style={{
             flexDirection: 'row', alignItems: 'center', gap: 12,
             backgroundColor: colors.card, padding: 14, borderRadius: Radius.lg,
@@ -77,7 +76,6 @@ function ProfileModal({ visible, onClose }) {
             <View style={{ width: 8, height: 8, borderRadius: Radius.full, backgroundColor: colors.green }} />
           </View>
 
-          {/* Theme Toggle */}
           <View style={{
             flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
             backgroundColor: colors.card, padding: 14, borderRadius: Radius.lg,

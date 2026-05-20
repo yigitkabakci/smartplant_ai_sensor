@@ -59,3 +59,11 @@ async def alerts_page(request: Request, db: Session = Depends(get_db)):
 async def sensor_docs(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request, db)
     return templates.TemplateResponse(request, "sensor_docs.html", {"current_user": user})
+
+
+@router.get("/plant-detail/{plant_id}", response_class=HTMLResponse)
+async def plant_detail_page(plant_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+    return templates.TemplateResponse(request, "plant_detail.html", {"current_user": user, "plant_id": plant_id})

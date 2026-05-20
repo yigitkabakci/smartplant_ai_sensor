@@ -98,16 +98,14 @@ async def get_history(
 @router.get("/leaf-history", response_model=List[LeafAnalysisHistoryItem])
 async def leaf_history(
     limit: int = Query(20, ge=1, le=100),
+    plant_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
 ):
     from models import LeafAnalysis
-    rows = (
-        db.query(LeafAnalysis)
-        .order_by(LeafAnalysis.id.desc())
-        .limit(limit)
-        .all()
-    )
-    return rows
+    q = db.query(LeafAnalysis)
+    if plant_id is not None:
+        q = q.filter(LeafAnalysis.plant_id == plant_id)
+    return q.order_by(LeafAnalysis.id.desc()).limit(limit).all()
 
 
 @router.get("/alerts", response_model=List[AlertResponse])
