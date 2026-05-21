@@ -130,8 +130,10 @@ export default function CropsScreen({ route }) {
         max_moisture:   sensor.moisture_pct != null ? String(Math.min(100, Math.round(sensor.moisture_pct + 10))) : f.max_moisture,
         ideal_temp_min: sensor.temperature_c != null ? String(Math.round(sensor.temperature_c - 3)) : f.ideal_temp_min,
         ideal_temp_max: sensor.temperature_c != null ? String(Math.round(sensor.temperature_c + 3)) : f.ideal_temp_max,
+        min_light_lux:  sensor.light_lux != null ? String(Math.max(0, Math.round(sensor.light_lux * 0.5))) : f.min_light_lux,
+        max_light_lux:  sensor.light_lux != null ? String(Math.round(sensor.light_lux * 2)) : f.max_light_lux,
       }));
-      Alert.alert('✅ Sensör Verileri Alındı', `Nem: ${sensor.moisture_pct?.toFixed(1)}%  Sıcaklık: ${sensor.temperature_c?.toFixed(1)}°C\nDeğerler ±tolerans ile forma yazıldı.`);
+      Alert.alert('✅ Sensör Verileri Alındı', `Nem: ${sensor.moisture_pct?.toFixed(1)}%  Sıcaklık: ${sensor.temperature_c?.toFixed(1)}°C  Işık: ${sensor.light_lux?.toFixed(0)} lux\nDeğerler ±tolerans ile forma yazıldı.`);
     } catch { Alert.alert('Hata', 'Sensör verisi alınamadı.'); }
     setSensorLoading(false);
   };
