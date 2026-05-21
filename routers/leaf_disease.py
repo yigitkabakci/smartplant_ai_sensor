@@ -37,9 +37,10 @@ def _secure_filename(filename: str) -> str:
 
 
 def _get_latest_sensor(db: Session, device_mac: Optional[str]) -> Optional[dict]:
+    if not device_mac:
+        return None
     query = db.query(SensorReading).order_by(SensorReading.log_id.desc())
-    if device_mac:
-        query = query.filter(SensorReading.device_mac == device_mac)
+    query = query.filter(SensorReading.device_mac == device_mac)
     row = query.first()
     if not row:
         return None

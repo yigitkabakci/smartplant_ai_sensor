@@ -20,6 +20,21 @@ export const DISEASE_TR = {
   'Leaf Blast':                          { tr: 'Yaprak Patlaması',             info: 'Magnaporthe oryzae mantarı. Eliptik gri lekeler. Pirinçte en yıkıcı hastalıklardan biridir.' },
   'Brown Spot':                          { tr: 'Kahverengi Leke',              info: 'Bipolaris oryzae mantarı. Kahverengi oval lekeler. Pirinçte tanelerin dökülmesine neden olur.' },
   'Healthy':                             { tr: 'Sağlıklı',                     info: 'Yaprak sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.' },
+
+  // --- Indoor bitkiler ---
+  'Anthracnose':           { tr: 'Antraknoz',                info: 'Colletotrichum mantarı. Yapraklarda koyu kahverengi çökmüş lekeler. Nemli ve sıcak ortamda hızla yayılır.' },
+  'LeafSpot':              { tr: 'Yaprak Lekesi',            info: 'Fungal veya bakteriyel etkenlerle oluşan kahverengi/siyah lekeler. Etkilenen yaprakları uzaklaştırın.' },
+  'Leaf Spot':             { tr: 'Yaprak Lekesi',            info: 'Fungal veya bakteriyel etkenlerle oluşan kahverengi/siyah lekeler. Etkilenen yaprakları uzaklaştırın.' },
+  'Rust':                  { tr: 'Pas Hastalığı',            info: 'Puccinia mantarı. Yaprak altında turuncu-kahverengi toz görünümlü pustüller. Hava sirkülasyonunu artırın.' },
+  'Sunburn':               { tr: 'Güneş Yanığı',             info: 'Aşırı doğrudan güneş ışığı. Yapraklarda soluk sarı veya kahverengi yanık lekeleri oluşur. Bitkiyi gölgeye alın.' },
+  'Dactylopius Opuntia':   { tr: 'Kaktüs Koşinili',         info: 'Dactylopius coccus böceği. Kaktüste beyaz pamuksu kitleler oluşturur. Alkollü pamukla temizleyin.' },
+  'Bacterial Wilt':        { tr: 'Bakteriyel Solgunluk',     info: 'Ralstonia solanacearum bakterisi. Yapraklar aniden solar ve sararır. Etkilenen bitkiyi hemen izole edin.' },
+  'Bacterial wilt':        { tr: 'Bakteriyel Solgunluk',     info: 'Ralstonia solanacearum bakterisi. Yapraklar aniden solar ve sararır. Etkilenen bitkiyi hemen izole edin.' },
+  'Manganese Toxicity':    { tr: 'Manganez Toksisitesi',     info: 'Aşırı manganez birikimi. Yapraklarda kahverengi lekeler ve kenar yanıklığı. Toprağı yenileyin veya pH\'ı artırın.' },
+  'Leaf Withering':        { tr: 'Yaprak Solması',           info: 'Yetersiz sulama, kök çürümesi veya aşırı güneş. Yapraklar solar ve büzülür. Sulama düzenini kontrol edin.' },
+  'Fungal Leaf Spot':      { tr: 'Fungal Yaprak Lekesi',     info: 'Çeşitli mantar türleri. Yapraklarda sarı halkalarla çevrili koyu lekeler. Yaprakları ıslak bırakmayın.' },
+  'Fungal leaf spot':      { tr: 'Fungal Yaprak Lekesi',     info: 'Çeşitli mantar türleri. Yapraklarda sarı halkalarla çevrili koyu lekeler. Yaprakları ıslak bırakmayın.' },
+  'Leaf Tip Necrosis':     { tr: 'Yaprak Ucu Nekrozu',       info: 'Düşük nem, florür veya tuz birikimi. Yaprak uçları kahverengileşir ve kurur. Damıtılmış su kullanın.' },
 };
 
 export function getDiseaseInfo(name) {
