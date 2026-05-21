@@ -540,9 +540,9 @@ function showResult(d) {
     sensorHtml += `</div>`;
   }
 
-  // --- Sorunlar ---
+  // --- Sorunlar (sadece disease/possible aşamalarında göster) ---
   let probHtml = middleHtml;
-  if (d.problems && d.problems.length) {
+  if (d.diagnosis_stage !== 'fallback' && d.problems && d.problems.length) {
     probHtml += `<div class="problems-title">Tespit Edilen Sorunlar</div>`;
     d.problems.forEach(p => {
       probHtml += `<div class="problem-item severity-${p.severity}">
